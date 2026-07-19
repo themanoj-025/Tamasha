@@ -2,9 +2,56 @@
 
 from __future__ import annotations
 
+import json
+import joblib
 import numpy as np
 import pandas as pd
 import pytest
+from sklearn.dummy import DummyRegressor
+
+from tamasha.config import settings
+
+
+@pytest.fixture(autouse=True, scope="session")
+def setup_dummy_models_if_missing() -> None:
+    """Ensure dummy model files exist for API testing if not already trained."""
+    settings.MODELS_DIR.mkdir(parents=True, exist_ok=True)
+
+    rating_model_path = settings.MODELS_DIR / "best_rating_model.pkl"
+    rating_features_path = settings.MODELS_DIR / "rating_features.json"
+    if not rating_model_path.exists() or not rating_features_path.exists():
+        rating_cols = [
+            "genre_Action",
+            "genre_Drama",
+            "genre_Romance",
+            "cast_size",
+            "runtime_minutes",
+            "budget_inr",
+        ]
+        model = DummyRegressor(strategy="constant", constant=7.0)
+        X = np.zeros((1, len(rating_cols)))
+        y = np.array([7.0])
+        model.fit(X, y)
+        joblib.dump(model, rating_model_path)
+        rating_features_path.write_text(json.dumps(rating_cols))
+
+    box_model_path = settings.MODELS_DIR / "best_boxoffice_model.pkl"
+    box_features_path = settings.MODELS_DIR / "boxoffice_features.json"
+    if not box_model_path.exists() or not box_features_path.exists():
+        box_cols = [
+            "genre_Action",
+            "genre_Drama",
+            "cast_size",
+            "runtime_minutes",
+            "budget_inr",
+            "avg_bankability_score",
+        ]
+        model = DummyRegressor(strategy="constant", constant=500000000.0)
+        X = np.zeros((1, len(box_cols)))
+        y = np.array([500000000.0])
+        model.fit(X, y)
+        joblib.dump(model, box_model_path)
+        box_features_path.write_text(json.dumps(box_cols))
 
 
 @pytest.fixture
