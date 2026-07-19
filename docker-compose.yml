@@ -1,0 +1,38 @@
+version: "3.9"
+
+services:
+  api:
+    build: .
+    container_name: tamasha-api
+    command: uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+      - ./data:/app/data
+      - ./models:/app/models
+    env_file:
+      - .env
+    networks:
+      - tamasha-net
+
+  dashboard:
+    build: .
+    container_name: tamasha-dashboard
+    command: streamlit run app/streamlit_app.py --server.port=8501 --server.address=0.0.0.0
+    ports:
+      - "8501:8501"
+    volumes:
+      - .:/app
+      - ./data:/app/data
+      - ./models:/app/models
+    depends_on:
+      - api
+    env_file:
+      - .env
+    networks:
+      - tamasha-net
+
+networks:
+  tamasha-net:
+    driver: bridge

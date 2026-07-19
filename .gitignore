@@ -1,0 +1,90 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Data files
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# Model artifacts
+models/*.pkl
+models/*.joblib
+models/*.onnx
+models/*.json
+!models/.gitkeep
+
+# Environment
+.env
+.streamlit/
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints/
+
+# Reports (keep figures, ignore temp)
+reports/*.html
+reports/*.png
+!reports/figures/
+
+# Kaggle
+kaggle.json
+
+# Docker
+.docker/
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Testing / CI
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage/
+.tox/
+.nox/
+
+# Type checking
+.mypy_cache/
+.pytype/
+.typings/
+
+# CatBoost training artifacts
+catboost_info/
+
+# Logs
+*.log
+logs/
