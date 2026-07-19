@@ -58,7 +58,7 @@ def show() -> None:
     with col1:
         st.markdown("<div class='glass-card'><h3 style='margin:0 0 1rem;color:#fff;'>🎬 Movie Profile</h3>", unsafe_allow_html=True)
 
-        title = st.text_input("Movie Title", value="My Bollywood Film")
+        st.text_input("Movie Title", value="My Bollywood Film")
 
         genre_options = [
             "Action", "Comedy", "Drama", "Romance", "Thriller",

@@ -2,15 +2,12 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-
 import pandas as pd
-import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
 from tamasha.config import settings
-from tamasha.predict import get_model_info, get_comparison_csv
+from tamasha.predict import get_model_info
 
 
 def _load_csv(csv_name: str) -> pd.DataFrame | None:

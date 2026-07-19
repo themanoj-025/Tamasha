@@ -275,7 +275,6 @@ def train_poster_classifier(
     # Check class balance
     n_pos = y.sum()
     n_neg = len(y) - n_pos
-    majority_class_pct = max(n_pos, n_neg) / len(y) * 100
     logger.info(
         "Class distribution: hits=%d (%.1f%%), flops=%d (%.1f%%)",
         n_pos, n_pos / len(y) * 100,

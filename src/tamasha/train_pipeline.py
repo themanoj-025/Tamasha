@@ -27,22 +27,22 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from tamasha.config import settings
-from tamasha.data.loaders import (
+from tamasha.config import settings  # noqa: E402
+from tamasha.data.loaders import (  # noqa: E402
     load_imdb_india,
     load_bollywood_boxoffice,
 )
-from tamasha.data.joining import fuzzy_join_datasets, generate_join_quality_report
-from sklearn.model_selection import train_test_split
+from tamasha.data.joining import fuzzy_join_datasets, generate_join_quality_report  # noqa: E402
+from sklearn.model_selection import train_test_split  # noqa: E402
 
-from tamasha.features.movie_features import build_feature_matrix
-from tamasha.models.model_selection import get_all_models
-from tamasha.models.rating_model import train_rating_model
-from tamasha.models.boxoffice_model import train_boxoffice_model, _compute_cast_avg_bankability
-from tamasha.network.bankability_score import compute_bankability_scores
-from tamasha.network.chemistry_pairs import detect_chemistry_pairs
-from tamasha.data.enrichment import enrich_dataset
-from tamasha.nlp.plot_sentiment import score_plot_sentiment, genre_conditional_correlation
+from tamasha.features.movie_features import build_feature_matrix  # noqa: E402
+from tamasha.models.model_selection import get_all_models  # noqa: E402
+from tamasha.models.rating_model import train_rating_model  # noqa: E402
+from tamasha.models.boxoffice_model import train_boxoffice_model, _compute_cast_avg_bankability  # noqa: E402
+from tamasha.network.bankability_score import compute_bankability_scores  # noqa: E402
+from tamasha.network.chemistry_pairs import detect_chemistry_pairs  # noqa: E402
+from tamasha.data.enrichment import enrich_dataset  # noqa: E402
+from tamasha.nlp.plot_sentiment import score_plot_sentiment, genre_conditional_correlation  # noqa: E402
 
 logger = logging.getLogger(__name__)
 
@@ -507,7 +507,7 @@ def main() -> None:
     ]:
         csv_path = settings.REPORTS_DIR / csv_name
         if csv_path.exists():
-            fig = plot_model_comparison(
+            plot_model_comparison(
                 csv_path,
                 save_path=settings.FIGURES_DIR / f"{prefix}_comparison.png",
             )
@@ -547,7 +547,7 @@ def main() -> None:
     # ── SHAP analysis (Stage 9) ──────────────────────────────────
     _print_separator("STEP 9: SHAP Explainability")
     try:
-        import shap
+        import shap  # noqa: F401
         from tamasha.evaluation.metrics import plot_shap_summary
 
         def _ensure_numeric(X: pd.DataFrame) -> pd.DataFrame:

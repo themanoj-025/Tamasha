@@ -132,7 +132,6 @@ def _load_metadata() -> None:
 def _load_feature_cols(task: str) -> list[str]:
     """Load expected feature column names saved during training."""
     global _RATING_FEATURE_COLS, _BOXOFFICE_FEATURE_COLS
-    key = f"{task}_features"
     path = settings.MODELS_DIR / f"{task}_features.json"
     if path.exists():
         cols = json.loads(path.read_text())
