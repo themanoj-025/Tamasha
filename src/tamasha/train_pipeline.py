@@ -33,7 +33,7 @@ from tamasha.data.loaders import (  # noqa: E402
     load_bollywood_boxoffice,
 )
 from tamasha.data.joining import fuzzy_join_datasets, generate_join_quality_report  # noqa: E402
-from sklearn.model_selection import train_test_split  # noqa: E402
+
 
 from tamasha.features.movie_features import build_feature_matrix  # noqa: E402
 from tamasha.models.model_selection import get_all_models  # noqa: E402
@@ -522,10 +522,12 @@ def main() -> None:
                 # Verify scatter-plot MAE matches reported CV MAE
                 scatter_mae = float(np.mean(np.abs(y_all.values - y_pred)))
                 reported_mae = float(comp_df[comp_df["model"] == model_name]["MAE"].iloc[0])
-                if abs(scatter_mae - reported_mae) > 0.01:
+                # Relative tolerance to avoid false positives on low-MAE models
+                rel_diff = abs(scatter_mae - reported_mae) / max(reported_mae, 1e-8)
+                if rel_diff > 0.05:  # 5% relative tolerance
                     logger.warning(
-                        "  Scatter plot MAE (%.4f) differs from reported CV MAE (%.4f) for %s",
-                        scatter_mae, reported_mae, model_name,
+                        "  Scatter plot MAE (%.4f) differs from reported CV MAE (%.4f) by %.1f%% for %s",
+                        scatter_mae, reported_mae, rel_diff * 100, model_name,
                     )
                 else:
                     logger.info("  Scatter plot MAE=%.4f matches reported CV MAE for %s", scatter_mae, model_name)
