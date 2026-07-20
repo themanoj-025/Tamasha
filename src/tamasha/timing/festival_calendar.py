@@ -233,7 +233,8 @@ def compute_clash_feature(
     result["has_clash"] = False
 
     # O(n log n) sort-by-date sweep instead of O(n²) nested loops
-    # Sort by date, then for each movie only check nearby neighbors
+    # Sort by date, then for each movie only check nearby neighbors.
+    # When a clash pair (i, j) is found, BOTH movies are flagged.
     valid_mask = pd.notna(dates)
     valid_dates = dates[valid_mask].sort_values()
     valid_indices = valid_dates.index.tolist()
@@ -247,8 +248,9 @@ def compute_clash_feature(
             if diff > clash_window_days:
                 break  # All remaining dates are further away
             if 0 < diff <= clash_window_days:
+                # Flag BOTH movies in the pair
                 result.at[idx, "has_clash"] = True
-                break
+                result.at[valid_indices[j], "has_clash"] = True
 
     n_clash = result["has_clash"].sum()
     logger.info("Clash feature: %d / %d movies have a clash.", n_clash, len(result))
