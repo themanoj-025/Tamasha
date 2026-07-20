@@ -368,17 +368,17 @@ def train_and_compare(
         comparison_sorted.to_csv(save_csv, index=False)
         logger.info("Comparison CSV saved to %s", save_csv)
 
-    # Refit best model on full data (strip " (tuned)" suffix for class lookup)
-    best_raw_name = best_name.replace(" (tuned)", "")
-    if tune and best_raw_name in tuned_params_log:
+    # Refit best model on full data
+    if tune and best_name in tuned_params_log:
         # Best model is a tuned estimator — use it directly
-        best_model = compare_models[best_raw_name]
+        best_model = compare_models[best_name]
         best_model.fit(X_arr, y_arr)
+        logger.info("Best model %s (tuned) refit on full dataset.", best_name)
     else:
-        best_model_cls = compare_models[best_raw_name].__class__
-        best_model = best_model_cls(**compare_models[best_raw_name].get_params())
+        best_model_cls = compare_models[best_name].__class__
+        best_model = best_model_cls(**compare_models[best_name].get_params())
         best_model.fit(X_arr, y_arr)
-    logger.info("Best model %s refit on full dataset.", best_name)
+        logger.info("Best model %s refit on full dataset.", best_name)
 
     return comparison_sorted, best_name, best_model
 
