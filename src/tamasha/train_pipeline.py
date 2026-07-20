@@ -276,6 +276,17 @@ def main() -> None:
     (settings.MODELS_DIR / "rating_features.json").write_text(json.dumps(rating_features))
     logger.info("  Saved %d rating feature column names", len(rating_features))
 
+    # Save director LabelEncoder for inference
+    from tamasha.features.movie_features import save_director_encoder
+    try:
+        director_col = [c for c in df_rating.columns if c.lower() == "director"]
+        if director_col:
+            save_director_encoder(df_rating, director_column=director_col[0])
+        else:
+            logger.warning("  No director column found; skipping director encoder save.")
+    except Exception as exc:
+        logger.warning("  Director encoder save failed (non-blocking): %s", exc)
+
     # =====================================================================
     # STEP 5: PLOT SENTIMENT (Stage 5) — using TMDb-enriched plot summaries
     # =====================================================================

@@ -1,9 +1,28 @@
-"""Main entry point for the Streamlit multi-page dashboard."""
+"""Main entry point for the Streamlit multi-page dashboard.
+
+Uses ``st.cache_resource`` to create the ``PredictionService`` singleton
+once, avoiding model reloading on every page rerun.
+"""
+
 from __future__ import annotations
 
 from pathlib import Path
 
 import streamlit as st
+
+from tamasha.predict import PredictionService
+
+
+@st.cache_resource(ttl=3600)
+def _load_prediction_service() -> PredictionService:
+    """Load the PredictionService singleton (cached by Streamlit)."""
+    svc = PredictionService()
+    svc.load()
+    return svc
+
+
+# ── Ensure the service is loaded once at startup ──────────────────────
+_svc = _load_prediction_service()
 
 st.set_page_config(
     page_title="Tamasha — Bollywood Movie Intelligence",
@@ -40,11 +59,14 @@ st.sidebar.markdown(
 )
 
 # Animated status indicator
+healthy = _svc.healthy
+dot_color = "#4ade80" if healthy else "#f87171"
+status_text = "Models loaded &mdash; ready" if healthy else "Models not trained &mdash; run: make train"
 st.sidebar.markdown(
-    """
+    f"""
     <div class="sidebar-status">
-        <span class="dot"></span>
-        <span>Models loaded &mdash; ready</span>
+        <span class="dot" style="background:{dot_color};"></span>
+        <span>{status_text}</span>
     </div>
     """,
     unsafe_allow_html=True,

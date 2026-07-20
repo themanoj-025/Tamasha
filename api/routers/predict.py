@@ -1,10 +1,14 @@
-"""Prediction routes for rating and box office."""
+"""Prediction routes for rating and box office.
+
+Uses FastAPI ``Depends()`` to receive a ``PredictionService`` instance
+built during application startup.
+"""
 
 from __future__ import annotations
 
 import logging
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
 from api.schemas import (
     PredictBoxOfficeRequest,
@@ -12,17 +16,26 @@ from api.schemas import (
     PredictRatingRequest,
     PredictRatingResponse,
 )
-from tamasha.predict import predict_rating, predict_boxoffice
+from tamasha.predict import PredictionService
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="", tags=["predict"])
 
 
+def _get_svc() -> PredictionService:
+    """Get the PredictionService from app.state (injected by FastAPI)."""
+    from api.main import get_prediction_service
+    return get_prediction_service()
+
+
 @router.post("/predict-rating", response_model=PredictRatingResponse)
-async def predict_rating_endpoint(request: PredictRatingRequest) -> PredictRatingResponse:
+async def predict_rating_endpoint(
+    request: PredictRatingRequest,
+    svc: PredictionService = Depends(_get_svc),
+) -> PredictRatingResponse:
     """Predict movie rating from cast, genre, and budget features."""
     try:
-        result = predict_rating(
+        result = svc.predict_rating(
             genres=request.genres,
             cast=request.cast,
             director=request.director,
@@ -47,10 +60,11 @@ async def predict_rating_endpoint(request: PredictRatingRequest) -> PredictRatin
 @router.post("/predict-boxoffice", response_model=PredictBoxOfficeResponse)
 async def predict_boxoffice_endpoint(
     request: PredictBoxOfficeRequest,
+    svc: PredictionService = Depends(_get_svc),
 ) -> PredictBoxOfficeResponse:
     """Predict movie box office using the Bankability-enhanced model."""
     try:
-        result = predict_boxoffice(
+        result = svc.predict_boxoffice(
             genres=request.genres,
             cast=request.cast,
             director=request.director,

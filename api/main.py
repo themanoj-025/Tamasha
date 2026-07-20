@@ -1,11 +1,7 @@
 """FastAPI application entry point for Tamasha API.
 
-Endpoints:
-- ``GET /health`` — Health check
-- ``POST /predict-rating`` — Predict movie rating
-- ``POST /predict-boxoffice`` — Predict box office
-- ``GET /actor/{name}`` — Bankability Score + chemistry pairs
-- ``GET /model-info`` — Currently deployed models and metrics
+Uses a ``lifespan`` context manager to build the ``PredictionService``
+once at startup and inject it into route handlers via ``Depends()``.
 """
 
 from __future__ import annotations
@@ -14,19 +10,25 @@ import logging
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
+
+from tamasha.predict import PredictionService
 
 logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
-    """Load models on startup, clean up on shutdown."""
+    """Build PredictionService on startup, clean up on shutdown."""
     logger.info("Tamasha API starting up...")
-    # Models will be loaded here after training
+    svc = PredictionService()
+    svc.load()
+    app.state.prediction_service = svc
+    logger.info("PredictionService loaded. Healthy: %s", svc.healthy)
     yield
     logger.info("Tamasha API shutting down...")
+    # Nothing explicit to clean up — model files remain on disk
 
 
 app = FastAPI(
@@ -36,6 +38,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# ── CORS — restricted in production ───────────────────────────────────
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -45,19 +48,31 @@ app.add_middleware(
 )
 
 
+# ── Dependency injection helper ──────────────────────────────────────
+
+def get_prediction_service() -> PredictionService:
+    """FastAPI dependency — yields the singleton from ``app.state``."""
+    svc: PredictionService = app.state.prediction_service
+    return svc
+
+
+# ── Health ───────────────────────────────────────────────────────────
+
 @app.get("/health")
-async def health() -> dict:
-    """Health check endpoint.
+async def health(
+    svc: PredictionService = Depends(get_prediction_service),
+) -> dict:
+    """Health check — reflects model-availability status."""
+    healthy = svc.healthy
+    return {
+        "status": "ok" if healthy else "degraded",
+        "version": "0.1.0",
+        "models_loaded": healthy,
+    }
 
-    Returns
-    -------
-    dict
-        ``{"status": "ok", "version": "0.1.0"}``
-    """
-    return {"status": "ok", "version": "0.1.0"}
 
+# ── Routers ──────────────────────────────────────────────────────────
 
-# Import routers
 from api.routers import predict, network, model_info  # noqa: E402
 
 app.include_router(predict.router)

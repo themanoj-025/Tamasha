@@ -7,8 +7,10 @@ for rating and box-office models.
 from __future__ import annotations
 
 import logging
-from typing import Optional
+from pathlib import Path
+from typing import Optional, Union
 
+import joblib
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder, MultiLabelBinarizer
@@ -89,8 +91,47 @@ def extract_cast_features(
     directors = df[director_column].fillna("Unknown Director").astype(str)
     result["director_encoded"] = le.fit_transform(directors)
 
-    logger.info("Cast features extracted.")
+    logger.info("Cast features extracted (director classes: %d).", len(le.classes_))
     return result
+
+
+def save_director_encoder(
+    df: pd.DataFrame,
+    director_column: str = "director",
+    save_path: Optional[Union[str, Path]] = None,
+) -> Path:
+    """Fit and persist a ``LabelEncoder`` for the director column.
+
+    Used during training so that the same encoding can be loaded at
+    inference time in ``PredictionService``.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Training DataFrame.
+    director_column : str, default="director"
+        Column with director names.
+    save_path : str or Path, optional
+        Destination for the ``.pkl`` file.  Defaults to
+        ``settings.MODELS_DIR / "director_encoder.pkl"``.
+
+    Returns
+    -------
+    Path
+        Path where the encoder was saved.
+    """
+    from sklearn.preprocessing import LabelEncoder
+
+    save_path = Path(save_path or settings.MODELS_DIR / "director_encoder.pkl")
+    save_path.parent.mkdir(parents=True, exist_ok=True)
+
+    le = LabelEncoder()
+    directors = df[director_column].fillna("Unknown Director").astype(str)
+    le.fit(directors)
+
+    joblib.dump(le, save_path)
+    logger.info("Director encoder saved to %s (%d classes)", save_path, len(le.classes_))
+    return save_path
 
 
 def extract_runtime_feature(
