@@ -10,28 +10,22 @@ import logging
 
 from fastapi import APIRouter, Depends, HTTPException
 
+from api.main import get_prediction_service
 from api.schemas import (
     PredictBoxOfficeRequest,
     PredictBoxOfficeResponse,
     PredictRatingRequest,
     PredictRatingResponse,
 )
-from tamasha.predict import PredictionService
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="", tags=["predict"])
 
 
-def _get_svc() -> PredictionService:
-    """Get the PredictionService from app.state (injected by FastAPI)."""
-    from api.main import get_prediction_service
-    return get_prediction_service()
-
-
 @router.post("/predict-rating", response_model=PredictRatingResponse)
 async def predict_rating_endpoint(
     request: PredictRatingRequest,
-    svc: PredictionService = Depends(_get_svc),
+    svc=Depends(get_prediction_service),
 ) -> PredictRatingResponse:
     """Predict movie rating from cast, genre, and budget features."""
     try:
@@ -60,7 +54,7 @@ async def predict_rating_endpoint(
 @router.post("/predict-boxoffice", response_model=PredictBoxOfficeResponse)
 async def predict_boxoffice_endpoint(
     request: PredictBoxOfficeRequest,
-    svc: PredictionService = Depends(_get_svc),
+    svc=Depends(get_prediction_service),
 ) -> PredictBoxOfficeResponse:
     """Predict movie box office using the Bankability-enhanced model."""
     try:

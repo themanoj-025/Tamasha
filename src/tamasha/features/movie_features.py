@@ -120,8 +120,6 @@ def save_director_encoder(
     Path
         Path where the encoder was saved.
     """
-    from sklearn.preprocessing import LabelEncoder
-
     save_path = Path(save_path or settings.MODELS_DIR / "director_encoder.pkl")
     save_path.parent.mkdir(parents=True, exist_ok=True)
 

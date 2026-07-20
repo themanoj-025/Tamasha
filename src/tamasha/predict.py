@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import json
 import logging
+import threading
 from pathlib import Path
 from typing import Any, Optional
 
@@ -74,26 +75,34 @@ class PredictionService:
         self._boxoffice_feature_cols: list[str] = []
         self._director_encoder: Any = None
         self._loaded: bool = False
+        self._load_lock: threading.Lock = threading.Lock()
 
     # ── public load ────────────────────────────────────────────────
 
     def load(self) -> None:
-        """Load all artifacts from disk. Safe to call multiple times."""
+        """Load all artifacts from disk. Safe to call multiple times.
+
+        Uses double-checked locking for thread safety — two threads
+        calling ``load()`` simultaneously will not double-load.
+        """
         if self._loaded:
             return
-        self._load_rating_model()
-        self._load_boxoffice_model()
-        self._load_metadata()
-        self._load_feature_cols()
-        self._load_director_encoder()
-        self._loaded = True
-        total = sum([
-            1 if self._rating_model else 0,
-            1 if self._boxoffice_model else 0,
-            1 if self._rating_feature_cols else 0,
-            1 if self._boxoffice_feature_cols else 0,
-        ])
-        logger.info("PredictionService loaded (%d/4 core artifacts).", total)
+        with self._load_lock:
+            if self._loaded:  # double-checked locking
+                return
+            self._load_rating_model()
+            self._load_boxoffice_model()
+            self._load_metadata()
+            self._load_feature_cols()
+            self._load_director_encoder()
+            self._loaded = True
+            total = sum([
+                1 if self._rating_model else 0,
+                1 if self._boxoffice_model else 0,
+                1 if self._rating_feature_cols else 0,
+                1 if self._boxoffice_feature_cols else 0,
+            ])
+            logger.info("PredictionService loaded (%d/4 core artifacts).", total)
 
     # ── property: healthy ──────────────────────────────────────────
 

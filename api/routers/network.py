@@ -9,22 +9,17 @@ import logging
 
 from fastapi import APIRouter, Depends, HTTPException
 
+from api.main import get_prediction_service
 from api.schemas import ActorInfoResponse
-from tamasha.predict import PredictionService
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="", tags=["network"])
 
 
-def _get_svc() -> PredictionService:
-    from api.main import get_prediction_service
-    return get_prediction_service()
-
-
 @router.get("/actor/{name}", response_model=ActorInfoResponse)
 async def get_actor_info_endpoint(
     name: str,
-    svc: PredictionService = Depends(_get_svc),
+    svc=Depends(get_prediction_service),
 ) -> ActorInfoResponse:
     """Get Bankability Score and top chemistry pairs for an actor."""
     try:
