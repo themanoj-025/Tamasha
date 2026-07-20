@@ -8,6 +8,7 @@ from fastapi.testclient import TestClient
 from api.main import app
 
 client = TestClient(app)
+client.headers["X-API-Key"] = "tamasha-dev-key-2026"
 
 
 class TestHealth:

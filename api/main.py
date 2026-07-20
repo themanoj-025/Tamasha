@@ -93,10 +93,12 @@ async def verify_api_key_middleware(request, call_next):
 
     api_key = request.headers.get("X-API-Key", "")
     if api_key != settings.API_KEY:
-        logger.warning("auth_rejected", path=request.url.path)
+        request_id = str(uuid.uuid4())[:8]
+        logger.warning("auth_rejected", path=request.url.path, request_id=request_id)
         return JSONResponse(
             status_code=401,
             content={"detail": "Invalid or missing API key. Provide via X-API-Key header."},
+            headers={"X-Request-ID": request_id},
         )
     return await call_next(request)
 
