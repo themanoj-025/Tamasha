@@ -52,11 +52,12 @@ PAGES[selected_page]()
 
 | Method | Path | Handler | Module | Auth | Purpose |
 |--------|------|---------|--------|:----:|---------|
-| `GET` | `/health` | `health()` | `api/main.py` | None | Health check + version |
-| `POST` | `/predict-rating` | `predict_rating_endpoint()` | `api/routers/predict.py` | None | Predict IMDB rating |
-| `POST` | `/predict-boxoffice` | `predict_boxoffice_endpoint()` | `api/routers/predict.py` | None | Predict box office collection |
-| `GET` | `/actor/{name}` | `get_actor_info_endpoint()` | `api/routers/network.py` | None | Actor Bankability + chemistry |
-| `GET` | `/model-info` | `get_model_info_endpoint()` | `api/routers/model_info.py` | None | Deployed model metadata |
+| `GET` | `/health` | `health()` | `api/main.py` | ❌ Exempt | Health check + version |
+| `POST` | `/predict-rating` | `predict_rating_endpoint()` | `api/routers/predict.py` | ✅ X-API-Key | Predict IMDB rating |
+| `POST` | `/predict-boxoffice` | `predict_boxoffice_endpoint()` | `api/routers/predict.py` | ✅ X-API-Key | Predict box office collection |
+| `GET` | `/actor/{name}` | `get_actor_info_endpoint()` | `api/routers/network.py` | ✅ X-API-Key | Actor Bankability + chemistry |
+| `GET` | `/model-info` | `get_model_info_endpoint()` | `api/routers/model_info.py` | ✅ X-API-Key | Deployed model metadata |
+| `GET` | `/docs` | — | — | ❌ Exempt | Swagger UI |
 
 ### Route Details
 
@@ -216,12 +217,38 @@ No prefix is applied — paths are absolute.
 
 ---
 
-## 4. CORS Configuration
+## 4. Authentication
+
+All protected endpoints require the `X-API-Key` header:
+
+```bash
+curl -H "X-API-Key: tamasha-dev-key-2026" http://localhost:8000/predict-rating ...
+```
+
+The health endpoint (`/health`) and documentation endpoints (`/docs`, `/openapi.json`, `/redoc`)
+are exempt from authentication.
+
+Configured via `API_KEY` env var in `.env`.
+
+---
+
+## 5. Rate Limiting
+
+All endpoints (including health) are rate-limited to **60 requests per minute** via slowapi.
+Limits are keyed by the `X-API-Key` header value, falling back to client IP.
+When exceeded, returns `429 Too Many Requests`.
+
+---
+
+## 6. CORS Configuration
+
+CORS is restricted to the origins configured in `ALLOWED_ORIGINS` env var:
 
 ```python
+# Config: ALLOWED_ORIGINS=http://localhost:8501,http://localhost:8000
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],         # Open for development
+    allow_origins=["http://localhost:8501", "http://localhost:8000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -230,7 +257,7 @@ app.add_middleware(
 
 ---
 
-## 5. Streamlit Cloud Entry Point
+## 7. Streamlit Cloud Entry Point
 
 - **File**: `app/streamlit_app.py`
 - **Command**: `streamlit run app/streamlit_app.py`
@@ -240,7 +267,7 @@ app.add_middleware(
 
 ---
 
-## 6. Render Deployment (FastAPI)
+## 8. Render Deployment (FastAPI)
 
 - **Blueprint file**: `render.yaml`
 - **Service**: Web Service
