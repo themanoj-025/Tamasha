@@ -73,19 +73,10 @@ def get_cached_prediction(payload: dict[str, Any], model_version: str = "") -> O
     """
     cache = _get_cache()
     key = _make_key(payload, model_version)
-    result = cache.get(key, default=None, expire_time=True)
+    result = cache.get(key)
     if result is not None:
-        # diskcache returns (value, expire_time) tuple with expire_time=True
-        # Actually, with expire_time=True it returns (value, expire_time) or (default, None)
-        if isinstance(result, tuple):
-            value, expire_time = result
-            if value is not None:
-                logger.debug("Cache HIT for key=%s", key[:12])
-                return value
-        else:
-            # Shouldn't happen with expire_time=True, but handle gracefully
-            logger.debug("Cache HIT for key=%s", key[:12])
-            return result
+        logger.debug("Cache HIT for key=%s", key[:12])
+        return result
     logger.debug("Cache MISS for key=%s", key[:12])
     return None
 
@@ -119,13 +110,7 @@ def get_cached_explanation(payload: dict[str, Any], model_version: str = "") -> 
     """Look up a cached LLM explanation (longer TTL)."""
     cache = _get_cache()
     key = f"explain:{_make_key(payload, model_version)}"
-    result = cache.get(key, default=None, expire_time=True)
-    if isinstance(result, tuple):
-        value, _ = result
-        if value is not None:
-            return value
-        return None
-    return result if result is not None else None
+    return cache.get(key)
 
 
 def set_cached_explanation(
