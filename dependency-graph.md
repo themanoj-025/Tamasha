@@ -300,8 +300,11 @@ metric_cards.py ──▶ streamlit
 ### `api/main.py`
 
 ```
-main.py ──▶ fastapi (FastAPI, CORSMiddleware)
-            tamasha.config
+main.py ──▶ fastapi (FastAPI, CORSMiddleware, HTTPException)
+            slowapi (Limiter, RateLimitExceeded, SlowAPIMiddleware)
+            structlog
+            tamasha.config (settings.API_KEY, settings.ALLOWED_ORIGINS, settings.RATE_LIMIT)
+            tamasha.predict (PredictionService)
             api.routers.predict
             api.routers.network
             api.routers.model_info
@@ -311,9 +314,11 @@ main.py ──▶ fastapi (FastAPI, CORSMiddleware)
 
 ```
 predict.py ──▶ fastapi (APIRouter, HTTPException)
+               api.main (get_prediction_service)
                api.schemas (PredictRatingRequest, PredictRatingResponse, etc.)
-               tamasha.predict (predict_rating, predict_boxoffice)
 ```
+
+**Note**: All routers now receive `PredictionService` via FastAPI Depends() from `api.main.get_prediction_service`, not from module-level imports.
 
 ### `api/routers/network.py`
 

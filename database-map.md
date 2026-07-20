@@ -197,11 +197,14 @@ All have the same schema:
 | `R2_std` | `float` | R² standard deviation |
 | `training_time_s` | `float` | Training time in seconds |
 
+The comparison CSVs now include a boolean `tuned` column indicating whether the model
+was optimized via RandomizedSearchCV before the CV comparison.
+
 ### Files:
 
 | File | Contents |
 |------|----------|
-| `reports/model_comparison_rating.csv` | 9 models × 5-fold CV on rating task |
+| `reports/model_comparison_rating.csv` | 9 models × 5-fold CV on rating task (includes `tuned` column) |
 | `reports/model_comparison_boxoffice_baseline.csv` | 9 models × 5-fold CV on box office (no Bankability) |
 | `reports/model_comparison_boxoffice_with_bankability.csv` | 9 models × 5-fold CV on box office (with Bankability) |
 
