@@ -23,6 +23,7 @@ import numpy as np
 import pandas as pd
 
 from tamasha.config import settings
+from tamasha.exceptions import ModelIntegrityError
 from tamasha.features.movie_features import build_feature_matrix
 
 logger = logging.getLogger(__name__)
@@ -76,6 +77,7 @@ class PredictionService:
         self._director_encoder: Any = None
         self._loaded: bool = False
         self._load_lock: threading.Lock = threading.Lock()
+        self._integrity_failures: list[dict[str, str]] = []
 
     # ── public load ────────────────────────────────────────────────
 
@@ -108,19 +110,29 @@ class PredictionService:
 
     @property
     def healthy(self) -> bool:
-        """``True`` when all required artifacts are present.
+        """``True`` when all required artifacts are present and pass integrity checks.
 
-        Returns ``False`` (not an exception) when models are missing so
-        callers can degrade gracefully.
+        Returns ``False`` when models are missing or integrity checks failed,
+        so callers can degrade gracefully.
         """
         if not self._loaded:
             return False
+        has_no_integrity_failures = len(self._integrity_failures) == 0
         return (
             self._rating_model is not None
             and self._boxoffice_model is not None
             and len(self._rating_feature_cols) > 0
             and len(self._boxoffice_feature_cols) > 0
+            and has_no_integrity_failures
         )
+
+    @property
+    def integrity_failures(self) -> list[dict[str, str]]:
+        """List of artifacts that failed integrity verification.
+
+        Each entry has keys: ``artifact``, ``expected``, ``actual``.
+        """
+        return list(self._integrity_failures)
 
     # ── private load helpers ───────────────────────────────────────
 
@@ -128,6 +140,7 @@ class PredictionService:
         path = self._models_dir / "best_rating_model.pkl"
         if path.exists():
             import joblib
+            self._verify_model_integrity(path)
             self._rating_model = joblib.load(path)
             logger.info("Loaded rating model from %s", path)
         else:
@@ -137,10 +150,45 @@ class PredictionService:
         path = self._models_dir / "best_boxoffice_model.pkl"
         if path.exists():
             import joblib
+            self._verify_model_integrity(path)
             self._boxoffice_model = joblib.load(path)
             logger.info("Loaded box office model from %s", path)
         else:
             logger.warning("Box office model not found at %s (run `make train`)", path)
+
+    def _verify_model_integrity(self, model_path: Path) -> None:
+        """Verify SHA-256 hash of a model artifact against metadata.json.
+
+        If metadata.json doesn't exist or has no sha256 field, the check
+        is skipped (backward compatibility with pre-v2 model saves).
+        """
+        from tamasha.models.model_selection import sha256_of_file
+
+        # Look for metadata.json in the parent directory
+        metadata_path = model_path.parent / "metadata.json"
+        if not metadata_path.exists():
+            return  # No metadata to verify against
+
+        try:
+            import json
+            metadata = json.loads(metadata_path.read_text())
+            expected_hash = metadata.get("sha256")
+            if not expected_hash:
+                return  # No hash stored
+
+            actual_hash = sha256_of_file(model_path)
+            if actual_hash != expected_hash:
+                logger.error(
+                    "Model integrity check FAILED: %s\n  Expected: %s\n  Actual: %s",
+                    model_path, expected_hash, actual_hash,
+                )
+                self._integrity_failures.append(
+                    {"artifact": str(model_path), "expected": expected_hash, "actual": actual_hash}
+                )
+                return  # Don't raise — log and mark as degraded
+            logger.debug("Integrity verified for %s", model_path)
+        except Exception as exc:
+            logger.warning("Integrity check skipped for %s: %s", model_path, exc)
 
     def _load_director_encoder(self) -> None:
         path = self._models_dir / "director_encoder.pkl"
