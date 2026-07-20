@@ -186,12 +186,24 @@ def get_prediction_service() -> PredictionService:
 async def health(
     svc: PredictionService = Depends(get_prediction_service),
 ) -> dict:
-    """Health check — reflects model-availability status."""
+    """Health check — reflects model-availability and integrity status."""
     healthy = svc.healthy
+    checks: dict[str, str] = {}
+    if svc._rating_model is None:
+        checks["rating_model"] = "missing"
+    if svc._boxoffice_model is None:
+        checks["boxoffice_model"] = "missing"
+    if not svc._rating_feature_cols:
+        checks["rating_features"] = "missing"
+    if not svc._boxoffice_feature_cols:
+        checks["boxoffice_features"] = "missing"
+    for failure in svc.integrity_failures:
+        checks[failure["artifact"]] = f"integrity_failed (expected {failure['expected'][:8]}…, got {failure['actual'][:8]}…)"
     return {
         "status": "ok" if healthy else "degraded",
         "version": "0.1.0",
         "models_loaded": healthy,
+        "checks": checks if checks else "all_ok",
     }
 
 
