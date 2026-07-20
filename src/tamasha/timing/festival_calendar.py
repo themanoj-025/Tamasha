@@ -232,15 +232,20 @@ def compute_clash_feature(
     dates = pd.to_datetime(result.get(date_column), errors="coerce")
     result["has_clash"] = False
 
-    for i, idx in enumerate(result.index):
-        if pd.isna(dates.loc[idx]):
-            continue
-        d1 = dates.loc[idx]
-        for j, jdx in enumerate(result.index):
-            if i == j or pd.isna(dates.loc[jdx]):
-                continue
-            d2 = dates.loc[jdx]
-            diff = abs((d1 - d2).days)
+    # O(n log n) sort-by-date sweep instead of O(n²) nested loops
+    # Sort by date, then for each movie only check nearby neighbors
+    valid_mask = pd.notna(dates)
+    valid_dates = dates[valid_mask].sort_values()
+    valid_indices = valid_dates.index.tolist()
+
+    for i, idx in enumerate(valid_indices):
+        d1 = valid_dates.loc[idx]
+        # Check neighbors forward (dates are sorted, so once diff > window, we break)
+        for j in range(i + 1, len(valid_indices)):
+            d2 = valid_dates.loc[valid_indices[j]]
+            diff = (d2 - d1).days
+            if diff > clash_window_days:
+                break  # All remaining dates are further away
             if 0 < diff <= clash_window_days:
                 result.at[idx, "has_clash"] = True
                 break

@@ -104,57 +104,75 @@ def compute_bankability_scores(
         b_norm = np.log1p(b) / np.log1p(b.max()) if b.max() > 0 else 0
         performance = performance * (1 + b_norm)
 
-    scores: dict[str, dict] = {}
+    # ── Vectorized implementation (O(n) instead of iterrows O(n²)) ──
+    # Explode cast into individual rows, compute decay weights, then groupby.
+    df_work = df[[year_column, cast_column, director_column]].copy()
+    df_work["_perf"] = performance
+    df_work["_year"] = pd.to_numeric(df[year_column], errors="coerce")
+    df_work = df_work.dropna(subset=["_year"])
 
-    def _add_film(person: str, person_type: str, weight: float, perf: float):
-        if person.lower() == "nan" or not person.strip():
-            return
-        key = person.strip().lower()
-        if key not in scores:
-            scores[key] = {
-                "name": person.strip(),
-                "type": person_type,
-                "weighted_sum": 0.0,
-                "total_weight": 0.0,
-                "film_count": 0,
-            }
-        scores[key]["weighted_sum"] += weight * perf
-        scores[key]["total_weight"] += weight
-        scores[key]["film_count"] += 1
+    # Compute decay weight for each row (vectorized)
+    df_work["_weight"] = 2.0 ** (-(current_year - df_work["_year"]) / half_life)
+    df_work["_weighted_perf"] = df_work["_weight"] * df_work["_perf"]
 
-    for _, row in df.iterrows():
-        year = pd.to_numeric(row.get(year_column), errors="coerce")
-        if pd.isna(year):
-            continue
-        w = _decay_weight(year, current_year, half_life)
-        p = performance.loc[row.name]
-
-        # Process cast
-        cast_str = str(row.get(cast_column, ""))
-        for actor in cast_str.split(","):
-            _add_film(actor.strip(), "actor", w, p)
-
-        # Process director
-        director = str(row.get(director_column, ""))
-        if director and director.lower() != "nan":
-            _add_film(director.strip(), "director", w, p)
-
-    # Compile results
-    rows_list = []
-    for key, data in scores.items():
-        bankability = data["weighted_sum"] / data["total_weight"] if data["total_weight"] > 0 else 0.0
-        rows_list.append(
-            {
-                "actor": data["name"],
-                "type": data["type"],
-                "bankability_score": round(bankability, 4),
-                "film_count": data["film_count"],
-            }
-        )
-
-    result = pd.DataFrame(rows_list).sort_values("bankability_score", ascending=False)
-    logger.info(
-        "Bankability scores computed for %d individuals.",
-        len(result),
+    # Explode cast column — each actor gets a row per film
+    cast_exploded = (
+        df_work[cast_column]
+        .astype(str)
+        .str.split(",")
+        .apply(pd.Series)
+        .stack()
+        .reset_index(level=1, drop=True)
+        .to_frame("person")
     )
+    cast_exploded["type"] = "actor"
+    # Join back to get weight/perf
+    cast_exploded = cast_exploded.join(df_work[["_weight", "_weighted_perf"]])
+    cast_exploded = cast_exploded[
+        ~cast_exploded["person"].str.lower().isin(["nan", "none", ""])
+    ]
+    cast_exploded["person"] = cast_exploded["person"].str.strip().str.lower()
+    cast_exploded = cast_exploded[cast_exploded["person"] != ""]
+
+    # Director rows
+    dir_df = df_work[[director_column, "_weight", "_weighted_perf"]].copy()
+    dir_df["person"] = dir_df[director_column].astype(str).str.strip().str.lower()
+    dir_df["type"] = "director"
+    dir_df = dir_df[~dir_df["person"].isin(["nan", "none", ""])]
+    dir_df = dir_df[dir_df["person"] != ""]
+    dir_df = dir_df.rename(columns={"_weight": "_weight", "_weighted_perf": "_weighted_perf"})
+
+    # Combine actor + director
+    combined = pd.concat([
+        cast_exploded[["person", "type", "_weight", "_weighted_perf"]],
+        dir_df[["person", "type", "_weight", "_weighted_perf"]],
+    ], ignore_index=True)
+
+    # Groupby person + type, compute weighted average
+    grouped = combined.groupby(["person", "type"], sort=False).agg(
+        weighted_sum=("_weighted_perf", "sum"),
+        total_weight=("_weight", "sum"),
+        film_count=("_weight", "count"),
+    ).reset_index()
+
+    grouped["bankability_score"] = (
+        grouped["weighted_sum"] / grouped["total_weight"]
+    ).fillna(0.0).round(4)
+
+    # Map original-case names (use first occurrence from cast column)
+    name_map: dict[str, str] = {}
+    for _, row in df[[cast_column, director_column]].iterrows():
+        for val in [str(row.get(cast_column, "")), str(row.get(director_column, ""))]:
+            for part in val.split(","):
+                stripped = part.strip()
+                if stripped and stripped.lower() not in ("nan", "none", ""):
+                    name_map[stripped.lower()] = stripped
+
+    grouped["actor"] = grouped["person"].map(name_map).fillna(grouped["person"])
+
+    result = grouped[["actor", "type", "bankability_score", "film_count"]].sort_values(
+        "bankability_score", ascending=False
+    ).reset_index(drop=True)
+
+    logger.info("Bankability scores computed for %d individuals (vectorized).", len(result))
     return result
