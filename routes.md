@@ -90,8 +90,8 @@ PAGES[selected_page]()
 {
   "title": "My Bollywood Film",
   "predicted_rating": 7.42,
-  "model_name": "GradientBoosting",
-  "model_mae": 0.95
+  "model_name": "LightGBM (tuned)",
+  "model_mae": 0.96
 }
 ```
 
@@ -119,8 +119,8 @@ PAGES[selected_page]()
 {
   "title": "My Bollywood Film",
   "predicted_boxoffice_cr": 175.4,
-  "model_name": "XGBoost",
-  "model_mae": 3.21,
+  "model_name": "GradientBoosting (tuned)",
+  "model_mae": 75.3,
   "scenarios": {
     "Normal": 175.4,
     "Diwali": 219.3,
@@ -169,19 +169,19 @@ PAGES[selected_page]()
 ```json
 {
   "rating_model": {
-    "name": "GradientBoosting",
-    "algorithm": "GradientBoosting",
-    "mae": 0.95,
-    "rmse": 1.24,
+    "name": "LightGBM (tuned)",
+    "algorithm": "LightGBM",
+    "mae": 0.96,
+    "rmse": 1.22,
     "r2": 0.22,
     "features_used": ["genre", "cast_size", "director", "runtime", "budget", "decade"]
   },
   "boxoffice_model": {
-    "name": "XGBoost",
-    "algorithm": "XGBoost",
-    "mae": 32.1,
-    "rmse": 48.5,
-    "r2": 0.35,
+    "name": "GradientBoosting (tuned)",
+    "algorithm": "GradientBoosting",
+    "mae": 75.3,
+    "rmse": 36.9,
+    "r2": 0.30,
     "features_used": ["genre", "cast_size", "director", "runtime", "budget", "decade", "avg_bankability_score"]
   }
 }
