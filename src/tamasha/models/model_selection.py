@@ -169,6 +169,8 @@ def train_and_compare(
     metric: str = "MAE",
     save_csv: Optional[str] = None,
     random_state: int = 42,
+    tune: bool = False,
+    tune_n_iter: int = 10,
 ) -> tuple[pd.DataFrame, str, Any]:
     """Train all candidate models under k-fold CV and return comparison.
 
@@ -190,6 +192,12 @@ def train_and_compare(
         Path to save comparison CSV.
     random_state : int, default=42
         Random state for reproducibility.
+    tune : bool, default=False
+        If True, run ``RandomizedSearchCV`` for models with a defined
+        search space (see ``_TUNING_SPACES``) **before** the k-fold
+        comparison. The tuned estimator is used in the comparison.
+    tune_n_iter : int, default=10
+        Number of parameter settings sampled per tuned model.
 
     Returns
     -------
@@ -204,12 +212,50 @@ def train_and_compare(
     if models is None:
         models = get_all_models()
 
+    # ── Optional hyperparameter tuning ──────────────────────────────
+    tuned_models: dict[str, Any] = {}
+    tuned_params_log: dict[str, dict[str, Any]] = {}
+
+    if tune:
+        logger.info("=" * 60)
+        logger.info("  HYPERPARAMETER TUNING PHASE (%s)", task_name)
+        logger.info("=" * 60)
+        for name in models:
+            if name in _TUNING_SPACES:
+                logger.info("  Tuning %s (n_iter=%d) ...", name, tune_n_iter)
+                best_est, best_params = tune_model(
+                    name, X_arr, y_arr,
+                    cv_folds=cv_folds,
+                    n_iter=tune_n_iter,
+                    random_state=random_state,
+                )
+                if best_est is not None:
+                    tuned_models[name] = best_est
+                    tuned_params_log[name] = best_params
+                    logger.info("    ✓ Tuned %s: %s", name, best_params)
+                else:
+                    tuned_models[name] = models[name]
+                    logger.info("    — Using default params for %s (tuning skipped/failed)", name)
+            else:
+                tuned_models[name] = models[name]
+                logger.info("    — No tuning space for %s, using defaults", name)
+
+        # Use tuned models for comparison
+        compare_models = tuned_models
+    else:
+        compare_models = models
+
+    # ── k-fold CV comparison ────────────────────────────────────────
     kf = KFold(n_splits=cv_folds, shuffle=True, random_state=random_state)
 
     results: list[dict[str, Any]] = []
 
-    for name, model in models.items():
-        logger.info("Training %s for %s ...", name, task_name)
+    for name, model in compare_models.items():
+        if tune and name in tuned_params_log:
+            logger.info("Evaluating TUNED %s for %s ...", name, task_name)
+        else:
+            logger.info("Evaluating %s for %s ...", name, task_name)
+
         fold_metrics: list[dict[str, float]] = []
         start_time = time.perf_counter()
 
@@ -243,9 +289,11 @@ def train_and_compare(
             for k in fold_metrics[0]
         }
 
+        label = f"{name} (tuned)" if tune and name in tuned_params_log else name
+
         results.append(
             {
-                "model": name,
+                "model": label,
                 "MAE": avg["MAE"],
                 "MAE_std": std["MAE"],
                 "RMSE": avg["RMSE"],
@@ -256,10 +304,39 @@ def train_and_compare(
             }
         )
 
+        tuned_tag = " (TUNED)" if tune and name in tuned_params_log else ""
         logger.info(
-            "%s — MAE=%.4f, RMSE=%.4f, R²=%.4f (%.1fs)",
-            name, avg["MAE"], avg["RMSE"], avg["R2"], elapsed,
+            "%s%s — MAE=%.4f, RMSE=%.4f, R²=%.4f (%.1fs)",
+            name, tuned_tag, avg["MAE"], avg["RMSE"], avg["R2"], elapsed,
         )
+
+    # ── Significance test between top 2 ─────────────────────────────
+    if len(results) >= 2:
+        sorted_idx = np.argsort([r["MAE"] for r in results])
+        top2_names = [results[i]["model"] for i in sorted_idx[:2]]
+        top2_models = [compare_models[results[i]["model"].replace(" (tuned)", "")] for i in sorted_idx[:2]]
+
+        top2_preds = []
+        for model in top2_models:
+            m = model.__class__(**model.get_params()) if hasattr(model, "get_params") else model.__class__()
+            m.fit(X_arr, y_arr)
+            top2_preds.append(m.predict(X_arr))
+
+        sig_result = compare_models_significance(
+            y_arr, top2_preds[0], top2_preds[1],
+            name_a=top2_names[0], name_b=top2_names[1],
+        )
+
+        logger.info("")
+        logger.info("  Significance test: %s vs %s", top2_names[0], top2_names[1])
+        logger.info("    MAE %s: %.4f", top2_names[0], sig_result["mae_a"])
+        logger.info("    MAE %s: %.4f", top2_names[1], sig_result["mae_b"])
+        logger.info("    p-value: %.4f", sig_result["p_value"])
+        if sig_result["significant"]:
+            logger.info("    → %s is SIGNIFICANTLY better (p < 0.05)", sig_result["better_model"])
+        else:
+            logger.info("    → Difference is NOT statistically significant (p >= 0.05)")
+        logger.info("")
 
     comparison = pd.DataFrame(results)
 
@@ -283,10 +360,16 @@ def train_and_compare(
         comparison_sorted.to_csv(save_csv, index=False)
         logger.info("Comparison CSV saved to %s", save_csv)
 
-    # Refit best model on full data
-    best_model_cls = models[best_name].__class__
-    best_model = best_model_cls(**models[best_name].get_params())
-    best_model.fit(X_arr, y_arr)
+    # Refit best model on full data (strip " (tuned)" suffix for class lookup)
+    best_raw_name = best_name.replace(" (tuned)", "")
+    if tune and best_raw_name in tuned_params_log:
+        # Best model is a tuned estimator — use it directly
+        best_model = compare_models[best_raw_name]
+        best_model.fit(X_arr, y_arr)
+    else:
+        best_model_cls = compare_models[best_raw_name].__class__
+        best_model = best_model_cls(**compare_models[best_raw_name].get_params())
+        best_model.fit(X_arr, y_arr)
     logger.info("Best model %s refit on full dataset.", best_name)
 
     return comparison_sorted, best_name, best_model
