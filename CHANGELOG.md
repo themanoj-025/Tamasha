@@ -12,10 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Phase 1 — Architecture refactor**: Thread-safe `PredictionService` class replaces
   module-level mutable globals. FastAPI Depends() injection; Streamlit `st.cache_resource`
   singleton. Double-checked locking for safe concurrent loading.
-- **Phase 2 — Test expansion**: 57 new tests (103 → 119 total). Mocked HTTP enrichment
+- **Phase 2 — Test expansion**: 57 new tests (46 → 103 total). Mocked HTTP enrichment
   tests, API contract tests, Hypothesis property-based tests for clash detection,
-  concurrency tests (20 threads), auth/rate-limit tests. Removed autouse fixtures from
-  conftest.
+  concurrency tests (20 threads). Removed autouse fixtures from conftest.
 - **Phase 4 — ML rigor**: RandomizedSearchCV hyperparameter tuning (n_iter=5) for 4
   models (RandomForest, GradientBoosting, XGBoost, LightGBM). Wilcoxon signed-rank
   statistical significance test between top models using out-of-fold predictions.
