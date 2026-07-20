@@ -62,7 +62,6 @@ def train_rating_model(
     tuple[Any, pd.DataFrame]
         ``(best_model, comparison_df)``.
     """
-    """Run the full rating model comparison and save the winner."""
     if save_dir is None:
         save_dir = settings.MODELS_DIR
     save_dir = Path(save_dir)
