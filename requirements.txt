@@ -21,7 +21,7 @@ networkx>=3.1,<4.0
 # Plotting / visualisation
 matplotlib>=3.7,<4.0
 plotly>=5.17,<6.0
-kaleido>=0.2,<1.0  # for static plotly image export
+kaleido==0.2.1  # pinned: 1.2.0 breaks with plotly 5.x; 0.2.1 is the last compatible version
 
 # Optional ML (install together with extras):
 # xgboost>=2.0,<3.0
@@ -39,6 +39,9 @@ uvicorn>=0.24,<1.0
 pydantic>=2.0,<3.0
 structlog>=24.0,<25.0
 slowapi>=0.1.9,<1.0
+tenacity>=8.2,<10.0
+diskcache>=5.6,<6.0
+httpx>=0.24,<1.0
 
 # Testing
 pytest>=7.4,<8.0

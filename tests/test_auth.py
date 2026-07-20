@@ -170,3 +170,32 @@ class TestHealthEndpointWithAuth:
         assert "status" in data
         assert "version" in data
         assert "models_loaded" in data
+
+
+class TestPrometheusMetrics:
+    """Verify /metrics endpoint is reachable and exempt from auth."""
+
+    def test_metrics_returns_200(self) -> None:
+        """Prometheus /metrics endpoint is accessible without auth."""
+        response = _noauth_client.get("/metrics")
+        assert response.status_code == 200
+
+    def test_metrics_is_prometheus_format(self) -> None:
+        """Response body starts with Prometheus text-exposition format."""
+        response = _noauth_client.get("/metrics")
+        text = response.text
+        # Prometheus format lines start with # HELP or # TYPE or metric names
+        assert "# HELP" in text or "# TYPE" in text or "fastapi" in text
+
+    def test_metrics_exempt_from_auth(self) -> None:
+        """No API key required to scrape /metrics."""
+        # This is a deliberate trade-off: internal metrics scraping
+        # should not require consumer API keys. Documented in api/main.py.
+        response = _noauth_client.get("/metrics")
+        assert response.status_code == 200
+
+    def test_metrics_not_in_openapi(self) -> None:
+        """/metrics should not appear in OpenAPI schema (include_in_schema=False)."""
+        response = _noauth_client.get("/openapi.json")
+        schema = response.json()
+        assert "/metrics" not in schema.get("paths", {})

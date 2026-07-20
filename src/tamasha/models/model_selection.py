@@ -16,6 +16,8 @@ from pathlib import Path
 from datetime import datetime
 from typing import Any, Optional, Union
 
+import hashlib
+import json
 import joblib
 import numpy as np
 import pandas as pd
@@ -511,6 +513,26 @@ def compare_models_significance(
 
 # ── Model versioning ──────────────────────────────────────────────────
 
+def sha256_of_file(path: Path) -> str:
+    """Compute SHA-256 hash of a file.
+
+    Parameters
+    ----------
+    path : Path
+        File path to hash.
+
+    Returns
+    -------
+    str
+        Hex-encoded SHA-256 digest.
+    """
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1 << 16), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
 def save_model_with_version(
     model: Any,
     task_name: str,
@@ -554,11 +576,15 @@ def save_model_with_version(
     model_path = version_dir / f"{task_name}_model.pkl"
     joblib.dump(model, model_path)
 
+    # Compute SHA-256 hash of the model artifact for integrity verification
+    model_hash = sha256_of_file(model_path)
+
     meta = {
         "version": next_version,
         "task": task_name,
         "timestamp": datetime.now(datetime.timezone.utc).isoformat(),
         "model_type": type(model).__name__,
+        "sha256": model_hash,
     }
     if metadata:
         meta.update(metadata)

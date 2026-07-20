@@ -20,6 +20,7 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 from slowapi.util import get_remote_address
+from prometheus_fastapi_instrumentator import Instrumentator
 
 from tamasha.config import settings
 from tamasha.predict import PredictionService
@@ -173,3 +174,10 @@ from api.routers import predict, network, model_info  # noqa: E402
 app.include_router(predict.router)
 app.include_router(network.router)
 app.include_router(model_info.router)
+
+# ── Prometheus metrics (scraped internally, exempt from auth) ───────
+Instrumentator().instrument(app).expose(app, endpoint="/metrics", include_in_schema=False)
+# Note: /metrics is deliberately exempt from X-API-Key auth because
+# Prometheus scrapes it internally. This is a standard trade-off:
+# internal metrics should not require consumer API keys.
+_AUTH_EXEMPT_PATHS.add("/metrics")
