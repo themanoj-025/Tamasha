@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import streamlit as st
 
+from tamasha.data.enrichment import get_actor_photo_url
 from tamasha.predict import get_actor_info, get_bankability_scores, get_chemistry_pairs
 
 
@@ -68,7 +69,18 @@ def show() -> None:
         if actor_search:
             info = get_actor_info(actor_search)
             if info["found"]:
-                st.markdown(_actor_card_html(info), unsafe_allow_html=True)
+                col_photo, col_card = st.columns([1, 2])
+                with col_photo:
+                    photo_url = get_actor_photo_url(actor_search)
+                    if photo_url:
+                        st.image(photo_url, width=120, caption=actor_search)
+                    else:
+                        st.markdown(
+                            f"<div style='font-size:3rem;text-align:center;'>{'🎭' if info['type']=='actor' else '🎬'}</div>",
+                            unsafe_allow_html=True,
+                        )
+                with col_card:
+                    st.markdown(_actor_card_html(info), unsafe_allow_html=True)
             else:
                 st.markdown(
                     f"<div class='info-box warning'>"

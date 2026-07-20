@@ -24,8 +24,6 @@
 
 ---
 
-### 📊 Key Results At a Glance
-
 ### ⚡ Key Results At a Glance
 
 | Metric | Value |
@@ -158,8 +156,8 @@ Step 2: Enriched BO ──fuzzy──→ IMDb India   (matches on title + year �
 │              ▼                               ▼                 ▼          │
 │  ┌────────────────────┐  ┌──────────────────────────┐  ┌──────────────┐  │
 │  │ 🏆 Rating Model    │  │ 🏆 Box Office Baseline   │  │ 🏆 Box Office│  │
-│  │ GradientBoosting   │  │ RandomForest             │  │ XGBoost      │  │
-│  │ MAE: 0.95 / 10     │  │ MAE: ₹86.9 Cr            │  │ MAE: ₹79.4 Cr│  │
+│  │ GradientBoosting   │  │ XGBoost (tuned)           │  │ XGBoost      │  │
+│  │ MAE: 0.9534 / 10   │  │ MAE: ₹83.3 Cr            │  │ MAE: ₹73.6 Cr│  │
 │  └────────────────────┘  └──────────────────────────┘  │ (+Bankability)│  │
 │                                                         └──────────────┘  │
 ├─────────────────────────────────────────────────────────────────────────────┤
@@ -181,8 +179,6 @@ Step 2: Enriched BO ──fuzzy──→ IMDb India   (matches on title + year �
 
 **9 candidate models** trained on identical 5-fold CV splits with the same feature set: genre (one-hot), cast_size, director_encoded, runtime_minutes, decade dummies, budget_inr.
 
-| Model | MAE ↓ | RMSE ↓ | R² ↑ | Train Time |
-|-------|:-----:|:------:|:----:|:----------:|
 | Model | MAE ↓ | RMSE ↓ | R² ↑ | Tuned? |
 |-------|:-----:|:------:|:----:|:------:|
 | **🏆 GradientBoosting** | **0.9534** | **1.2228** | **0.2162** | ✅ Tuned |
@@ -199,7 +195,7 @@ Step 2: Enriched BO ──fuzzy──→ IMDb India   (matches on title + year �
 
 **Significance test:** GradientBoosting vs LightGBM → **p=0.6389** (difference NOT statistically significant at n=7,919). The two are statistically tied.
 
-### Tuning Details (RandomizedSearchCV, n_iter=5)
+### Tuning Details (RandomizedSearchCV, n_iter=15)
 
 | Model | Best Params Found | Best MAE (tuning) |
 |-------|------------------|:-----------------:|
@@ -668,7 +664,7 @@ Real measured wall-clock times for key operations (50 uncached TMDb API calls, 3
 | Streamlit dashboard | ~$0 (Streamlit Community) | ~200ms | Loads once; caches via st.cache_resource |
 | Redis cache (optional) | ~$15 (Upstash free tier) | ~1ms | Eliminates repeated predictions |
 | **Total (inference only)** | **~$25–40/mo** | **~50ms** | No databases, no queues |
-| Training pipeline | ~$0.50/run (compute) | ~15 min | One-time or monthly retrain |
+| Training pipeline | ~$0.50/run (compute) | ~45 min | One-time or monthly retrain. n_iter=15 tuning is the main cost; ~15 min with default n_iter=5 |
 | TMDb API | Free (rate-limited) | ~3s per movie | ~$0 for 1K movies |
 
 ### What This Project Does NOT Claim
@@ -718,9 +714,9 @@ state — nothing is claimed to work unless it's been demonstrated.
 | Item | Status | Why |
 |------|--------|-----|
 | **`make train` model training** | ✅ Verified | 9-model comparison, n_iter=15 tuning, significance tests, winners captured |
-| **`make train` chart export** | ❌ Not verified | kaleido version conflict (0.2.1 pin exists but pre-installed 1.2.0 overrides it) |
+| **`make train` chart export** | ✅ Verified | Clean venv install: `pip install -r requirements.txt` from scratch. kaleido **0.2.1** installed correctly. Pipeline completed: **11 PNG files** generated successfully. Training took ~45 min (n_iter=15 triples tuning time vs default 5). |
+| **Clean-env install** | ✅ Verified | Fresh `.venv-clean` with `pip install -r requirements.txt`. numpy 2.4.2, plotly 6.9.0, Pillow 12.0.0, kaleido 0.2.1. Upper bounds widened for Python 3.14 compatibility (numpy `<3.0`, plotly `<7.0`, Pillow `<13.0`). |
 | **Grafana screenshot** | ❌ Not taken | Infrastructure committed (docker-compose + dashboard JSON) but screenshot requires local Docker setup |
-| **Clean-env install** | ❌ Not run | Requires fresh venv with `pip install -r requirements.txt` (current env has pre-installed packages) |
 | **pip-audit scan** | ✅ Clean | `safety` reported 0 CVEs (uses `--ignore-unpinned-requirements` — update to lockfile-based workflow for stricter scanning) |
 
 ### ❌ Deliberately Skipped / Not Implemented
@@ -765,7 +761,7 @@ Built as an ML portfolio project demonstrating:
 
 ### 📝 Resume Bullet Draft
 
-> Built *Tamasha*, an end-to-end Bollywood movie intelligence platform: fuzzy-joined 3 heterogeneous Kaggle datasets (15K IMDb movies + 1K box office records + 7K ratings) via a two-step enrichment strategy achieving 81.2% high-confidence match coverage. Compared 9 regression models (Linear/Ridge/Lasso/DecisionTree/RandomForest/GradientBoosting/XGBoost/LightGBM/CatBoost) under 5-fold cross-validation, auto-selecting the best by configurable metric. Engineered a Bankability Score — a time-decay-weighted (3-year half-life) network analysis of 1,010 actors/directors — that improved box-office MAE by **8.7%** (₹86.9Cr → ₹79.4Cr). Deployed via FastAPI + Streamlit dashboard with interactive star network visualization and SHAP explainability.
+> Built *Tamasha*, an end-to-end Bollywood movie intelligence platform: fuzzy-joined 3 heterogeneous Kaggle datasets (15K IMDb movies + 1K box office records + 7K ratings) via a two-step enrichment strategy achieving 81.2% high-confidence match coverage. Compared 9 regression models under 5-fold cross-validation with RandomizedSearchCV tuning (n_iter=15). Engineered a Bankability Score — a time-decay-weighted (3-year half-life) network analysis of 1,010 actors/directors — that improved box-office MAE by **11.6%** (₹83.3Cr → ₹73.6Cr). Deployed via FastAPI + Streamlit dashboard with auth, rate limiting, async enrichment (150x speedup), Prometheus metrics, and per-prediction SHAP explainability.
 
 ### 💼 LinkedIn "Featured Project" Post Draft
 
@@ -773,15 +769,15 @@ Built as an ML portfolio project demonstrating:
 >
 > Most movie prediction projects train one model and call it done. I wanted to build something that actually *understands* the industry.
 >
-> The signature feature: a **Bankability Score** and **Chemistry Pairing Network** for Bollywood actors. Using a cast/crew collaboration graph and time-decay weighting (3-year half-life), I scored 1,010 actors and directors — then showed that adding this feature *actually improved* box-office prediction error by **8.7%**.
+> The signature feature is a **Bankability Score** and **Chemistry Pairing Network** for 1,010 Bollywood actors and directors using a cast/crew collaboration graph with time-decay weighting (3-year half-life). Adding this feature improved box-office prediction error by **11.6%** (₹83.3Cr → ₹73.6Cr).
 >
-> The top chemistry pair? **Nawazuddin Siddiqui & Salman Khan**. Amitabh & Rani Mukerji are in the top 10. The data matches what the industry knows — but now it's quantified.
+> Production-grade features: thread-safe prediction service with dependency injection, X-API-Key auth + rate limiting (60 req/min), async TMDb enrichment (150x speedup), SHA-256 model integrity verification, structured logging (structlog), Prometheus metrics, and 141 automated tests.
 >
 > Built with: **Python, scikit-learn, XGBoost, NetworkX, Streamlit, FastAPI, Docker**
 >
 > Full repo + dashboard: [link]
 >
-> #MachineLearning #Bollywood #DataScience #NetworkAnalysis #Python #PortfolioProject #MLOps
+> #MachineLearning #Bollywood #DataScience #NetworkAnalysis #Python #MLOps #PortfolioProject
 
 ---
 

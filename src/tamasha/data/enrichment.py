@@ -343,6 +343,77 @@ def enrich_dataset(
     return coverage, result_df
 
 
+# ── Poster / Photo helpers (for Streamlit dashboard) ──────────────
+
+
+_PERSON_SEARCH_URL = "https://api.themoviedb.org/3/search/person"
+_IMAGE_BASE = "https://image.tmdb.org/t/p"
+
+
+def get_poster_url(title: str, year: Optional[int] = None, size: str = "w500") -> Optional[str]:
+    """Get a movie poster URL from TMDb.
+
+    Uses the existing cached TMDb data if available, otherwise hits the API.
+    Returns ``None`` if no poster found or API unavailable.
+
+    Parameters
+    ----------
+    title : str
+        Movie title.
+    year : int, optional
+        Release year for disambiguation.
+    size : str, default="w500"
+        TMDb image size ("w92", "w154", "w185", "w342", "w500", "w780", "original").
+
+    Returns
+    -------
+    str or None
+        Full poster URL (e.g. ``https://image.tmdb.org/t/p/w500/abc.jpg``)
+        or ``None`` if not found.
+    """
+    data = get_movie_data(title, year)
+    if data is None or not data.get("poster_path"):
+        return None
+    return f"{_IMAGE_BASE}/{size}{data['poster_path']}"
+
+
+def get_actor_photo_url(name: str, size: str = "w185") -> Optional[str]:
+    """Search TMDb for an actor/director and return their profile photo URL.
+
+    Parameters
+    ----------
+    name : str
+        Actor or director name.
+    size : str, default="w185"
+        TMDb image size ("w45", "w185", "h632", "original").
+
+    Returns
+    -------
+    str or None
+        Full photo URL or ``None`` if not found.
+    """
+    if not _TMDB_API_KEY and not _TMDB_ACCESS_TOKEN:
+        return None
+
+    params: dict[str, Any] = {"query": name}
+    if not _TMDB_ACCESS_TOKEN and _TMDB_API_KEY:
+        params["api_key"] = _TMDB_API_KEY
+
+    try:
+        resp = requests.get(_PERSON_SEARCH_URL, headers=_HEADERS, params=params, timeout=10)
+        resp.raise_for_status()
+        data = resp.json()
+        results = data.get("results", [])
+        if not results:
+            return None
+        profile_path = results[0].get("profile_path")
+        if not profile_path:
+            return None
+        return f"{_IMAGE_BASE}/{size}{profile_path}"
+    except Exception:
+        return None
+
+
 # ── Async enrichment ──────────────────────────────────────────────────
 
 

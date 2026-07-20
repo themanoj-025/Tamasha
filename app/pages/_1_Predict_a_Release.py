@@ -5,6 +5,7 @@ from __future__ import annotations
 import plotly.graph_objects as go
 import streamlit as st
 
+from tamasha.data.enrichment import get_poster_url
 from tamasha.predict import predict_boxoffice, predict_rating
 
 
@@ -68,7 +69,7 @@ def show() -> None:
             unsafe_allow_html=True,
         )
 
-        st.text_input("Movie Title", value="My Bollywood Film")
+        st.text_input("Movie Title", value="My Bollywood Film", key="movie_title")
 
         genre_options = [
             "Action",
@@ -158,6 +159,14 @@ def show() -> None:
                     year=release_year,
                     release_window=release_window,
                 )
+
+            # ── Movie Poster ────────────────────────────────────────
+            title = st.session_state.get("movie_title", "My Bollywood Film")
+            poster_url = get_poster_url(title, year=release_year)
+            if poster_url:
+                st.markdown("<div style='text-align:center;margin-bottom:1rem;'>", unsafe_allow_html=True)
+                st.image(poster_url, width=250, caption=title)
+                st.markdown("</div>", unsafe_allow_html=True)
 
             # ── Rating Card ────────────────────────────────────────
             if rating_result["predicted_rating"] is not None:
