@@ -9,7 +9,7 @@
 [![scikit-learn](https://img.shields.io/badge/scikit--learn-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white)]()
 [![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)]()
 [![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)]()
-[![Tests](https://img.shields.io/badge/Tests-119_passing-brightgreen?style=for-the-badge)]()
+[![Tests](https://img.shields.io/badge/Tests-141_passing-brightgreen?style=for-the-badge)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
 
 ---
@@ -41,7 +41,9 @@
 | 📡 **TMDb Enrichment** | **93.2%** date coverage, **93.1%** plot coverage (812 movies) |
 | 🖼 **Poster CV** | No signal found — 49.2% (vs 51.1% baseline) — 200 posters |
 | 🛡️ **Auth & Rate Limiting** | X-API-Key middleware + slowapi (60 req/min) |
-| ✅ **Test Suite** | **119 tests** (concurrency, contract, property-based, mocked HTTP) |
+| 📡 **Observability** | Prometheus metrics + Grafana dashboard (local docker-compose) |
+| 🚀 **Performance** | Vectorized bankability (O(n)), O(n log n) clash detection, diskcache |
+| ✅ **Test Suite** | **141 tests** (concurrency, auth, cache, property-based, mocked HTTP) |
 
 ---
 
@@ -516,7 +518,7 @@ Output: `reports/model_comparison_*.csv`, `reports/figures/*.png`, `models/best_
 ### ✅ Run Tests
 
 ```bash
-make test      # 119 tests, all passing
+make test      # 141 tests, all passing
 ```
 
 ### 🖥 Start the Dashboard

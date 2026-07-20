@@ -11,7 +11,7 @@
       "title": "Request Rate (req/s)",
       "type": "timeseries",
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
-      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
         {
           "expr": "rate(http_requests_total[1m])",
@@ -31,7 +31,7 @@
       "title": "Error Rate (4xx + 5xx)",
       "type": "timeseries",
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
-      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
         {
           "expr": "rate(http_requests_total{status=~\"4..|5..\"}[1m])",
@@ -51,7 +51,7 @@
       "title": "Latency p50 / p95 / p99",
       "type": "timeseries",
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
-      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
         {
           "expr": "histogram_quantile(0.50, rate(http_request_duration_seconds_bucket[5m]))",
@@ -81,10 +81,10 @@
       "title": "Total Requests by Endpoint",
       "type": "stat",
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
-      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
         {
-          "expr": "sum by (handler) (http_requests_total)",
+          "expr": "sum(increase(http_requests_total[$__range])) by (handler)",
           "legendFormat": "{{handler}}",
           "refId": "A"
         }
