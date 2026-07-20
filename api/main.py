@@ -51,8 +51,16 @@ app.add_middleware(
 # ── Dependency injection helper ──────────────────────────────────────
 
 def get_prediction_service() -> PredictionService:
-    """FastAPI dependency — yields the singleton from ``app.state``."""
-    svc: PredictionService = app.state.prediction_service
+    """FastAPI dependency — yields the singleton from ``app.state``.
+
+    Falls back to creating one on the fly (for tests / scripts that
+    create ``TestClient`` without triggering the lifespan).
+    """
+    svc: PredictionService | None = getattr(app.state, "prediction_service", None)
+    if svc is None:
+        svc = PredictionService()
+        svc.load()
+        app.state.prediction_service = svc
     return svc
 
 
