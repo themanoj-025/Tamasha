@@ -30,10 +30,10 @@
 
 | Metric | Value |
 |--------|-------|
-| ⭐ **Best Rating Model** | **LightGBM (tuned)** — MAE **0.9587** / 10 |
-| 💰 **Best Box Office Model** | **GradientBoosting (tuned)** (+ Bankability) — MAE **₹75.3 Cr** |
-| 🔥 **Bankability Impact** | **10.2% MAE improvement** over baseline |
-| 🔧 **Hyperparameter Tuning** | RandomizedSearchCV (n_iter=5) for 4 models |
+| ⭐ **Best Rating Model** | **GradientBoosting (tuned)** — MAE **0.9534** / 10 |
+| 💰 **Best Box Office Model** | **XGBoost (tuned)** (+ Bankability) — MAE **₹73.6 Cr** |
+| 🔥 **Bankability Impact** | **11.6% MAE improvement** over baseline |
+| 🔧 **Hyperparameter Tuning** | RandomizedSearchCV (n_iter=15) for 4 models |
 | 📊 **Statistical Significance** | Wilcoxon signed-rank test between top models |
 | 👥 **Bankability Scores** | 1,010 actors & directors scored |
 | 🔗 **High-Quality Matches** | 812 / 1,000 box office movies (93% ≥ 95 score) |
@@ -185,28 +185,28 @@ Step 2: Enriched BO ──fuzzy──→ IMDb India   (matches on title + year �
 |-------|:-----:|:------:|:----:|:----------:|
 | Model | MAE ↓ | RMSE ↓ | R² ↑ | Tuned? |
 |-------|:-----:|:------:|:----:|:------:|
-| **🏆 LightGBM** | **0.9587** | **1.2220** | **0.2173** | ✅ Tuned |
+| **🏆 GradientBoosting** | **0.9534** | **1.2228** | **0.2162** | ✅ Tuned |
+| LightGBM | 0.9539 | 1.2207 | 0.2189 | ✅ Tuned |
+| XGBoost | 0.9551 | 1.2199 | 0.2198 | ✅ Tuned |
 | CatBoost | 0.9593 | 1.2242 | 0.2143 | No (defaults) |
-| XGBoost | 0.9672 | 1.2399 | 0.1940 | ✅ Tuned |
-| GradientBoosting | 0.9686 | 1.2284 | 0.2090 | ✅ Tuned |
-| RandomForest | 0.9682 | 1.2340 | 0.2017 | ✅ Tuned |
+| RandomForest | 0.9692 | 1.2345 | 0.2011 | ✅ Tuned |
 | Ridge | 0.9791 | 1.2401 | 0.1938 | No |
 | LinearRegression | 0.9793 | 1.2402 | 0.1937 | No |
 | Lasso | 0.9917 | 1.2519 | 0.1786 | No |
 | DecisionTree | 1.0131 | 1.3053 | 0.1069 | No |
 
-**Selection rule (configurable):** Lowest MAE wins. → **LightGBM (tuned)** selected.
+**Selection rule (configurable):** Lowest MAE wins. → **GradientBoosting (tuned)** selected.
 
-**Significance test:** LightGBM vs CatBoost → **p=0.3125** (difference NOT statistically significant at n=7,919). The two are statistically tied.
+**Significance test:** GradientBoosting vs LightGBM → **p=0.6389** (difference NOT statistically significant at n=7,919). The two are statistically tied.
 
 ### Tuning Details (RandomizedSearchCV, n_iter=5)
 
 | Model | Best Params Found | Best MAE (tuning) |
 |-------|------------------|:-----------------:|
-| RandomForest | `{n_estimators: 200, max_depth: 10, min_samples_split: 2, min_samples_leaf: 2}` | 0.9694 |
-| GradientBoosting | `{n_estimators: 200, max_depth: 3, learning_rate: 0.05, min_samples_split: 5}` | 0.9684 |
-| XGBoost | `{subsample: 0.8, n_estimators: 100, max_depth: 8, learning_rate: 0.1}` | 0.9669 |
-| LightGBM | `{num_leaves: 63, n_estimators: 200, max_depth: 4, learning_rate: 0.1}` | 0.9580 |
+| RandomForest | `{n_estimators: 100, max_depth: 10, min_samples_split: 2, min_samples_leaf: 4}` | 0.9688 |
+| GradientBoosting | `{n_estimators: 300, max_depth: 5, learning_rate: 0.1, min_samples_split: 5}` | 0.9560 |
+| XGBoost | `{subsample: 0.8, n_estimators: 200, max_depth: 6, learning_rate: 0.05}` | 0.9587 |
+| LightGBM | `{num_leaves: 15, n_estimators: 200, max_depth: -1, learning_rate: 0.01}` | 0.9539 |
 
 <p align="center">
   <img src="reports/figures/rating_comparison.png" alt="Rating Model Comparison" width="95%">
