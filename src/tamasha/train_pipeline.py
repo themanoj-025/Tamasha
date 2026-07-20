@@ -258,7 +258,7 @@ def main() -> None:
         df_rating,
         rating_column="rating",
         tune=True,
-        tune_n_iter=5,
+        tune_n_iter=15,
     )
 
     best_rating_name = comparison_rating.iloc[0]["model"]
@@ -439,7 +439,7 @@ def main() -> None:
         bankability_df=None,
         run_label="boxoffice",  # Function appends "_baseline"
         tune=True,
-        tune_n_iter=5,
+        tune_n_iter=15,
     )
 
     baseline_best_name = comparison_boxoffice_baseline.iloc[0]["model"]
@@ -464,7 +464,7 @@ def main() -> None:
         bankability_df=bankability_scores,
         run_label="boxoffice",  # Function appends "_with_bankability"
         tune=True,
-        tune_n_iter=5,
+        tune_n_iter=15,
     )
 
     bank_best_name = comparison_boxoffice_with_bank.iloc[0]["model"]
@@ -491,14 +491,9 @@ def main() -> None:
     ) -> None:
         """Generate predicted-vs-actual scatter plots for top N models.
 
-        .. note::
-
-           These scatter plots are generated from a **single 80/20 train/test
-           split**, not from the cross-validation folds used to compute the
-           comparison metrics.  This means the MAE/RMSE shown in the scatter
-           plots may differ slightly from the CV-based numbers in the model
-           comparison tables.  A future improvement would use
-           ``cross_val_predict`` to produce out-of-fold predictions instead.
+        Uses ``cross_val_predict`` to produce **out-of-fold** predictions,
+        ensuring the scatter plot visually represents the SAME evaluation
+        methodology as the headline MAE in the comparison tables.
         """
         if not comp_csv.exists() or len(X_all) < 10:
             return
@@ -506,11 +501,8 @@ def main() -> None:
         top_models = comp_df.head(n_top)["model"].tolist()
         logger.info("  Top %d models for %s: %s", n_top, prefix, top_models)
 
-        # Single train/test split for consistent comparison
-        # NOTE: uses single split (not CV) — see docstring for caveat
-        X_train, X_test, y_train, y_test = train_test_split(
-            X_all, y_all, test_size=0.2, random_state=42
-        )
+        from sklearn.model_selection import cross_val_predict as cvp
+        from sklearn.model_selection import KFold
 
         all_models = get_all_models()
         for model_name in top_models:
@@ -519,10 +511,24 @@ def main() -> None:
                 continue
             try:
                 model = all_models[model_name].__class__(**all_models[model_name].get_params())
-                model.fit(X_train, y_train)
-                y_pred = model.predict(X_test)
+                # Out-of-fold predictions — matches the CV comparison
+                y_pred = cvp(
+                    model, X_all, y_all,
+                    cv=KFold(n_splits=5, shuffle=True, random_state=42),
+                    n_jobs=1,
+                )
                 save_path = settings.FIGURES_DIR / f"{prefix}_pred_vs_actual_{model_name.lower()}.png"
-                plot_predicted_vs_actual(y_test, y_pred, model_name, save_path=save_path)
+                plot_predicted_vs_actual(y_all, y_pred, model_name, save_path=save_path)
+                # Verify scatter-plot MAE matches reported CV MAE
+                scatter_mae = float(np.mean(np.abs(y_all.values - y_pred)))
+                reported_mae = float(comp_df[comp_df["model"] == model_name]["MAE"].iloc[0])
+                if abs(scatter_mae - reported_mae) > 0.01:
+                    logger.warning(
+                        "  Scatter plot MAE (%.4f) differs from reported CV MAE (%.4f) for %s",
+                        scatter_mae, reported_mae, model_name,
+                    )
+                else:
+                    logger.info("  Scatter plot MAE=%.4f matches reported CV MAE for %s", scatter_mae, model_name)
                 logger.info("  Scatter plot saved: %s", save_path)
             except Exception as exc:
                 logger.warning("  Scatter plot failed for %s: %s", model_name, exc)
