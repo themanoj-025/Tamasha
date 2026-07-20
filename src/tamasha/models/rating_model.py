@@ -104,6 +104,8 @@ def train_rating_model(
         cv_folds=cv_folds,
         metric=metric,
         save_csv=str(csv_path),
+        tune=tune,
+        tune_n_iter=tune_n_iter,
     )
 
     # Save best model
