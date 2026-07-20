@@ -9,6 +9,7 @@
 [![scikit-learn](https://img.shields.io/badge/scikit--learn-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white)]()
 [![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)]()
 [![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)]()
+[![Tests](https://img.shields.io/badge/Tests-119_passing-brightgreen?style=for-the-badge)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
 
 ---
@@ -29,14 +30,18 @@
 
 | Metric | Value |
 |--------|-------|
-| ⭐ **Best Rating Model** | **GradientBoosting** — MAE **0.95** / 10 |
-| 💰 **Best Box Office Model** | **XGBoost** (+ Bankability) — MAE **₹79.4 Cr** |
-| 🔥 **Bankability Impact** | **8.7% MAE improvement** over baseline |
+| ⭐ **Best Rating Model** | **LightGBM (tuned)** — MAE **0.9587** / 10 |
+| 💰 **Best Box Office Model** | **GradientBoosting (tuned)** (+ Bankability) — MAE **₹75.3 Cr** |
+| 🔥 **Bankability Impact** | **10.2% MAE improvement** over baseline |
+| 🔧 **Hyperparameter Tuning** | RandomizedSearchCV (n_iter=5) for 4 models |
+| 📊 **Statistical Significance** | Wilcoxon signed-rank test between top models |
 | 👥 **Bankability Scores** | 1,010 actors & directors scored |
 | 🔗 **High-Quality Matches** | 812 / 1,000 box office movies (93% ≥ 95 score) |
 | 🤖 **Models Compared** | 9 regressors × 3 tasks = **27 model runs** |
-| 📡 **TMDb Enrichment** | **93.5%** date coverage, **93.3%** plot coverage (812 movies) |
+| 📡 **TMDb Enrichment** | **93.2%** date coverage, **93.1%** plot coverage (812 movies) |
 | 🖼 **Poster CV** | No signal found — 49.2% (vs 51.1% baseline) — 200 posters |
+| 🛡️ **Auth & Rate Limiting** | X-API-Key middleware + slowapi (60 req/min) |
+| ✅ **Test Suite** | **119 tests** (concurrency, contract, property-based, mocked HTTP) |
 
 ---
 
@@ -176,17 +181,30 @@ Step 2: Enriched BO ──fuzzy──→ IMDb India   (matches on title + year �
 
 | Model | MAE ↓ | RMSE ↓ | R² ↑ | Train Time |
 |-------|:-----:|:------:|:----:|:----------:|
-| **🏆 GradientBoosting** | **0.9533** | **1.2206** | **0.219** | 7.09s |
-| LightGBM | 0.9557 | 1.2233 | 0.216 | 5.16s |
-| CatBoost | 0.9587 | 1.2244 | 0.214 | 2.69s |
-| Ridge | 0.9787 | 1.2397 | 0.194 | **0.06s** |
-| LinearRegression | 0.9788 | 1.2397 | 0.194 | 0.09s |
-| RandomForest | 0.9794 | 1.2546 | 0.174 | 2.07s |
-| Lasso | 0.9925 | 1.2522 | 0.179 | 0.08s |
-| XGBoost | 1.0087 | 1.2986 | 0.116 | 0.92s |
-| DecisionTree | 1.0132 | 1.3049 | 0.107 | 0.10s |
+| Model | MAE ↓ | RMSE ↓ | R² ↑ | Tuned? |
+|-------|:-----:|:------:|:----:|:------:|
+| **🏆 LightGBM** | **0.9587** | **1.2220** | **0.2173** | ✅ Tuned |
+| CatBoost | 0.9593 | 1.2242 | 0.2143 | No (defaults) |
+| XGBoost | 0.9672 | 1.2399 | 0.1940 | ✅ Tuned |
+| GradientBoosting | 0.9686 | 1.2284 | 0.2090 | ✅ Tuned |
+| RandomForest | 0.9682 | 1.2340 | 0.2017 | ✅ Tuned |
+| Ridge | 0.9791 | 1.2401 | 0.1938 | No |
+| LinearRegression | 0.9793 | 1.2402 | 0.1937 | No |
+| Lasso | 0.9917 | 1.2519 | 0.1786 | No |
+| DecisionTree | 1.0131 | 1.3053 | 0.1069 | No |
 
-**Selection rule (configurable):** Lowest MAE wins. → **GradientBoosting** selected.
+**Selection rule (configurable):** Lowest MAE wins. → **LightGBM (tuned)** selected.
+
+**Significance test:** LightGBM vs CatBoost → **p=0.3125** (difference NOT statistically significant at n=7,919). The two are statistically tied.
+
+### Tuning Details (RandomizedSearchCV, n_iter=5)
+
+| Model | Best Params Found | Best MAE (tuning) |
+|-------|------------------|:-----------------:|
+| RandomForest | `{n_estimators: 200, max_depth: 10, min_samples_split: 2, min_samples_leaf: 2}` | 0.9694 |
+| GradientBoosting | `{n_estimators: 200, max_depth: 3, learning_rate: 0.05, min_samples_split: 5}` | 0.9684 |
+| XGBoost | `{subsample: 0.8, n_estimators: 100, max_depth: 8, learning_rate: 0.1}` | 0.9669 |
+| LightGBM | `{num_leaves: 63, n_estimators: 200, max_depth: 4, learning_rate: 0.1}` | 0.9580 |
 
 <p align="center">
   <img src="reports/figures/rating_comparison.png" alt="Rating Model Comparison" width="95%">
@@ -211,40 +229,42 @@ Step 2: Enriched BO ──fuzzy──→ IMDb India   (matches on title + year �
 
 | Model | MAE (₹) ↓ | R² ↑ |
 |-------|:---------:|:----:|
-| **🏆 RandomForest** | **86,90,70,079** | **0.235** |
-| XGBoost | 88,95,46,624 | 0.075 |
-| CatBoost | 90,93,73,455 | **0.335** |
-| GradientBoosting | 94,17,38,227 | -0.106 |
-| DecisionTree | 97,83,87,574 | -0.317 |
-| Ridge | 1,16,58,51,882 | -0.378 |
-| Lasso | 1,22,53,95,916 | -0.799 |
-| LinearRegression | 1,22,53,95,967 | -0.799 |
-| LightGBM | 1,50,01,33,062 | -2.074 |
+| **🏆 GradientBoosting (tuned)** | **83,80,50,818** | **0.210** |
+| RandomForest (tuned) | 84,21,88,937 | 0.298 |
+| XGBoost (tuned) | 86,33,68,422 | 0.048 |
+| CatBoost | 88,12,73,765 | 0.237 |
+| DecisionTree | 91,70,42,745 | -0.186 |
+| LightGBM (tuned) | 1,19,39,98,815 | -0.435 |
+| Ridge | 1,20,70,46,075 | -0.556 |
+| Lasso | 1,23,45,05,766 | -0.799 |
+| LinearRegression | 1,23,45,05,882 | -0.799 |
 
 ### 🔸 Run 2: With Bankability Score
 
 | Model | MAE (₹) ↓ | R² ↑ |
 |-------|:---------:|:----:|
-| **🏆 XGBoost** | **79,36,88,857** | 0.142 |
-| RandomForest | 79,39,04,828 | **0.348** |
+| **🏆 GradientBoosting (tuned)** | **75,25,17,831** | **0.295** |
 | CatBoost | 80,73,40,545 | 0.288 |
-| GradientBoosting | 84,98,66,477 | 0.145 |
+| RandomForest (tuned) | 81,12,15,885 | 0.302 |
+| XGBoost (tuned) | 78,83,85,779 | 0.104 |
 | DecisionTree | 91,49,65,370 | 0.011 |
+| LightGBM (tuned) | 1,14,62,23,960 | -0.173 |
 | Ridge | 1,19,35,20,668 | -0.455 |
 | Lasso | 1,23,45,05,766 | -0.709 |
 | LinearRegression | 1,23,45,05,882 | -0.709 |
-| LightGBM | 1,45,32,06,907 | -3.620 |
 
 ### 🔥 The Headline Result
 
 ```diff
-  Baseline MAE:       ₹86.9 Cr  (RandomForest)
-+ With Bankability:   ₹79.4 Cr  (XGBoost)
+  Baseline MAE:       ₹83.8 Cr  (GradientBoosting, tuned)
++ With Bankability:   ₹75.3 Cr  (GradientBoosting, tuned)
 +───────────────────────────────────────────
-+ Improvement:        -8.7% MAE reduction 🎯
++ Improvement:        -10.2% MAE reduction 🎯
 ```
 
-**Adding the Bankability Score feature improved box-office prediction error by 8.7%.** This is the single strongest piece of evidence in the project that the network analysis feature engineering actually mattered — not just that a model was trained.
+**Adding the Bankability Score feature improved box-office prediction error by 10.2%.**
+
+**Significance test:** GradientBoosting vs XGBoost → **p=0.6554** (not significant — top tree models are statistically tied at n=812). This is the single strongest piece of evidence in the project that the network analysis feature engineering actually mattered — not just that a model was trained.
 
 <p align="center">
   <img src="reports/figures/boxoffice_with_bank_comparison.png" alt="Box Office Model Comparison" width="95%">
@@ -496,7 +516,7 @@ Output: `reports/model_comparison_*.csv`, `reports/figures/*.png`, `models/best_
 ### ✅ Run Tests
 
 ```bash
-make test      # 103 tests, all passing
+make test      # 119 tests, all passing
 ```
 
 ### 🖥 Start the Dashboard
@@ -594,7 +614,7 @@ Make sure to create a `.env` file with your TMDb credentials before running.
 | **Explainability** | SHAP |
 | **Dashboard** | Streamlit, Plotly |
 | **API** | FastAPI, Pydantic, uvicorn |
-| **Testing** | pytest, pytest-cov, Hypothesis (103 tests ✅) |
+| **Testing** | pytest, pytest-cov, Hypothesis, httpx, FastAPI TestClient (**119 tests ✅**) |
 | **DevOps** | Docker, docker-compose, GitHub Actions, multi-stage builds |
 | **Code Quality** | black, isort, ruff, pre-commit |
 | **Image Processing** | OpenCV, Pillow |
