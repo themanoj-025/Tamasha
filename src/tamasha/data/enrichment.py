@@ -5,10 +5,19 @@ release-date columns (Stage 7) that the original datasets lack.
 
 All responses are cached locally to avoid repeated API calls and respect
 TMDb's fair-use policy.
+
+Architecture
+------------
+- Synchronous API: :func:`_fetch_tmdb` uses ``requests`` + tenacity retry.
+- Asynchronous API: :func:`_fetch_tmdb_async` uses ``httpx.AsyncClient``
+  + tenacity (async-native) + ``asyncio.Semaphore`` for bounded concurrency.
+- :func:`enrich_dataset_async` runs the async path via ``asyncio.run()``,
+  making it callable from synchronous contexts (like the training pipeline).
 """
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import os
@@ -16,12 +25,9 @@ import time
 from pathlib import Path
 from typing import Any, Optional
 
-import pandas as pd
-
-import asyncio
-from concurrent.futures import ThreadPoolExecutor
-
+import httpx
 import requests
+import pandas as pd
 from dotenv import load_dotenv
 from tenacity import (
     retry,
@@ -331,51 +337,71 @@ def enrich_dataset(
 # ── Async enrichment ──────────────────────────────────────────────────
 
 
-async def _fetch_one_async(
-    idx: int,
+# ── Async fetch (httpx.AsyncClient + tenacity async) ──────────────────
+
+@retry(
+    retry=retry_if_exception_type((
+        httpx.TimeoutException,
+        httpx.ConnectError,
+        TMDbServerError,
+    )),
+    wait=wait_exponential_jitter(initial=1, max=20),
+    stop=stop_after_attempt(4),
+    reraise=True,
+)
+async def _fetch_tmdb_async(
+    client: httpx.AsyncClient,
     title: str,
-    year: Optional[int],
-    cache: dict[str, Any],
-    sem: asyncio.Semaphore,
-    client: Any,
-) -> tuple[int, str, str]:
-    """Fetch a single movie's TMDb data asynchronously.
+    year: Optional[int] = None,
+) -> Optional[dict[str, Any]]:
+    """Async TMDb search with tenacity retry/backoff.
 
-    Returns ``(idx, plot, date)``.
+    Parameters
+    ----------
+    client : httpx.AsyncClient
+        Shared async HTTP client.
+    title : str
+        Movie title to search for.
+    year : int, optional
+        Release year for disambiguation.
+
+    Returns
+    -------
+    dict or None
+        The first TMDb result, or None if no match.
     """
-    cache_key = f"{title.strip().lower()}|{year}" if year else title.strip().lower()
-    if cache_key in cache:
-        data = cache[cache_key]
-        has_plot = bool(data and data.get("overview", "").strip())
-        has_date = bool(data and data.get("release_date", "").strip())
-        return (
-            idx,
-            data["overview"] if data and has_plot else "",
-            data["release_date"] if data and has_date else "",
-        )
+    if not _TMDB_API_KEY and not _TMDB_ACCESS_TOKEN:
+        return None
 
-    async with sem:
-        result = _search_tmdb(title, year)
-        if result is None:
-            cache[cache_key] = None
-            return (idx, "", "")
+    params = _build_params(title, year)
 
-        data: dict[str, Any] = {
-            "title": result.get("title", title),
-            "overview": result.get("overview", ""),
-            "release_date": result.get("release_date", ""),
-            "poster_path": result.get("poster_path"),
-            "tmdb_id": result.get("id"),
-        }
-        cache[cache_key] = data
+    resp = await client.get(_SEARCH_URL, headers=_HEADERS, params=params, timeout=10)
 
-        has_plot = bool(data.get("overview", "").strip())
-        has_date = bool(data.get("release_date", "").strip())
-        return (
-            idx,
-            data["overview"] if has_plot else "",
-            data["release_date"] if has_date else "",
-        )
+    # Handle 429 Rate Limit — respect Retry-After
+    if resp.status_code == 429:
+        retry_after = int(resp.headers.get("Retry-After", 2))
+        logger.warning("Rate limited (async). Waiting %ds (Retry-After)...", retry_after)
+        await asyncio.sleep(retry_after)
+        resp = await client.get(_SEARCH_URL, headers=_HEADERS, params=params, timeout=10)
+
+    # 5xx → raise for tenacity to retry
+    if resp.status_code >= 500:
+        raise TMDbServerError(f"TMDb returned {resp.status_code}: {resp.text[:200]}")
+
+    resp.raise_for_status()  # 4xx (except 429) → fail fast, no retry
+
+    data = resp.json()
+    results = data.get("results", [])
+    if not results:
+        return None
+
+    if year is not None:
+        for r in results:
+            rd = r.get("release_date", "")
+            if rd and rd.startswith(str(year)):
+                return r
+
+    return results[0]
 
 
 async def _enrich_async(
@@ -384,7 +410,10 @@ async def _enrich_async(
     cache: dict[str, Any],
     concurrency: int = 8,
 ) -> list[tuple[int, str, str]]:
-    """Run async enrichment with bounded concurrency.
+    """Run async enrichment with httpx.AsyncClient + bounded concurrency.
+
+    Uses true async I/O via ``httpx.AsyncClient``, NOT a thread pool.
+    Concurrency is bounded by an ``asyncio.Semaphore(concurrency)``.
 
     Parameters
     ----------
@@ -395,8 +424,8 @@ async def _enrich_async(
     cache : dict
         Shared cache dict.
     concurrency : int, default=8
-        Max concurrent TMDb API calls. 8 is chosen to stay within
-        TMDb's rate limits while maximizing throughput.
+        Max concurrent TMDb API calls. 8 keeps us safely within TMDb's
+        rate limits (40 req/10s) while maximizing throughput.
 
     Returns
     -------
@@ -404,41 +433,59 @@ async def _enrich_async(
         Results as ``(idx, plot, date)`` tuples.
     """
     sem = asyncio.Semaphore(concurrency)
-    # _search_tmdb uses requests (sync), so we run it in a thread pool
-    # to avoid blocking the event loop. httpx.AsyncClient would be
-    # faster but requires refactoring the entire _search_tmdb function.
-    loop = asyncio.get_event_loop()
-    with ThreadPoolExecutor(max_workers=concurrency) as pool:
-        tasks = [
-            loop.run_in_executor(
-                pool,
-                _search_tmdb,
-                titles[i],
-                years[i],
-            )
-            for i in range(len(titles))
-        ]
-        results_raw = await asyncio.gather(*tasks, return_exceptions=True)
 
-    output: list[tuple[int, str, str]] = []
-    for i, result in enumerate(results_raw):
-        if isinstance(result, Exception):
-            logger.debug("Async enrichment failed for %s: %s", titles[i], result)
-            output.append((i, "", ""))
-            continue
+    async def _fetch_one(i: int) -> tuple[int, str, str]:
+        cache_key = f"{titles[i].strip().lower()}|{years[i]}" if years[i] else titles[i].strip().lower()
+        if cache_key in cache:
+            data = cache[cache_key]
+            has_plot = bool(data and data.get("overview", "").strip())
+            has_date = bool(data and data.get("release_date", "").strip())
+            return (
+                i,
+                data["overview"] if data and has_plot else "",
+                data["release_date"] if data and has_date else "",
+            )
+
+        async with sem:
+            try:
+                result = await _fetch_tmdb_async(client, titles[i], years[i])
+            except Exception as exc:
+                logger.debug("Async TMDb fetch failed for %s: %s", titles[i], exc)
+                cache[cache_key] = None
+                return (i, "", "")
+
         if result is None:
-            cache_key = f"{titles[i].strip().lower()}|{years[i]}" if years[i] else titles[i].strip().lower()
             cache[cache_key] = None
-            output.append((i, "", ""))
-            continue
-        data = result
+            return (i, "", "")
+
+        data: dict[str, Any] = {
+            "title": result.get("title", titles[i]),
+            "overview": result.get("overview", ""),
+            "release_date": result.get("release_date", ""),
+            "poster_path": result.get("poster_path"),
+            "tmdb_id": result.get("id"),
+        }
+        cache[cache_key] = data
+
         has_plot = bool(data.get("overview", "").strip())
         has_date = bool(data.get("release_date", "").strip())
-        output.append((
+        return (
             i,
-            data.get("overview", "") if has_plot else "",
-            data.get("release_date", "") if has_date else "",
-        ))
+            data["overview"] if has_plot else "",
+            data["release_date"] if has_date else "",
+        )
+
+    async with httpx.AsyncClient(timeout=httpx.Timeout(10.0)) as client:
+        tasks = [_fetch_one(i) for i in range(len(titles))]
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+
+    output: list[tuple[int, str, str]] = []
+    for i, result in enumerate(results):
+        if isinstance(result, tuple):
+            output.append(result)  # type: ignore[arg-type]
+        else:
+            logger.debug("Unexpected error in async enrichment for %s: %s", titles[i], result)
+            output.append((i, "", ""))
     return output
 
 
@@ -449,11 +496,10 @@ def enrich_dataset_async(
     max_movies: Optional[int] = None,
     concurrency: int = 8,
 ) -> tuple[dict[str, list[str]], "pd.DataFrame"]:
-    """Enrich a movie DataFrame with TMDb data using async I/O.
+    """Enrich a movie DataFrame with TMDb data using true async I/O.
 
-    Uses :func:`enrich_dataset` internally — the async variant runs
-    ``_search_tmdb`` calls in a thread pool with bounded concurrency
-    instead of sequential blocking.
+    Uses ``httpx.AsyncClient`` (not ThreadPoolExecutor) for genuine
+    async HTTP calls. Bounded concurrency via ``asyncio.Semaphore``.
 
     Parameters
     ----------
@@ -489,9 +535,9 @@ def enrich_dataset_async(
         else:
             years_list.append(None)
 
-    logger.info("Enriching %d movies from TMDb (async, concurrency=%d)...", total, concurrency)
+    logger.info("Enriching %d movies from TMDb (async httpx, concurrency=%d)...", total, concurrency)
 
-    # Run the async enrichment
+    # Run the async enrichment — asyncio.run() bridges sync→async
     results = asyncio.run(_enrich_async(titles, years_list, _CACHE, concurrency))
 
     plots = [""] * total
@@ -516,7 +562,7 @@ def enrich_dataset_async(
 
     logger.info("")
     logger.info("=" * 60)
-    logger.info("TMDb Enrichment Complete (async)")
+    logger.info("TMDb Enrichment Complete (async httpx)")
     logger.info("  Movies attempted:   %d", total)
     logger.info("  Plot coverage:      %.1f%% (%d with plot)", plot_coverage, sum(1 for p in plots if p.strip()))
     logger.info("  Date coverage:      %.1f%% (%d with date)", date_coverage, sum(1 for d in dates if d.strip()))
