@@ -114,12 +114,43 @@ from tamasha.predict import get_comparison_csv, get_model_info
 
 ---
 
+## Authentication
+
+All endpoints except `/health`, `/docs`, `/openapi.json`, and `/redoc` require the
+`X-API-Key` header:
+
+```bash
+curl -H "X-API-Key: tamasha-dev-key-2026" http://localhost:8000/predict-rating ...
+```
+
+Configure via `API_KEY` env var (default dev key: `tamasha-dev-key-2026`).
+Set a strong random value in production.
+
+---
+
+## Rate Limiting
+
+All endpoints are rate-limited to **60 requests per minute** (configurable via
+`RATE_LIMIT` env var). The rate limit is keyed by the `X-API-Key` header value
+(or client IP if no key is provided).
+
+Rate-limit headers are included on every response:
+- `X-RateLimit-Limit`: Maximum requests per window
+- `X-RateLimit-Remaining`: Remaining requests in current window
+- ~~`X-RateLimit-Reset`: (not yet available with slowapi)~~
+
+When exceeded, returns `429 Too Many Requests`.
+
+---
+
 ## Error Handling
 
 | HTTP Status | Meaning | Example Scenario |
 |:-----------:|---------|-----------------|
 | `200` | Success | All endpoints |
+| `401` | Unauthorized | Missing or invalid X-API-Key header |
 | `404` | Not found | Actor not in Bankability dataset |
+| `429` | Too Many Requests | Rate limit exceeded (60 req/min) |
 | `503` | Service unavailable | Model not trained (missing .pkl) |
 | `500` | Internal error | Prediction failure, data error |
 
