@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import pandas as pd
-import pytest
 
 from tamasha.features.movie_features import (
     build_feature_matrix,

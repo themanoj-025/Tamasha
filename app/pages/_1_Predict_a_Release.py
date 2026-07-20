@@ -2,11 +2,10 @@
 
 from __future__ import annotations
 
-import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
-from tamasha.predict import predict_rating, predict_boxoffice
+from tamasha.predict import predict_boxoffice, predict_rating
 
 
 def _star_rating_html(rating: float, max_stars: float = 10.0) -> str:
@@ -21,26 +20,34 @@ def _star_rating_html(rating: float, max_stars: float = 10.0) -> str:
 
 def _gauge_chart(value: float, max_val: float, title: str, color: str = "#3b82f6") -> go.Figure:
     """Create a speedometer-style gauge chart."""
-    fig = go.Figure(go.Indicator(
-        mode="gauge+number",
-        value=value,
-        number={"suffix": "", "font": {"color": "#ffffff", "size": 28}},
-        title={"text": title, "font": {"color": "#8a94b0", "size": 14}},
-        gauge={
-            "axis": {"range": [0, max_val], "tickcolor": "#5a6380", "tickfont": {"color": "#8a94b0"}},
-            "bar": {"color": color},
-            "bgcolor": "#1a1d24",
-            "borderwidth": 0,
-            "steps": [
-                {"range": [0, max_val * 0.33], "color": "rgba(239,68,68,0.15)"},
-                {"range": [max_val * 0.33, max_val * 0.66], "color": "rgba(234,179,8,0.15)"},
-                {"range": [max_val * 0.66, max_val], "color": "rgba(74,222,128,0.15)"},
-            ],
-        },
-    ))
+    fig = go.Figure(
+        go.Indicator(
+            mode="gauge+number",
+            value=value,
+            number={"suffix": "", "font": {"color": "#ffffff", "size": 28}},
+            title={"text": title, "font": {"color": "#8a94b0", "size": 14}},
+            gauge={
+                "axis": {
+                    "range": [0, max_val],
+                    "tickcolor": "#5a6380",
+                    "tickfont": {"color": "#8a94b0"},
+                },
+                "bar": {"color": color},
+                "bgcolor": "#1a1d24",
+                "borderwidth": 0,
+                "steps": [
+                    {"range": [0, max_val * 0.33], "color": "rgba(239,68,68,0.15)"},
+                    {"range": [max_val * 0.33, max_val * 0.66], "color": "rgba(234,179,8,0.15)"},
+                    {"range": [max_val * 0.66, max_val], "color": "rgba(74,222,128,0.15)"},
+                ],
+            },
+        )
+    )
     fig.update_layout(
-        height=200, margin=dict(l=20, r=20, t=30, b=10),
-        paper_bgcolor="rgba(0,0,0,0)", font={"color": "#e0e0e0"},
+        height=200,
+        margin=dict(l=20, r=20, t=30, b=10),
+        paper_bgcolor="rgba(0,0,0,0)",
+        font={"color": "#e0e0e0"},
     )
     return fig
 
@@ -56,14 +63,28 @@ def show() -> None:
     col1, col2 = st.columns([1, 1.2], gap="large")
 
     with col1:
-        st.markdown("<div class='glass-card'><h3 style='margin:0 0 1rem;color:#fff;'>🎬 Movie Profile</h3>", unsafe_allow_html=True)
+        st.markdown(
+            "<div class='glass-card'><h3 style='margin:0 0 1rem;color:#fff;'>🎬 Movie Profile</h3>",
+            unsafe_allow_html=True,
+        )
 
         st.text_input("Movie Title", value="My Bollywood Film")
 
         genre_options = [
-            "Action", "Comedy", "Drama", "Romance", "Thriller",
-            "Horror", "Sci-Fi", "Musical", "Biography", "Crime",
-            "Mystery", "Fantasy", "Animation", "Family",
+            "Action",
+            "Comedy",
+            "Drama",
+            "Romance",
+            "Thriller",
+            "Horror",
+            "Sci-Fi",
+            "Musical",
+            "Biography",
+            "Crime",
+            "Mystery",
+            "Fantasy",
+            "Animation",
+            "Family",
         ]
         genres = st.multiselect("Genres", genre_options, default=["Drama", "Romance"])
 
@@ -76,16 +97,30 @@ def show() -> None:
         )
         cast_list = [c.strip() for c in cast_str.split(",") if c.strip()]
 
-        budget_cr = st.number_input("Budget (₹ Crore)", min_value=1.0, max_value=500.0, value=80.0, step=5.0)
+        budget_cr = st.number_input(
+            "Budget (₹ Crore)", min_value=1.0, max_value=500.0, value=80.0, step=5.0
+        )
         budget_inr = budget_cr * 1e7
 
-        runtime = st.slider("Runtime (minutes)", 90, 240, 150, help="Typical Bollywood films run 120-180 min")
+        runtime = st.slider(
+            "Runtime (minutes)", 90, 240, 150, help="Typical Bollywood films run 120-180 min"
+        )
 
         col_y, col_w = st.columns(2)
         with col_y:
-            release_year = st.number_input("Release Year", min_value=2020, max_value=2030, value=2024)
+            release_year = st.number_input(
+                "Release Year", min_value=2020, max_value=2030, value=2024
+            )
         with col_w:
-            release_windows = ["Normal", "Diwali", "Eid", "Christmas", "Independence Day", "Republic Day", "New Year"]
+            release_windows = [
+                "Normal",
+                "Diwali",
+                "Eid",
+                "Christmas",
+                "Independence Day",
+                "Republic Day",
+                "New Year",
+            ]
             release_window = st.selectbox("Release Window", release_windows)
 
         st.markdown("</div>", unsafe_allow_html=True)
@@ -93,7 +128,9 @@ def show() -> None:
         predict_btn = st.button("🎯 Generate Predictions", type="primary", use_container_width=True)
 
     with col2:
-        st.markdown("<h3 style='color:#fff;margin:0 0 1rem;'>📊 Results</h3>", unsafe_allow_html=True)
+        st.markdown(
+            "<h3 style='color:#fff;margin:0 0 1rem;'>📊 Results</h3>", unsafe_allow_html=True
+        )
 
         if predict_btn:
             if not genres:
@@ -105,13 +142,21 @@ def show() -> None:
 
             with st.spinner("Running predictions..."):
                 rating_result = predict_rating(
-                    genres=genres, cast=cast_list, director=director,
-                    budget_inr=budget_inr, runtime_minutes=runtime, year=release_year,
+                    genres=genres,
+                    cast=cast_list,
+                    director=director,
+                    budget_inr=budget_inr,
+                    runtime_minutes=runtime,
+                    year=release_year,
                 )
                 box_result = predict_boxoffice(
-                    genres=genres, cast=cast_list, director=director,
-                    budget_inr=budget_inr, runtime_minutes=runtime,
-                    year=release_year, release_window=release_window,
+                    genres=genres,
+                    cast=cast_list,
+                    director=director,
+                    budget_inr=budget_inr,
+                    runtime_minutes=runtime,
+                    year=release_year,
+                    release_window=release_window,
                 )
 
             # ── Rating Card ────────────────────────────────────────
@@ -127,7 +172,8 @@ def show() -> None:
                         <div style="margin:4px 0;">{stars_html}</div>
                         <div class="metric-delta">Model: {rating_result['model_name']} · MAE: ±{mae_str}</div>
                     </div>
-                    """, unsafe_allow_html=True,
+                    """,
+                    unsafe_allow_html=True,
                 )
                 # Mini gauge
                 fig_r = _gauge_chart(pred_r, 10.0, "Rating Score", "#a78bfa")
@@ -158,17 +204,23 @@ def show() -> None:
                         <div class="metric-delta">Model: {box_result['model_name']} · MAE: ±₹{mae_b:.1f} Cr</div>
                     </div>
                     {bank_note}
-                    """, unsafe_allow_html=True,
+                    """,
+                    unsafe_allow_html=True,
                 )
 
                 # Bankability info
                 bank_info = box_result.get("bankability_info", {})
                 if bank_info:
-                    fallback_str = f" ({bank_info['fallback_count']}/{bank_info['total_count']} fallback)" if bank_info['fallback_count'] > 0 else ""
+                    fallback_str = (
+                        f" ({bank_info['fallback_count']}/{bank_info['total_count']} fallback)"
+                        if bank_info["fallback_count"] > 0
+                        else ""
+                    )
                     st.markdown(
                         f"<div class='info-box info'>"
                         f"<b>🎭 Cast Bankability:</b> Avg Score = {bank_info['avg_score']:.3f}{fallback_str}"
-                        f"</div>", unsafe_allow_html=True,
+                        f"</div>",
+                        unsafe_allow_html=True,
                     )
 
                 # Gauge: Budget vs Box Office
@@ -178,7 +230,10 @@ def show() -> None:
                     st.plotly_chart(fig_b, use_container_width=True)
 
                 # ── Scenario Comparison ─────────────────────────────
-                st.markdown("<h4 style='color:#fff;margin:1rem 0 0.5rem;'>📅 Release Scenario Comparison</h4>", unsafe_allow_html=True)
+                st.markdown(
+                    "<h4 style='color:#fff;margin:1rem 0 0.5rem;'>📅 Release Scenario Comparison</h4>",
+                    unsafe_allow_html=True,
+                )
                 st.markdown(
                     "<div class='info-box info'>Scenario simulation — shows relative box office under different release windows. Not a guaranteed forecast.</div>",
                     unsafe_allow_html=True,
@@ -194,15 +249,21 @@ def show() -> None:
                         colors[idx] = "#ffd93d"
 
                     fig_s = go.Figure()
-                    fig_s.add_trace(go.Bar(
-                        x=window_list, y=values,
-                        marker_color=colors,
-                        text=[f"₹{v:.0f} Cr" for v in values],
-                        textposition="outside",
-                        textfont=dict(color="#e0e0e0", size=11),
-                    ))
+                    fig_s.add_trace(
+                        go.Bar(
+                            x=window_list,
+                            y=values,
+                            marker_color=colors,
+                            text=[f"₹{v:.0f} Cr" for v in values],
+                            textposition="outside",
+                            textfont=dict(color="#e0e0e0", size=11),
+                        )
+                    )
                     fig_s.update_layout(
-                        title=dict(text="Predicted Box Office by Window (₹ Cr)", font=dict(color="#ffffff", size=14)),
+                        title=dict(
+                            text="Predicted Box Office by Window (₹ Cr)",
+                            font=dict(color="#ffffff", size=14),
+                        ),
                         template="plotly_dark",
                         height=320,
                         margin=dict(l=20, r=20, t=40, b=60),

@@ -87,9 +87,7 @@ def load_poster_images(
     return images, labels, filenames
 
 
-def extract_color_histogram(
-    image: np.ndarray, bins: int = 16
-) -> np.ndarray:
+def extract_color_histogram(image: np.ndarray, bins: int = 16) -> np.ndarray:
     """Extract HSV color histogram features.
 
     Parameters
@@ -168,9 +166,7 @@ def detect_faces(image: np.ndarray) -> int:
         Number of faces detected.
     """
     gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
-    faces = _FACE_CASCADE.detectMultiScale(
-        gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30)
-    )
+    faces = _FACE_CASCADE.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
     return len(faces)
 
 
@@ -217,11 +213,11 @@ def extract_all_features(images: list[np.ndarray]) -> np.ndarray:
     for img in images:
         features = np.concatenate(
             [
-                extract_color_histogram(img),       # 48 features
-                extract_brightness_features(img),    # 4 features
-                [extract_edge_density(img)],         # 1 feature
-                [detect_faces(img)],                 # 1 feature
-                extract_channel_statistics(img),     # 9 features
+                extract_color_histogram(img),  # 48 features
+                extract_brightness_features(img),  # 4 features
+                [extract_edge_density(img)],  # 1 feature
+                [detect_faces(img)],  # 1 feature
+                extract_channel_statistics(img),  # 9 features
             ]
         )
         feature_list.append(features)
@@ -277,8 +273,10 @@ def train_poster_classifier(
     n_neg = len(y) - n_pos
     logger.info(
         "Class distribution: hits=%d (%.1f%%), flops=%d (%.1f%%)",
-        n_pos, n_pos / len(y) * 100,
-        n_neg, n_neg / len(y) * 100,
+        n_pos,
+        n_pos / len(y) * 100,
+        n_neg,
+        n_neg / len(y) * 100,
     )
 
     # Split
@@ -311,7 +309,8 @@ def train_poster_classifier(
 
     logger.info(
         "Poster classifier accuracy: %.2f%% (baseline: %.2f%%)",
-        accuracy * 100, baseline * 100,
+        accuracy * 100,
+        baseline * 100,
     )
     logger.info("Confusion matrix: %s", cm)
 

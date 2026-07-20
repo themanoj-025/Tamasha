@@ -23,8 +23,6 @@ import numpy as np
 import pandas as pd
 
 from tamasha.config import settings
-from tamasha.exceptions import ModelIntegrityError
-from tamasha.features.movie_features import build_feature_matrix
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +31,7 @@ logger = logging.getLogger(__name__)
 #  PredictionService  (thread‑safe by construction — no mutable shared
 #  state after load(); each call creates its own local temporaries)
 # ═══════════════════════════════════════════════════════════════════════
+
 
 class PredictionService:
     """Prediction service that loads all trained artifacts once.
@@ -98,12 +97,14 @@ class PredictionService:
             self._load_feature_cols()
             self._load_director_encoder()
             self._loaded = True
-            total = sum([
-                1 if self._rating_model else 0,
-                1 if self._boxoffice_model else 0,
-                1 if self._rating_feature_cols else 0,
-                1 if self._boxoffice_feature_cols else 0,
-            ])
+            total = sum(
+                [
+                    1 if self._rating_model else 0,
+                    1 if self._boxoffice_model else 0,
+                    1 if self._rating_feature_cols else 0,
+                    1 if self._boxoffice_feature_cols else 0,
+                ]
+            )
             logger.info("PredictionService loaded (%d/4 core artifacts).", total)
 
     # ── property: healthy ──────────────────────────────────────────
@@ -140,6 +141,7 @@ class PredictionService:
         path = self._models_dir / "best_rating_model.pkl"
         if path.exists():
             import joblib
+
             self._verify_model_integrity(path)
             self._rating_model = joblib.load(path)
             logger.info("Loaded rating model from %s", path)
@@ -150,6 +152,7 @@ class PredictionService:
         path = self._models_dir / "best_boxoffice_model.pkl"
         if path.exists():
             import joblib
+
             self._verify_model_integrity(path)
             self._boxoffice_model = joblib.load(path)
             logger.info("Loaded box office model from %s", path)
@@ -171,6 +174,7 @@ class PredictionService:
 
         try:
             import json
+
             metadata = json.loads(metadata_path.read_text())
             expected_hash = metadata.get("sha256")
             if not expected_hash:
@@ -180,7 +184,9 @@ class PredictionService:
             if actual_hash != expected_hash:
                 logger.error(
                     "Model integrity check FAILED: %s\n  Expected: %s\n  Actual: %s",
-                    model_path, expected_hash, actual_hash,
+                    model_path,
+                    expected_hash,
+                    actual_hash,
                 )
                 self._integrity_failures.append(
                     {"artifact": str(model_path), "expected": expected_hash, "actual": actual_hash}
@@ -194,6 +200,7 @@ class PredictionService:
         path = self._models_dir / "director_encoder.pkl"
         if path.exists():
             import joblib
+
             self._director_encoder = joblib.load(path)
             logger.info("Loaded director encoder from %s", path)
         else:
@@ -204,10 +211,12 @@ class PredictionService:
         bank_path = self._reports_dir / "bankability_scores.csv"
         if bank_path.exists():
             self._bankability_scores = pd.read_csv(bank_path)
-            self._bankability_map = dict(zip(
-                self._bankability_scores["actor"].str.lower().str.strip(),
-                self._bankability_scores["bankability_score"],
-            ))
+            self._bankability_map = dict(
+                zip(
+                    self._bankability_scores["actor"].str.lower().str.strip(),
+                    self._bankability_scores["bankability_score"],
+                )
+            )
             logger.info("Loaded %d bankability scores", len(self._bankability_scores))
         else:
             self._bankability_scores = pd.DataFrame()
@@ -385,10 +394,19 @@ class PredictionService:
         if self._rating_model is None:
             return {"predicted_rating": None, "model_name": "No model trained", "model_mae": None}
         if not self._rating_feature_cols:
-            return {"predicted_rating": None, "model_name": "No feature columns saved", "model_mae": None}
+            return {
+                "predicted_rating": None,
+                "model_name": "No feature columns saved",
+                "model_mae": None,
+            }
 
         X_vec = self._build_prediction_vector(
-            genres, cast, director, budget_inr, runtime_minutes, year,
+            genres,
+            cast,
+            director,
+            budget_inr,
+            runtime_minutes,
+            year,
             self._rating_feature_cols,
         )
         if X_vec.size == 0:
@@ -399,7 +417,11 @@ class PredictionService:
             pred = max(0.0, min(10.0, pred))
             model_name = self._model_names.get("rating", "GradientBoosting")
             model_mae = self._model_metrics.get("rating", {}).get("mae", 0)
-            return {"predicted_rating": round(pred, 2), "model_name": model_name, "model_mae": model_mae}
+            return {
+                "predicted_rating": round(pred, 2),
+                "model_name": model_name,
+                "model_mae": model_mae,
+            }
         except Exception as exc:
             logger.error("Rating prediction failed: %s", exc)
             return {"predicted_rating": None, "model_name": "Error", "model_mae": None}
@@ -426,18 +448,36 @@ class PredictionService:
                 "scenarios": dict, "fallback_actors": bool}``
         """
         if self._boxoffice_model is None:
-            return {"predicted_boxoffice_cr": None, "model_name": "No model trained", "model_mae": None}
+            return {
+                "predicted_boxoffice_cr": None,
+                "model_name": "No model trained",
+                "model_mae": None,
+            }
         if not self._boxoffice_feature_cols:
-            return {"predicted_boxoffice_cr": None, "model_name": "No feature columns saved", "model_mae": None}
+            return {
+                "predicted_boxoffice_cr": None,
+                "model_name": "No feature columns saved",
+                "model_mae": None,
+            }
 
         bank_info = self._compute_cast_avg_bankability(cast)
 
         X_vec = self._build_prediction_vector(
-            genres, cast, director, budget_inr, runtime_minutes, year,
-            self._boxoffice_feature_cols, bank_info["avg_score"],
+            genres,
+            cast,
+            director,
+            budget_inr,
+            runtime_minutes,
+            year,
+            self._boxoffice_feature_cols,
+            bank_info["avg_score"],
         )
         if X_vec.size == 0:
-            return {"predicted_boxoffice_cr": None, "model_name": "Feature error", "model_mae": None}
+            return {
+                "predicted_boxoffice_cr": None,
+                "model_name": "Feature error",
+                "model_mae": None,
+            }
 
         try:
             pred = float(self._boxoffice_model.predict(X_vec)[0])
@@ -491,22 +531,27 @@ class PredictionService:
 
         chemistry: list[dict[str, Any]] = []
         if not self._chemistry_pairs.empty:
-            mask = (
-                self._chemistry_pairs["actor_1"].str.lower().str.strip().isin([key, name.lower()])
-                | self._chemistry_pairs["actor_2"].str.lower().str.strip().isin([key, name.lower()])
-            )
+            mask = self._chemistry_pairs["actor_1"].str.lower().str.strip().isin(
+                [key, name.lower()]
+            ) | self._chemistry_pairs["actor_2"].str.lower().str.strip().isin([key, name.lower()])
             chem_matches = self._chemistry_pairs[mask]
             for _, row in chem_matches.iterrows():
-                partner = row["actor_2"] if row["actor_1"].lower().strip() == key else row["actor_1"]
-                chemistry.append({
-                    "actor": partner,
-                    "joint_films": int(row["joint_films"]),
-                    "chemistry_score": float(row["uplift"]),
-                })
+                partner = (
+                    row["actor_2"] if row["actor_1"].lower().strip() == key else row["actor_1"]
+                )
+                chemistry.append(
+                    {
+                        "actor": partner,
+                        "joint_films": int(row["joint_films"]),
+                        "chemistry_score": float(row["uplift"]),
+                    }
+                )
 
         return {
             "name": name.strip().title(),
-            "bankability_score": float(score_row["bankability_score"]) if score_row is not None else None,
+            "bankability_score": float(score_row["bankability_score"])
+            if score_row is not None
+            else None,
             "film_count": int(score_row["film_count"]) if score_row is not None else 0,
             "type": str(score_row["type"]) if score_row is not None else "unknown",
             "top_chemistry_pairs": chemistry,
@@ -532,7 +577,15 @@ class PredictionService:
                 "mae": self._model_metrics.get("boxoffice_bank", {}).get("mae"),
                 "rmse": self._model_metrics.get("boxoffice_bank", {}).get("rmse"),
                 "r2": self._model_metrics.get("boxoffice_bank", {}).get("r2"),
-                "features_used": ["genre", "cast_size", "director", "runtime", "budget", "decade", "avg_bankability_score"],
+                "features_used": [
+                    "genre",
+                    "cast_size",
+                    "director",
+                    "runtime",
+                    "budget",
+                    "decade",
+                    "avg_bankability_score",
+                ],
             },
         }
 
@@ -600,7 +653,9 @@ def predict_boxoffice(
     release_window: str = "Normal",
 ) -> dict[str, Any]:
     """Module-level wrapper — delegates to the global singleton."""
-    return _get_service().predict_boxoffice(genres, cast, director, budget_inr, runtime_minutes, year, release_window)
+    return _get_service().predict_boxoffice(
+        genres, cast, director, budget_inr, runtime_minutes, year, release_window
+    )
 
 
 def get_actor_info(name: str) -> dict[str, Any]:

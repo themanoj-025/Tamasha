@@ -25,12 +25,14 @@ logger = logging.getLogger(__name__)
 try:
     import plotly.express as px
     import plotly.graph_objects as go
+
     _HAS_PLOTLY = True
 except ImportError:
     _HAS_PLOTLY = False
 
 try:
     import shap
+
     _HAS_SHAP = True
 except ImportError:
     _HAS_SHAP = False
@@ -60,10 +62,20 @@ def plot_model_comparison(
     if _HAS_PLOTLY:
         fig = go.Figure()
         fig.add_trace(
-            go.Bar(name="MAE", x=df["model"], y=df["MAE"], error_y=dict(type="data", array=df.get("MAE_std", None)))
+            go.Bar(
+                name="MAE",
+                x=df["model"],
+                y=df["MAE"],
+                error_y=dict(type="data", array=df.get("MAE_std", None)),
+            )
         )
         fig.add_trace(
-            go.Bar(name="RMSE", x=df["model"], y=df["RMSE"], error_y=dict(type="data", array=df.get("RMSE_std", None)))
+            go.Bar(
+                name="RMSE",
+                x=df["model"],
+                y=df["RMSE"],
+                error_y=dict(type="data", array=df.get("RMSE_std", None)),
+            )
         )
         fig.update_layout(
             title="Model Comparison: MAE & RMSE",

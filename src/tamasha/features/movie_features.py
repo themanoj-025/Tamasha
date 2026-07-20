@@ -11,7 +11,6 @@ from pathlib import Path
 from typing import Optional, Union
 
 import joblib
-import numpy as np
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder, MultiLabelBinarizer
 
@@ -44,9 +43,7 @@ def extract_genre_features(
     genres = df[genre_column].fillna("").astype(str).str.split(r"\s*,\s*")
     mlb = MultiLabelBinarizer()
     encoded = mlb.fit_transform(genres)
-    genre_df = pd.DataFrame(
-        encoded, index=df.index, columns=[f"genre_{g}" for g in mlb.classes_]
-    )
+    genre_df = pd.DataFrame(encoded, index=df.index, columns=[f"genre_{g}" for g in mlb.classes_])
 
     if max_genres and genre_df.shape[1] > max_genres:
         # Keep only top-N by frequency
@@ -264,9 +261,7 @@ def build_feature_matrix(
         if budget_cols_inr:
             bcol = budget_cols_inr[0]
             budget = pd.to_numeric(df[bcol], errors="coerce").fillna(0)
-            parts.append(
-                pd.DataFrame({"budget_inr": budget}, index=df.index)
-            )
+            parts.append(pd.DataFrame({"budget_inr": budget}, index=df.index))
 
     X = pd.concat(parts, axis=1)
 

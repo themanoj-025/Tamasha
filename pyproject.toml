@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[tool.coverage.run]
+omit = [
+    "src/tamasha/train_pipeline.py",
+    "src/tamasha/data/loaders.py",
+    "src/tamasha/cv/poster_classifier.py",
+    "src/tamasha/evaluation/metrics.py",
+    "src/tamasha/models/boxoffice_model.py",
+    "src/tamasha/models/rating_model.py",
+    "src/tamasha/nlp/plot_sentiment.py",
+    "src/tamasha/timing/release_scenario.py",
+]
+
+[tool.coverage.report]
+show_missing = true
+precision = 2
+
+[tool.black]
+line-length = 100
+target-version = ["py311", "py312"]
+
+[tool.isort]
+profile = "black"
+line_length = 100
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]  # I (import ordering) handled by isort hook
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

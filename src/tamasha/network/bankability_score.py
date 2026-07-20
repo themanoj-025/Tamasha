@@ -128,9 +128,7 @@ def compute_bankability_scores(
     cast_exploded["type"] = "actor"
     # Join back to get weight/perf
     cast_exploded = cast_exploded.join(df_work[["_weight", "_weighted_perf"]])
-    cast_exploded = cast_exploded[
-        ~cast_exploded["person"].str.lower().isin(["nan", "none", ""])
-    ]
+    cast_exploded = cast_exploded[~cast_exploded["person"].str.lower().isin(["nan", "none", ""])]
     cast_exploded["person"] = cast_exploded["person"].str.strip().str.lower()
     cast_exploded = cast_exploded[cast_exploded["person"] != ""]
 
@@ -143,21 +141,28 @@ def compute_bankability_scores(
     dir_df = dir_df.rename(columns={"_weight": "_weight", "_weighted_perf": "_weighted_perf"})
 
     # Combine actor + director
-    combined = pd.concat([
-        cast_exploded[["person", "type", "_weight", "_weighted_perf"]],
-        dir_df[["person", "type", "_weight", "_weighted_perf"]],
-    ], ignore_index=True)
+    combined = pd.concat(
+        [
+            cast_exploded[["person", "type", "_weight", "_weighted_perf"]],
+            dir_df[["person", "type", "_weight", "_weighted_perf"]],
+        ],
+        ignore_index=True,
+    )
 
     # Groupby person + type, compute weighted average
-    grouped = combined.groupby(["person", "type"], sort=False).agg(
-        weighted_sum=("_weighted_perf", "sum"),
-        total_weight=("_weight", "sum"),
-        film_count=("_weight", "count"),
-    ).reset_index()
+    grouped = (
+        combined.groupby(["person", "type"], sort=False)
+        .agg(
+            weighted_sum=("_weighted_perf", "sum"),
+            total_weight=("_weight", "sum"),
+            film_count=("_weight", "count"),
+        )
+        .reset_index()
+    )
 
     grouped["bankability_score"] = (
-        grouped["weighted_sum"] / grouped["total_weight"]
-    ).fillna(0.0).round(4)
+        (grouped["weighted_sum"] / grouped["total_weight"]).fillna(0.0).round(4)
+    )
 
     # Map original-case names (use first occurrence from cast column)
     name_map: dict[str, str] = {}
@@ -170,9 +175,11 @@ def compute_bankability_scores(
 
     grouped["actor"] = grouped["person"].map(name_map).fillna(grouped["person"])
 
-    result = grouped[["actor", "type", "bankability_score", "film_count"]].sort_values(
-        "bankability_score", ascending=False
-    ).reset_index(drop=True)
+    result = (
+        grouped[["actor", "type", "bankability_score", "film_count"]]
+        .sort_values("bankability_score", ascending=False)
+        .reset_index(drop=True)
+    )
 
     logger.info("Bankability scores computed for %d individuals (vectorized).", len(result))
     return result

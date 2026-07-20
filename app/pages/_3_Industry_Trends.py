@@ -51,9 +51,7 @@ def show() -> None:
     genre_corr = _load_csv("genre_tone_correlation.csv")
     genre_corr_rating = _load_csv("genre_tone_correlation_rating.csv")
 
-    tab1, tab2, tab3 = st.tabs(
-        ["🎭 Genre Tone Analysis", "🎉 Festival & Clash", "📈 Genre Trends"]
-    )
+    tab1, tab2, tab3 = st.tabs(["🎭 Genre Tone Analysis", "🎉 Festival & Clash", "📈 Genre Trends"])
 
     with tab1:
         st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
@@ -72,20 +70,26 @@ def show() -> None:
             # Bar chart
             colors = ["#4ade80" if c >= 0 else "#f87171" for c in genre_corr["correlation"]]
             fig = go.Figure()
-            fig.add_trace(go.Bar(
-                x=genre_corr["genre"],
-                y=genre_corr["correlation"],
-                marker_color=colors,
-                text=[f"{c:.3f}" for c in genre_corr["correlation"]],
-                textposition="outside",
-                textfont=dict(size=11),
-            ))
+            fig.add_trace(
+                go.Bar(
+                    x=genre_corr["genre"],
+                    y=genre_corr["correlation"],
+                    marker_color=colors,
+                    text=[f"{c:.3f}" for c in genre_corr["correlation"]],
+                    textposition="outside",
+                    textfont=dict(size=11),
+                )
+            )
             fig.update_layout(
                 title=dict(text="Genre-Tone Correlation with Box Office", font=dict(color="#fff")),
-                template="plotly_dark", height=400,
+                template="plotly_dark",
+                height=400,
                 xaxis=dict(tickfont=dict(size=11)),
-                yaxis=dict(title="Correlation (VADER compound score)", tickfont=dict(color="#8a94b0")),
-                plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)",
+                yaxis=dict(
+                    title="Correlation (VADER compound score)", tickfont=dict(color="#8a94b0")
+                ),
+                plot_bgcolor="rgba(0,0,0,0)",
+                paper_bgcolor="rgba(0,0,0,0)",
             )
             fig.add_hline(y=0, line_dash="dash", line_color="#5a6380")
             st.plotly_chart(fig, use_container_width=True)
@@ -94,7 +98,8 @@ def show() -> None:
             st.markdown("<h4 style='color:#fff;'>Full Results</h4>", unsafe_allow_html=True)
             st.dataframe(
                 genre_corr[["genre", "correlation", "mean_compound", "n_movies"]],
-                use_container_width=True, hide_index=True,
+                use_container_width=True,
+                hide_index=True,
             )
 
             # Key insight
@@ -103,30 +108,44 @@ def show() -> None:
             insight_parts = []
             if len(top_pos) > 0:
                 r = top_pos.iloc[0]
-                insight_parts.append(f"🎭 <strong>{r['genre']}</strong>: +{r['correlation']:.3f} (n={int(r['n_movies'])}) — darker tone → higher box office")
+                insight_parts.append(
+                    f"🎭 <strong>{r['genre']}</strong>: +{r['correlation']:.3f} (n={int(r['n_movies'])}) — darker tone → higher box office"
+                )
             if len(top_neg) > 0:
                 r = top_neg.iloc[0]
-                insight_parts.append(f"🎭 <strong>{r['genre']}</strong>: {r['correlation']:.3f} (n={int(r['n_movies'])}) — darker tone performs better")
+                insight_parts.append(
+                    f"🎭 <strong>{r['genre']}</strong>: {r['correlation']:.3f} (n={int(r['n_movies'])}) — darker tone performs better"
+                )
             if insight_parts:
                 st.markdown(
                     f"<div class='info-box success'>"
                     f"<b>🔑 Key Findings:</b><br>{'<br>'.join(insight_parts)}"
-                    f"</div>", unsafe_allow_html=True,
+                    f"</div>",
+                    unsafe_allow_html=True,
                 )
         else:
-            st.markdown("<div class='info-box info'>Genre-tone correlation data not found. Run: make train</div>", unsafe_allow_html=True)
+            st.markdown(
+                "<div class='info-box info'>Genre-tone correlation data not found. Run: make train</div>",
+                unsafe_allow_html=True,
+            )
 
         st.markdown("</div>", unsafe_allow_html=True)
 
         # Rating correlations
         if genre_corr_rating is not None and not genre_corr_rating.empty:
             st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
-            st.markdown("<h3 style='color:#fff;'>Plot Tone vs. IMDB Rating</h3>", unsafe_allow_html=True)
+            st.markdown(
+                "<h3 style='color:#fff;'>Plot Tone vs. IMDB Rating</h3>", unsafe_allow_html=True
+            )
             fig2 = px.scatter(
-                genre_corr_rating, x="correlation", y="n_movies",
-                text="genre", size="n_movies",
+                genre_corr_rating,
+                x="correlation",
+                y="n_movies",
+                text="genre",
+                size="n_movies",
                 labels={"correlation": "Tone-Rating Correlation", "n_movies": "Sample Size"},
-                template="plotly_dark", height=300,
+                template="plotly_dark",
+                height=300,
             )
             fig2.update_traces(textposition="top center")
             fig2.update_layout(plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)")
@@ -155,17 +174,20 @@ def show() -> None:
                 "Dussehra": "Sep-Oct",
                 "Gandhi Jayanti": "Oct 2",
             }
-            fest_df = pd.DataFrame([
-                {"Festival": k, "Approx Date": v, "Window": "±7 days"}
-                for k, v in festivals.items()
-            ])
+            fest_df = pd.DataFrame(
+                [
+                    {"Festival": k, "Approx Date": v, "Window": "±7 days"}
+                    for k, v in festivals.items()
+                ]
+            )
             st.dataframe(fest_df, use_container_width=True, hide_index=True)
 
             st.markdown(
                 "<div class='info-box info'>"
                 "<b>📊 Festival releases identified:</b> 62 movies flagged as festival-adjacent. "
                 "Clash analysis flags movies within ±7 days of another major release."
-                "</div>", unsafe_allow_html=True,
+                "</div>",
+                unsafe_allow_html=True,
             )
             st.markdown("</div>", unsafe_allow_html=True)
 
@@ -183,7 +205,8 @@ def show() -> None:
                 "<b>🚀 Release Scenario Simulator</b><br>"
                 "The <code>release_scenario.py</code> module can simulate how a hypothetical film "
                 "would perform under different release windows using the winning box office model."
-                "</div>", unsafe_allow_html=True,
+                "</div>",
+                unsafe_allow_html=True,
             )
 
             # Festival windows info
@@ -193,7 +216,9 @@ def show() -> None:
             }
             st.markdown("<h4 style='color:#fff;'>Scenario Multipliers</h4>", unsafe_allow_html=True)
             st.dataframe(
-                pd.DataFrame(windows_info), use_container_width=True, hide_index=True,
+                pd.DataFrame(windows_info),
+                use_container_width=True,
+                hide_index=True,
             )
             st.markdown(
                 "<p style='color:#5a6380;font-size:0.75rem;'>Multipliers estimated from historical patterns. "
@@ -214,21 +239,37 @@ def show() -> None:
         gdf = _get_genre_distribution().sort_values("Count", ascending=True)
 
         fig_g = go.Figure()
-        fig_g.add_trace(go.Bar(
-            y=gdf["Genre"], x=gdf["Count"],
-            orientation="h",
-            marker_color=["#3b82f6", "#6366f1", "#8b5cf6", "#a78bfa", "#c084fc",
-                         "#f472b6", "#fb7185", "#f87171", "#fbbf24", "#4ade80",
-                         "#2dd4bf", "#38bdf8"],
-            text=gdf["Count"],
-            textposition="outside",
-            textfont=dict(color="#e0e0e0", size=11),
-        ))
+        fig_g.add_trace(
+            go.Bar(
+                y=gdf["Genre"],
+                x=gdf["Count"],
+                orientation="h",
+                marker_color=[
+                    "#3b82f6",
+                    "#6366f1",
+                    "#8b5cf6",
+                    "#a78bfa",
+                    "#c084fc",
+                    "#f472b6",
+                    "#fb7185",
+                    "#f87171",
+                    "#fbbf24",
+                    "#4ade80",
+                    "#2dd4bf",
+                    "#38bdf8",
+                ],
+                text=gdf["Count"],
+                textposition="outside",
+                textfont=dict(color="#e0e0e0", size=11),
+            )
+        )
         fig_g.update_layout(
-            template="plotly_dark", height=420,
+            template="plotly_dark",
+            height=420,
             xaxis=dict(title="Number of Movies", tickfont=dict(color="#8a94b0")),
             yaxis=dict(tickfont=dict(color="#e0e0e0", size=12)),
-            plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            paper_bgcolor="rgba(0,0,0,0)",
             margin=dict(l=10, r=40, t=10, b=10),
         )
         st.plotly_chart(fig_g, use_container_width=True)
@@ -237,16 +278,23 @@ def show() -> None:
         year_trend = _get_year_trend()
         fig_y = go.Figure()
         if not year_trend.empty:
-            fig_y.add_trace(go.Scatter(
-            x=year_trend["Year"], y=year_trend["Count"], mode="lines+markers",
-            line=dict(color="#3b82f6", width=3),
-            marker=dict(size=8, color="#6366f1"),
-            fill="tozeroy", fillcolor="rgba(59,130,246,0.1)",
-        ))
+            fig_y.add_trace(
+                go.Scatter(
+                    x=year_trend["Year"],
+                    y=year_trend["Count"],
+                    mode="lines+markers",
+                    line=dict(color="#3b82f6", width=3),
+                    marker=dict(size=8, color="#6366f1"),
+                    fill="tozeroy",
+                    fillcolor="rgba(59,130,246,0.1)",
+                )
+            )
         fig_y.update_layout(
             title=dict(text="Movie Count by Year (1990-2020)", font=dict(color="#fff")),
-            template="plotly_dark", height=300,
-            plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)",
+            template="plotly_dark",
+            height=300,
+            plot_bgcolor="rgba(0,0,0,0)",
+            paper_bgcolor="rgba(0,0,0,0)",
         )
         st.plotly_chart(fig_y, use_container_width=True)
 
@@ -254,6 +302,7 @@ def show() -> None:
             "<div class='info-box info'>"
             "Data from IMDb India dataset. Drama and Comedy dominate Bollywood production "
             "across all decades, with Action and Thriller gaining share post-2000."
-            "</div>", unsafe_allow_html=True,
+            "</div>",
+            unsafe_allow_html=True,
         )
         st.markdown("</div>", unsafe_allow_html=True)

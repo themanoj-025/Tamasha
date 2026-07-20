@@ -46,14 +46,8 @@ def metric_card(
     """
     featured_cls = " featured" if featured else ""
     gradient_cls = " gradient-text" if gradient_value else ""
-    delta_html = (
-        f'<span class="metric-delta">{delta}</span>'
-        if delta else ""
-    )
-    help_icon = (
-        f'<span class="metric-help" title="{help_text}">ⓘ</span>'
-        if help_text else ""
-    )
+    delta_html = f'<span class="metric-delta">{delta}</span>' if delta else ""
+    help_icon = f'<span class="metric-help" title="{help_text}">ⓘ</span>' if help_text else ""
     st.markdown(
         f"""
         <div class="metric-card{featured_cls}">
@@ -79,7 +73,7 @@ def badge(text: str, color: str = "blue") -> None:
     c = colors.get(color, "#3b82f6")
     st.markdown(
         f'<span style="display:inline-block;padding:2px 10px;'
-        f'border-radius:20px;font-size:0.7rem;font-weight:600;'
+        f"border-radius:20px;font-size:0.7rem;font-weight:600;"
         f'background:{c}20;color:{c};border:1px solid {c}30;">'
         f"{text}</span>",
         unsafe_allow_html=True,

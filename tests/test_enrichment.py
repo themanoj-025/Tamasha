@@ -6,16 +6,14 @@ All external HTTP calls are mocked — tests run with no network access.
 from __future__ import annotations
 
 import json
-import os
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pandas as pd
 import pytest
 import requests
 
-
 # ── Monkey-patch env vars before importing the module ────────────────
+
 
 @pytest.fixture(autouse=True)
 def _set_tmdb_env(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -28,11 +26,13 @@ def _set_tmdb_env(monkeypatch: pytest.MonkeyPatch) -> None:
 def _clear_enrichment_cache() -> None:
     """Reset the module-level cache before each test."""
     import tamasha.data.enrichment as enrichment_mod
+
     enrichment_mod._CACHE.clear()
     enrichment_mod._LAST_REQUEST_TIME = 0.0
 
 
 # ── Helpers ───────────────────────────────────────────────────────────
+
 
 def _make_tmdb_result(
     title: str = "Test Movie",
@@ -70,6 +70,7 @@ def _make_rate_limit_response(retry_after: int = 2) -> requests.Response:
 
 # ── Tests: get_movie_data ────────────────────────────────────────────
 
+
 class TestGetMovieData:
     """Tests for the get_movie_data function."""
 
@@ -83,8 +84,10 @@ class TestGetMovieData:
             release_date="1995-10-20",
         )
 
-        with patch("tamasha.data.enrichment.requests.get",
-                   return_value=_make_tmdb_search_response([mock_result])):
+        with patch(
+            "tamasha.data.enrichment.requests.get",
+            return_value=_make_tmdb_search_response([mock_result]),
+        ):
             data = get_movie_data("Dilwale Dulhania Le Jayenge", year=1995)
 
         assert data is not None
@@ -97,8 +100,9 @@ class TestGetMovieData:
         """TMDb returns empty results → None."""
         from tamasha.data.enrichment import get_movie_data
 
-        with patch("tamasha.data.enrichment.requests.get",
-                   return_value=_make_tmdb_search_response([])):
+        with patch(
+            "tamasha.data.enrichment.requests.get", return_value=_make_tmdb_search_response([])
+        ):
             data = get_movie_data("Totally Fake Movie 99999", year=2099)
 
         assert data is None
@@ -107,8 +111,9 @@ class TestGetMovieData:
         """requests.get raises ConnectionError → graceful None, not crash."""
         from tamasha.data.enrichment import get_movie_data
 
-        with patch("tamasha.data.enrichment.requests.get",
-                   side_effect=requests.ConnectionError("Timeout")):
+        with patch(
+            "tamasha.data.enrichment.requests.get", side_effect=requests.ConnectionError("Timeout")
+        ):
             data = get_movie_data("Any Movie", year=2020)
 
         assert data is None
@@ -203,8 +208,9 @@ class TestGetMovieData:
             _make_tmdb_result(title="Movie 2024", release_date="2024-06-15", movie_id=2),
         ]
 
-        with patch("tamasha.data.enrichment.requests.get",
-                   return_value=_make_tmdb_search_response(results)):
+        with patch(
+            "tamasha.data.enrichment.requests.get", return_value=_make_tmdb_search_response(results)
+        ):
             data = get_movie_data("Movie", year=2024)
 
         assert data is not None
@@ -213,6 +219,7 @@ class TestGetMovieData:
 
 # ── Tests: enrich_dataset ────────────────────────────────────────────
 
+
 class TestEnrichDataset:
     """Tests for the enrich_dataset function."""
 
@@ -220,15 +227,19 @@ class TestEnrichDataset:
         """All movies match → full coverage returned."""
         from tamasha.data.enrichment import enrich_dataset
 
-        df = pd.DataFrame({
-            "title": ["Movie A", "Movie B"],
-            "year": [2020, 2021],
-        })
+        df = pd.DataFrame(
+            {
+                "title": ["Movie A", "Movie B"],
+                "year": [2020, 2021],
+            }
+        )
 
         mock_result = _make_tmdb_result()
 
-        with patch("tamasha.data.enrichment.requests.get",
-                   return_value=_make_tmdb_search_response([mock_result])):
+        with patch(
+            "tamasha.data.enrichment.requests.get",
+            return_value=_make_tmdb_search_response([mock_result]),
+        ):
             coverage, enriched = enrich_dataset(df, max_movies=2)
 
         assert "plot_summary" in enriched.columns
@@ -240,13 +251,16 @@ class TestEnrichDataset:
         """No TMDb matches → plot_summary/release_date are empty strings."""
         from tamasha.data.enrichment import enrich_dataset
 
-        df = pd.DataFrame({
-            "title": ["Unknown Movie"],
-            "year": [2099],
-        })
+        df = pd.DataFrame(
+            {
+                "title": ["Unknown Movie"],
+                "year": [2099],
+            }
+        )
 
-        with patch("tamasha.data.enrichment.requests.get",
-                   return_value=_make_tmdb_search_response([])):
+        with patch(
+            "tamasha.data.enrichment.requests.get", return_value=_make_tmdb_search_response([])
+        ):
             coverage, enriched = enrich_dataset(df, max_movies=1)
 
         assert enriched["plot_summary"].iloc[0] == ""

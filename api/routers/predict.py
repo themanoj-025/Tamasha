@@ -53,7 +53,9 @@ async def predict_rating_endpoint(
             runtime_minutes=request.runtime_minutes,
         )
         if result["predicted_rating"] is None:
-            raise HTTPException(status_code=503, detail="Rating model not available. Run: make train")
+            raise HTTPException(
+                status_code=503, detail="Rating model not available. Run: make train"
+            )
 
         response = PredictRatingResponse(
             title=request.title,
@@ -94,7 +96,9 @@ async def predict_boxoffice_endpoint(
             release_window=request.release_window,
         )
         if result["predicted_boxoffice_cr"] is None:
-            raise HTTPException(status_code=503, detail="Box office model not available. Run: make train")
+            raise HTTPException(
+                status_code=503, detail="Box office model not available. Run: make train"
+            )
 
         response = PredictBoxOfficeResponse(
             title=request.title,

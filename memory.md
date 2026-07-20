@@ -29,12 +29,13 @@ Generic rating/box-office prediction is common in ML portfolios. Tamasha differe
 
 ### Key Metrics from Modeling
 
-- **Rating Model**: **LightGBM (tuned)** wins (MAE = 0.9587, R² = 0.2173) — RandomizedSearchCV found optimal params
-- **Box Office (Baseline)**: **GradientBoosting (tuned)** wins (MAE = ₹83.8 Cr)
-- **Box Office (with Bankability)**: **GradientBoosting (tuned)** wins (MAE = ₹75.3 Cr) — **10.2% MAE improvement** from the Bankability Score feature
-- **Significance Test**: LightGBM vs CatBoost (p=0.31) — NOT significant. GracenBoosting vs XGBoost (p=0.66) — NOT significant
+- **Rating Model**: **GradientBoosting (tuned)** wins (MAE = **0.9534**, R² = 0.2162) — n_iter=15 RandomizedSearchCV
+- **Box Office (Baseline)**: **XGBoost (tuned)** wins (MAE = **₹83.3 Cr**)
+- **Box Office (with Bankability)**: **XGBoost (tuned)** wins (MAE = **₹73.6 Cr**) — **11.6% MAE improvement** from the Bankability Score feature
+- **Significance Test**: GradientBoosting vs LightGBM for rating (p=0.6389) — NOT significant. XGBoost vs GradientBoosting for box office (p=0.4375) — NOT significant
 - **Poster CV**: Accuracy = 49.2% vs majority baseline 51.1% — no independent signal from poster visuals
 - **Plot Sentiment**: Strongest correlations — Fantasy (+0.42), History (+0.40), Romance (+0.36)
+- **SHAP**: Bankability Score ranks as #2 most important feature in the box office model (after budget)
 
 ---
 
@@ -42,19 +43,20 @@ Generic rating/box-office prediction is common in ML portfolios. Tamasha differe
 
 | Layer | Technology | Purpose |
 |-------|-----------|---------|
-| **Language** | Python 3.11+ | Primary language |
-| **ML/Analysis** | scikit-learn, xgboost, lightgbm, catboost | Model training, tuning & comparison |
+| **Language** | Python 3.11+ / 3.12 | Primary language |
+| **ML/Analysis** | scikit-learn, xgboost, lightgbm, catboost | Model training, tuning & comparison (n_iter=15) |
 | **NLP** | NLTK VADER | Plot sentiment analysis |
 | **CV** | OpenCV, scikit-learn | Poster feature extraction + classification |
 | **Network** | networkx | Cast/crew collaboration graph |
 | **Data** | pandas, numpy, rapidfuzz | Data manipulation & fuzzy joining |
 | **Config** | pydantic-settings | Centralized configuration |
 | **Dashboard** | Streamlit | Multi-page interactive UI |
-| **API** | FastAPI, slowapi, structlog | Prediction endpoints with auth + rate limiting + structured logging |
-| **Deployment** | Docker, docker-compose | Containerization |
-| **Testing** | pytest, pytest-cov, Hypothesis, httpx | Unit tests (119 passing) |
-| **CI/CD** | GitHub Actions | Pre-commit + pytest + coverage + pip-audit on every push |
-| **Quality** | black, isort, ruff, pre-commit | Code formatting & linting |
+| **API** | FastAPI, slowapi, structlog, prometheus-fastapi-instrumentator | Prediction endpoints with auth + rate limiting + structured logging + metrics |
+| **Cache** | diskcache | Response caching with model-version-aware keys |
+| **Deployment** | Docker (multi-stage), docker-compose | Containerization |
+| **Testing** | pytest, pytest-cov, Hypothesis, httpx, FastAPI TestClient | Unit tests (**141 tests ✅**) |
+| **CI/CD** | GitHub Actions | Pre-commit (blocking) + pytest + coverage (≥70%) + pip-audit + Docker build + Python 3.11/3.12 matrix |
+| **Quality** | black, isort, ruff, pre-commit, detect-secrets | Code formatting & linting |
 
 ---
 
@@ -65,9 +67,12 @@ Generic rating/box-office prediction is common in ML portfolios. Tamasha differe
 Replaced module-level mutable globals (`_RATING_MODEL`, `_BOXOFFICE_MODEL`, etc.) with a `PredictionService` class that:
 - Loads all artifacts once in `load()` method
 - Uses double-checked locking (`threading.Lock()`) for safe concurrent loading
+- SHA-256 verification: every model artifact hashed at save time; hash verified before load
+- On hash mismatch: raises `ModelIntegrityError`, /health reports which artifact failed
 - Injected via FastAPI `Depends()` — built once at startup via lifespan
 - Streamlit uses `st.cache_resource` for the equivalent singleton
 - Exposes `healthy` property for monitoring
+- Director `LabelEncoder` is now persisted to disk and loaded at inference (not silently ignored)
 
 ### Auth + Rate Limiting
 
@@ -78,10 +83,12 @@ Replaced module-level mutable globals (`_RATING_MODEL`, `_BOXOFFICE_MODEL`, etc.
 
 ### Hyperparameter Tuning
 
-RandomizedSearchCV with n_iter=5 for 4 models (RandomForest, GradientBoosting, XGBoost, LightGBM):
-- Best tuning MAE: LightGBM (0.9580) < XGBoost (0.9669) < GradientBoosting (0.9684) < RandomForest (0.9694)
+RandomizedSearchCV with n_iter=15 for 4 models (RandomForest, GradientBoosting, XGBoost, LightGBM):
+- Box office search space constrained to prevent overfitting (max_depth >= 1, learning_rate >= 0.05)
+- Best tuning MAE (rating): GradientBoosting (0.9560) < LightGBM (0.9539) < XGBoost (0.9587) < RandomForest (0.9688)
 - Tuned models used in final CV comparison with clean model names + boolean `tuned` column
 - Wilcoxon signed-rank test between top 2 models using out-of-fold predictions (cross_val_predict)
+- Scatter plots use `cross_val_predict()` for genuine out-of-fold predictions matching CV MAE
 
 ---
 
@@ -225,28 +232,43 @@ tamasha/
 
 ## Testing
 
-- **Framework**: pytest, pytest-cov, Hypothesis
-- **Test count**: 119 (up from 46)
+- **Framework**: pytest, pytest-cov (≥70% coverage), Hypothesis, FastAPI TestClient
+- **Test count**: **141** (up from 46)
 - **Key test areas**:
   - Joining: synthetic DataFrames with known expected matches
-  - Bankability: hand-computed scores on small synthetic graph
+  - Bankability: hand-computed scores on small synthetic graph + regression test against vectorized output
   - Chemistry: planted "obvious" pair in test data
-  - Festival calendar: date flag correctness + Hypothesis property-based tests
+  - Festival calendar: date flag correctness + Hypothesis property-based tests + 10K-row scale test
   - Model selection: mock comparison table → correct model picker
   - API: FastAPI TestClient with contract tests + auth tests
-  - PredictionService: 20-thread concurrency test, edge cases, graceful degradation
-  - Enrichment: mocked HTTP (success, 429 retry, timeout, cache, malformed)
-  - Auth: 17 tests for API key validation, exempt paths, CORS, error shapes
-- **CI**: GitHub Actions → pre-commit (black, isort, ruff) → pytest (coverage ≥70%) → pip-audit
+  - PredictionService: 20-thread concurrency test, edge cases, graceful degradation, model integrity checks
+  - Enrichment: mocked HTTP (success, 429 retry w/ Retry-After, timeout, cache, malformed, 5xx)
+  - Auth: 17 tests for API key validation, exempt paths, CORS, request body limits, /health degraded
+  - Scatter-CV consistency: asserts scatter plot MAE matches reported CV MAE via cross_val_predict
+  - Bankability regression: hand-computed reference vs. vectorized output equivalence
+- **CI matrix**: Python 3.11 + 3.12
+- **CI pipeline**: pre-commit (blocking — black, isort, ruff, detect-secrets) → pytest --cov-fail-under=70 → pip-audit → Docker build
 
 ---
 
-## Technical Debt / Known Issues
+## Performance Benchmarks
+
+| Operation | Method | Time | Speedup |
+|-----------|--------|:----:|:-------:|
+| TMDb enrichment | Sequential (`requests`) | 60.6s | 1x (baseline) |
+| TMDb enrichment | **Async** (`httpx`, concurrency=8) | **0.4s min / 0.4s med / 4.0s max** | **~150x** |
+| Bankability scoring | Vectorized (pandas groupby) | O(n) vs previous O(n²) | Documented in code |
+| Festival clash detection | Sort-by-date sweep | O(n log n) vs previous O(n²) | 10K rows in ~6s |
+| Prediction cache hit | diskcache lookup | ~1ms | Eliminates redundant model inference |
+
+## Known Issues
 
 1. **Poster CV**: Null result (49.2% vs 51.1% baseline) — 200-image sample + hand-crafted features are insufficient. Documented honestly.
 2. **Rating Model R²=0.22**: Metadata-only features can't fully predict ratings. Adding plot sentiment as a feature could improve this.
 3. **Festival dates are approximate**: Movable festivals (Eid, Diwali) use approximate dates. A library like `hijri-converter` would improve accuracy.
 4. **No inflation adjustment**: Data concentrated in 2010-2023, but cross-decade comparisons would benefit from adjustment.
-5. **TMDb API dependency**: Enrichment requires internet + API key. Cached, but first run is slow (~30s for cached).
-6. **Model files gitignored**: Users must run `make train` after cloning. Could add a `make download-models` target with GitHub Releases.
-7. **kaleido/plotly version conflict**: Static image export fails with the current dependency versions. Fix via `pip install -U kaleido==0.2.1` or plotly>=6.1.1.
+5. **kaleido/plotly version conflict**: Static image export in `make train` fails with pre-installed kaleido 1.2.0 despite 0.2.1 pin. Fix pending clean-env verification.
+6. **Grafana screenshot not taken**: Dashboard JSON committed but screenshot requires local Docker setup with real traffic data.
+7. **D1/D2 LLM features skipped**: LLM narration endpoint and eval set not implemented (no `ANTHROPIC_API_KEY` available).
+8. **No live deployment**: Per instruction, Render/Streamlit Cloud deployment deferred. All infrastructure code present but not deployed.
+9. **Model files gitignored**: Users must run `make train` after cloning. Could add a `make download-models` target with GitHub Releases.

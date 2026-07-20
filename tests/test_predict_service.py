@@ -22,8 +22,8 @@ from sklearn.dummy import DummyRegressor
 from tamasha.config import settings
 from tamasha.predict import PredictionService
 
-
 # ── Helpers ───────────────────────────────────────────────────────────
+
 
 def _ensure_dummy_artifacts() -> Path:
     """Create minimal dummy model artifacts in the models dir.
@@ -35,9 +35,14 @@ def _ensure_dummy_artifacts() -> Path:
 
     # Rating model + features
     rating_cols = [
-        "genre_Action", "genre_Drama", "genre_Romance",
-        "director_encoded", "cast_size", "runtime_minutes",
-        "budget_inr", "decade_2020",
+        "genre_Action",
+        "genre_Drama",
+        "genre_Romance",
+        "director_encoded",
+        "cast_size",
+        "runtime_minutes",
+        "budget_inr",
+        "decade_2020",
     ]
     model_r = DummyRegressor(strategy="constant", constant=7.0)
     X = np.zeros((1, len(rating_cols)))
@@ -55,23 +60,27 @@ def _ensure_dummy_artifacts() -> Path:
 
     # Director encoder
     from sklearn.preprocessing import LabelEncoder
+
     le = LabelEncoder()
     le.fit(["Director A", "Director B", "Director C"])
     joblib.dump(le, models_dir / "director_encoder.pkl")
 
     # Bankability scores
-    bank_df = pd.DataFrame({
-        "actor": ["Actor Known", "Actor AlsoKnown"],
-        "type": ["actor", "actor"],
-        "bankability_score": [1.5, 0.8],
-        "film_count": [5, 3],
-    })
+    bank_df = pd.DataFrame(
+        {
+            "actor": ["Actor Known", "Actor AlsoKnown"],
+            "type": ["actor", "actor"],
+            "bankability_score": [1.5, 0.8],
+            "film_count": [5, 3],
+        }
+    )
     bank_df.to_csv(settings.REPORTS_DIR / "bankability_scores.csv", index=False)
 
     return models_dir
 
 
 # ── Tests ─────────────────────────────────────────────────────────────
+
 
 class TestPredictionService:
     """Tests for the PredictionService class."""
@@ -131,8 +140,12 @@ class TestPredictionService:
         svc = PredictionService(models_dir=self.models_dir, reports_dir=self.reports_dir)
         # Don't call load() -> no model loaded
         result = svc.predict_rating(
-            genres=["Drama"], cast=["Actor A"],
-            director="Dir", budget_inr=0, runtime_minutes=120, year=2024,
+            genres=["Drama"],
+            cast=["Actor A"],
+            director="Dir",
+            budget_inr=0,
+            runtime_minutes=120,
+            year=2024,
         )
         assert result["predicted_rating"] is None
 
@@ -289,9 +302,12 @@ class TestConcurrency:
         def _predict_rating() -> None:
             try:
                 r = self.svc.predict_rating(
-                    genres=["Drama"], cast=["Actor Known"],
-                    director="Director A", budget_inr=50_000_000,
-                    runtime_minutes=150, year=2024,
+                    genres=["Drama"],
+                    cast=["Actor Known"],
+                    director="Director A",
+                    budget_inr=50_000_000,
+                    runtime_minutes=150,
+                    year=2024,
                 )
                 # Should have rating-specific fields, not boxoffice fields
                 assert "predicted_rating" in r
@@ -303,9 +319,12 @@ class TestConcurrency:
         def _predict_boxoffice() -> None:
             try:
                 r = self.svc.predict_boxoffice(
-                    genres=["Action"], cast=["Actor Known"],
-                    director="Director A", budget_inr=100_000_000,
-                    runtime_minutes=140, year=2024,
+                    genres=["Action"],
+                    cast=["Actor Known"],
+                    director="Director A",
+                    budget_inr=100_000_000,
+                    runtime_minutes=140,
+                    year=2024,
                 )
                 assert "predicted_boxoffice_cr" in r
                 assert "predicted_rating" not in r

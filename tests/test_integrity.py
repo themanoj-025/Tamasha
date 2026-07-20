@@ -13,13 +13,12 @@ from pathlib import Path
 
 import joblib
 import numpy as np
-import pytest
-from sklearn.dummy import DummyRegressor
 from fastapi.testclient import TestClient
+from sklearn.dummy import DummyRegressor
 
 from api.main import app
 from tamasha.config import settings
-from tamasha.models.model_selection import sha256_of_file, save_model_with_version
+from tamasha.models.model_selection import save_model_with_version, sha256_of_file
 
 
 def _install_model_with_hash(tmp_path: Path) -> Path:
@@ -34,12 +33,16 @@ def _install_model_with_hash(tmp_path: Path) -> Path:
     version_dir = tmp_path
     version_dir.mkdir(parents=True, exist_ok=True)
     meta_path = version_dir / "metadata.json"
-    meta_path.write_text(json.dumps({
-        "version": 1,
-        "task": "rating",
-        "sha256": sha256_of_file(model_path),
-        "model_type": "DummyRegressor",
-    }))
+    meta_path.write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "task": "rating",
+                "sha256": sha256_of_file(model_path),
+                "model_type": "DummyRegressor",
+            }
+        )
+    )
     return model_path
 
 
@@ -55,6 +58,7 @@ class TestSha256Hash:
     def test_hash_matches_known_value(self) -> None:
         """SHA-256 of known content matches expected hash."""
         import hashlib
+
         test_file = Path("test_hash.txt")
         try:
             test_file.write_text("hello world")
@@ -95,6 +99,7 @@ class TestSaveModelWithVersion:
         finally:
             # Cleanup
             import shutil
+
             shutil.rmtree("models_test_temp", ignore_errors=True)
 
 
@@ -123,11 +128,13 @@ class TestIntegrityVerification:
         )
         svc.load()
         # Manually inject an integrity failure to simulate corruption
-        svc._integrity_failures.append({
-            "artifact": str(settings.MODELS_DIR / "best_rating_model.pkl"),
-            "expected": "abc123def456",
-            "actual": "deadbeef0123",
-        })
+        svc._integrity_failures.append(
+            {
+                "artifact": str(settings.MODELS_DIR / "best_rating_model.pkl"),
+                "expected": "abc123def456",
+                "actual": "deadbeef0123",
+            }
+        )
         assert svc.healthy is False
         failures = svc.integrity_failures
         assert len(failures) == 1

@@ -14,8 +14,6 @@ from typing import Optional
 import pandas as pd
 from rapidfuzz import fuzz, process
 
-from tamasha.config import settings
-
 logger = logging.getLogger(__name__)
 
 
@@ -135,9 +133,7 @@ def fuzzy_join_datasets(
     )
 
     # Normalise titles in right frame
-    right_titles_norm = [
-        _normalise_title(t) for t in df_right[right_title].astype(str)
-    ]
+    right_titles_norm = [_normalise_title(t) for t in df_right[right_title].astype(str)]
     right_titles_orig = df_right[right_title].tolist()
     right_lookup = dict(zip(right_titles_norm, right_titles_orig))
 

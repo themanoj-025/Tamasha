@@ -15,11 +15,7 @@ import pandas as pd
 
 from tamasha.config import settings
 from tamasha.features.movie_features import build_feature_matrix
-from tamasha.models.model_selection import (
-    get_all_models,
-    save_model,
-    train_and_compare,
-)
+from tamasha.models.model_selection import get_all_models, save_model, train_and_compare
 
 logger = logging.getLogger(__name__)
 
@@ -81,9 +77,7 @@ def train_boxoffice_model(
             or [c for c in df.columns if "box_office" in c.lower()]
         )
         if not candidates:
-            raise ValueError(
-                "No box-office column found. Specify ``boxoffice_column``."
-            )
+            raise ValueError("No box-office column found. Specify ``boxoffice_column``.")
         boxoffice_column = candidates[0]
         logger.info("Auto-detected box-office column: %s", boxoffice_column)
 
@@ -97,9 +91,7 @@ def train_boxoffice_model(
     if bankability_df is not None and not bankability_df.empty:
         cast_col = [c for c in df.columns if c.lower() == "cast"]
         if cast_col:
-            avg_bankability = _compute_cast_avg_bankability(
-                df, cast_col[0], bankability_df
-            )
+            avg_bankability = _compute_cast_avg_bankability(df, cast_col[0], bankability_df)
             X["avg_bankability_score"] = avg_bankability
             logger.info("Added avg_bankability_score feature.")
         run_label = f"{run_label}_with_bankability"

@@ -4,15 +4,14 @@ from __future__ import annotations
 
 from datetime import date
 
-import pytest
+import pandas as pd
 
 from tamasha.timing.festival_calendar import (
+    compute_clash_feature,
     compute_festival_features,
     get_major_release_windows,
     is_festival_release,
-    compute_clash_feature,
 )
-import pandas as pd
 
 
 class TestFestivalCalendar:
@@ -55,11 +54,13 @@ class TestComputeFestivalFeatures:
     """Tests for compute_festival_features."""
 
     def test_returns_expected_columns(self):
-        df = pd.DataFrame({
-            "title": ["Movie A", "Movie B"],
-            "year": [2024, 2024],
-            "release_date": ["2024-10-31", "2024-02-15"],
-        })
+        df = pd.DataFrame(
+            {
+                "title": ["Movie A", "Movie B"],
+                "year": [2024, 2024],
+                "release_date": ["2024-10-31", "2024-02-15"],
+            }
+        )
         result = compute_festival_features(df, date_column="release_date", year_column="year")
         assert "is_festival_release" in result.columns
         assert "festival_name" in result.columns
@@ -70,17 +71,21 @@ class TestComputeClashFeature:
     """Tests for compute_clash_feature."""
 
     def test_clash_detected(self):
-        df = pd.DataFrame({
-            "title": ["Movie A", "Movie B"],
-            "release_date": ["2024-01-01", "2024-01-05"],
-        })
+        df = pd.DataFrame(
+            {
+                "title": ["Movie A", "Movie B"],
+                "release_date": ["2024-01-01", "2024-01-05"],
+            }
+        )
         result = compute_clash_feature(df, clash_window_days=7)
         assert bool(result["has_clash"].iloc[0]) is True
 
     def test_no_clash_when_far_apart(self):
-        df = pd.DataFrame({
-            "title": ["Movie A", "Movie B"],
-            "release_date": ["2024-01-01", "2024-02-01"],
-        })
+        df = pd.DataFrame(
+            {
+                "title": ["Movie A", "Movie B"],
+                "release_date": ["2024-01-01", "2024-02-01"],
+            }
+        )
         result = compute_clash_feature(df, clash_window_days=7)
         assert not result["has_clash"].any()

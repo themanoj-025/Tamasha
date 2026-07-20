@@ -17,13 +17,10 @@ The calendar uses approximate dates for movable festivals.
 from __future__ import annotations
 
 import logging
-from datetime import date, timedelta
+from datetime import date
 from typing import Optional
 
-import numpy as np
 import pandas as pd
-
-from tamasha.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -84,11 +81,7 @@ def get_major_release_windows(year: int) -> dict[str, date]:
     dict[str, date]
         ``{festival_name: approximate_date}``.
     """
-    return {
-        name: dt
-        for name in _FESTIVALS
-        if (dt := _get_festival_date(name, year)) is not None
-    }
+    return {name: dt for name in _FESTIVALS if (dt := _get_festival_date(name, year)) is not None}
 
 
 def is_festival_release(

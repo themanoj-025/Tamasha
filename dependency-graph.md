@@ -64,13 +64,20 @@ cleaning.py ──▶ pandas
 
 ```
 enrichment.py ──▶ pandas
-                 requests
+                 requests (sync _fetch_tmdb)
+                 httpx (async _fetch_tmdb_async, httpx.AsyncClient)
+                 asyncio
+                 tenacity (retry, wait_exponential_jitter, stop_after_attempt)
                  dotenv
                  json, os, time, pathlib
                  config
 ```
 
 **No imports from other tamasha modules.**
+
+**Note**: Contains BOTH synchronous (``requests``) and asynchronous (``httpx.AsyncClient``)
+code paths. The async path uses ``asyncio.Semaphore(8)`` to bound concurrency and
+tenacity for exponential backoff with jitter on all external calls.
 
 ### `tamasha.features.movie_features`
 
@@ -301,6 +308,7 @@ metric_cards.py ──▶ streamlit
 
 ```
 main.py ──▶ fastapi (FastAPI, CORSMiddleware, HTTPException)
+            prometheus_fastapi_instrumentator (Instrumentator)
             slowapi (Limiter, RateLimitExceeded, SlowAPIMiddleware)
             structlog
             tamasha.config (settings.API_KEY, settings.ALLOWED_ORIGINS, settings.RATE_LIMIT)
@@ -309,6 +317,11 @@ main.py ──▶ fastapi (FastAPI, CORSMiddleware, HTTPException)
             api.routers.network
             api.routers.model_info
 ```
+
+**Auth middleware**: X-API-Key header check on all routes except /health, /docs, /metrics.
+**Rate limiting**: slowapi 60 req/min with X-RateLimit-* response headers.
+**Request body limit**: 100KB via custom ASGI middleware (returns 413).
+**Request ID**: Every response includes X-Request-ID header via middleware.
 
 ### `api/routers/predict.py`
 
@@ -340,22 +353,31 @@ model_info.py ──▶ fastapi (APIRouter)
 
 ## `tests/` Dependencies
 
-| Test File | Tests Module(s) |
-|-----------|----------------|
-| `test_joining.py` | `tamasha.data.joining` |
-| `test_cleaning.py` | `tamasha.data.cleaning` |
-| `test_features.py` | `tamasha.features.movie_features` |
-| `test_model_selection.py` | `tamasha.models.model_selection` |
-| `test_bankability_score.py` | `tamasha.network.bankability_score` |
-| `test_chemistry_pairs.py` | `tamasha.network.chemistry_pairs` |
-| `test_festival_calendar.py` | `tamasha.timing.festival_calendar` |
-| `test_api.py` | `api.main`, `tamasha.predict` |
+| Test File | Tests Module(s) | Test Count |
+|-----------|----------------|:----------:|
+| `test_joining.py` | `tamasha.data.joining` | ~5 |
+| `test_cleaning.py` | `tamasha.data.cleaning` | ~8 |
+| `test_features.py` | `tamasha.features.movie_features` | ~6 |
+| `test_model_selection.py` | `tamasha.models.model_selection` | ~5 |
+| `test_bankability_score.py` | `tamasha.network.bankability_score` | ~4 |
+| `test_chemistry_pairs.py` | `tamasha.network.chemistry_pairs` | ~3 |
+| `test_festival_calendar.py` | `tamasha.timing.festival_calendar` | ~6 |
+| `test_festival_calendar_property.py` | `tamasha.timing.festival_calendar` (Hypothesis) | ~8 |
+| `test_api.py` | `api.main`, `tamasha.predict` | ~10 |
+| `test_api_contract.py` | `api.main`, `api.schemas` (schema validation) | ~10 |
+| `test_auth.py` | `api.main` (X-API-Key, rate limiting, CORS, body limits) | ~17 |
+| `test_predict_service.py` | `tamasha.predict` (PredictionService, concurrency) | ~15 |
+| `test_enrichment.py` | `tamasha.data.enrichment` (mocked HTTP) | ~12 |
+| `test_bankability_regression.py` | `tamasha.network.bankability_score` (vectorized) | ~2 |
+| `test_clash_detection_scale.py` | `tamasha.timing.festival_calendar` (10K-row scale) | ~2 |
+| `test_scatter_cv_consistency.py` | `tamasha.evaluation.metrics` (MAE consistency) | ~6 |
+| **Total** | | **141** |
 
 ---
 
 ## Circular Dependency Risk
 
-**None detected.** The dependency graph is a directed acyclic graph (DAG):
+**None detected.** The dependency graph remains a directed acyclic graph (DAG):
 
 ```
 config
@@ -387,7 +409,7 @@ config
 | `data/cleaning.py` | train_pipeline, test_cleaning.py | |
 | `data/enrichment.py` | train_pipeline | TMDb API changes affect sentiment + timing + poster stages |
 | `features/movie_features.py` | rating_model, boxoffice_model, predict, test_features | Feature count changes need model retraining |
-| `features/cast_crew_network.py` | (standalone, only used by network analysis) | |
+| `features/cast_crew_network.py` | (standalone, `build_collaboration_graph()` and `get_top_collaborators()` removed as dead code) | |
 | `models/model_selection.py` | **ALL model training**, predict, train_pipeline | Core — adding models, changing CV logic |
 | `models/rating_model.py` | train_pipeline | |
 | `models/boxoffice_model.py` | train_pipeline | |
@@ -398,7 +420,7 @@ config
 | `timing/festival_calendar.py` | train_pipeline, test_festival_calendar, _3_Industry_Trends | |
 | `timing/release_scenario.py` | _1_Predict_a_Release | |
 | `evaluation/metrics.py` | train_pipeline | |
-| `predict.py` | **ALL app pages + ALL API routers** | **HIGHEST IMPACT** after config |
+| `predict.py` (PredictionService) | **ALL app pages + ALL API routers** | **HIGHEST IMPACT** after config |
 | `train_pipeline.py` | (no one imports it) | Only run as script/`make train` |
 | `app/` pages | (no one imports them except streamlit_app.py) | |
 | `api/` routers | api/main.py | |

@@ -13,14 +13,14 @@ from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
 import structlog
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from prometheus_fastapi_instrumentator import Instrumentator
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 from slowapi.util import get_remote_address
-from prometheus_fastapi_instrumentator import Instrumentator
 
 from tamasha.config import settings
 from tamasha.predict import PredictionService
@@ -32,8 +32,7 @@ structlog.configure(
         structlog.contextvars.merge_contextvars,
         structlog.processors.add_log_level,
         structlog.processors.TimeStamper(fmt="iso"),
-        structlog.dev.ConsoleRenderer() if __debug__
-        else structlog.processors.JSONRenderer(),
+        structlog.dev.ConsoleRenderer() if __debug__ else structlog.processors.JSONRenderer(),
     ],
     wrapper_class=structlog.make_filtering_bound_logger(logging.INFO),
     context_class=dict,
@@ -45,6 +44,7 @@ logger: structlog.stdlib.BoundLogger = structlog.get_logger()  # type: ignore[as
 
 
 # ── App factory ──────────────────────────────────────────────────────
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
@@ -59,6 +59,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
 
 # ── Rate limiter ─────────────────────────────────────────────────────
+
 
 def _rate_limit_key(request) -> str:
     """Use API key as the rate-limit identifier if present; fall back to IP."""
@@ -123,16 +124,21 @@ async def limit_request_size(request, call_next):
         body_size = 0
     if body_size > _MAX_BODY_BYTES:
         request_id = str(uuid.uuid4())[:8]
-        logger.warning("request_too_large", path=request.url.path, size=body_size, request_id=request_id)
+        logger.warning(
+            "request_too_large", path=request.url.path, size=body_size, request_id=request_id
+        )
         return JSONResponse(
             status_code=413,
-            content={"detail": f"Request body too large ({body_size} bytes). Maximum allowed is {_MAX_BODY_BYTES} bytes."},
+            content={
+                "detail": f"Request body too large ({body_size} bytes). Maximum allowed is {_MAX_BODY_BYTES} bytes."
+            },
             headers={"X-Request-ID": request_id},
         )
     return await call_next(request)
 
 
 # ── Request‑ID middleware ─────────────────────────────────────────────
+
 
 @app.middleware("http")
 async def add_request_id(request, call_next):
@@ -146,9 +152,7 @@ async def add_request_id(request, call_next):
 
 # ── CORS — restricted in production ───────────────────────────────────
 
-_allowed_origins = [
-    o.strip() for o in settings.ALLOWED_ORIGINS.split(",") if o.strip()
-]
+_allowed_origins = [o.strip() for o in settings.ALLOWED_ORIGINS.split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_allowed_origins,
@@ -166,6 +170,7 @@ app.add_middleware(SlowAPIMiddleware)
 
 # ── Dependency injection helper ──────────────────────────────────────
 
+
 def get_prediction_service() -> PredictionService:
     """FastAPI dependency — yields the singleton from ``app.state``.
 
@@ -181,6 +186,7 @@ def get_prediction_service() -> PredictionService:
 
 
 # ── Health ───────────────────────────────────────────────────────────
+
 
 @app.get("/health")
 async def health(
@@ -198,7 +204,9 @@ async def health(
     if not svc._boxoffice_feature_cols:
         checks["boxoffice_features"] = "missing"
     for failure in svc.integrity_failures:
-        checks[failure["artifact"]] = f"integrity_failed (expected {failure['expected'][:8]}…, got {failure['actual'][:8]}…)"
+        checks[
+            failure["artifact"]
+        ] = f"integrity_failed (expected {failure['expected'][:8]}…, got {failure['actual'][:8]}…)"
     return {
         "status": "ok" if healthy else "degraded",
         "version": "0.1.0",
@@ -209,7 +217,7 @@ async def health(
 
 # ── Routers ──────────────────────────────────────────────────────────
 
-from api.routers import predict, network, model_info  # noqa: E402
+from api.routers import model_info, network, predict  # noqa: E402
 
 app.include_router(predict.router)
 app.include_router(network.router)

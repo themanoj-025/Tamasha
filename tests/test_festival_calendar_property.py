@@ -11,12 +11,10 @@ from __future__ import annotations
 from datetime import date, timedelta
 
 import pandas as pd
-import pytest
-from hypothesis import assume, given, strategies as st
-from hypothesis.extra.pandas import data_frames, column
+from hypothesis import assume, given
+from hypothesis import strategies as st
 
 from tamasha.timing.festival_calendar import compute_clash_feature
-
 
 # ── Strategy: sorted dates with gaps ──────────────────────────────────
 
@@ -27,6 +25,7 @@ _date_strategy = st.dates(
 
 
 # ── Properties for compute_clash_feature ─────────────────────────────
+
 
 class TestClashDetectionProperties:
     """Property-based tests for the O(n²) clash detection."""
@@ -42,10 +41,12 @@ class TestClashDetectionProperties:
     )
     def test_clash_is_symmetric(self, dates: list[date], window_days: int) -> None:
         """If movie A clashes with movie B, movie B must also clash with movie A."""
-        df = pd.DataFrame({
-            "title": [f"Movie {i}" for i in range(len(dates))],
-            "release_date": [d.isoformat() for d in dates],
-        })
+        df = pd.DataFrame(
+            {
+                "title": [f"Movie {i}" for i in range(len(dates))],
+                "release_date": [d.isoformat() for d in dates],
+            }
+        )
         result = compute_clash_feature(df, clash_window_days=window_days)
         clashes = result[result["has_clash"]].index.tolist()
 
@@ -54,8 +55,12 @@ class TestClashDetectionProperties:
             for j in range(i + 1, len(dates)):
                 diff = abs((dates[i] - dates[j]).days)
                 if 0 < diff <= window_days:
-                    assert i in clashes, f"{dates[i]} and {dates[j]} are {diff} days apart but movie {i} not flagged"
-                    assert j in clashes, f"{dates[i]} and {dates[j]} are {diff} days apart but movie {j} not flagged"
+                    assert (
+                        i in clashes
+                    ), f"{dates[i]} and {dates[j]} are {diff} days apart but movie {i} not flagged"
+                    assert (
+                        j in clashes
+                    ), f"{dates[i]} and {dates[j]} are {diff} days apart but movie {j} not flagged"
 
     @given(
         dates=st.lists(
@@ -70,10 +75,12 @@ class TestClashDetectionProperties:
         """Shuffling rows must produce the same clash flags (by movie identity)."""
         import random
 
-        df = pd.DataFrame({
-            "title": [f"Movie {i}" for i in range(len(dates))],
-            "release_date": [d.isoformat() for d in dates],
-        })
+        df = pd.DataFrame(
+            {
+                "title": [f"Movie {i}" for i in range(len(dates))],
+                "release_date": [d.isoformat() for d in dates],
+            }
+        )
         result_original = compute_clash_feature(df, clash_window_days=window_days)
 
         # Shuffle and recompute
@@ -83,8 +90,13 @@ class TestClashDetectionProperties:
         result_shuffled = compute_clash_feature(df_shuffled, clash_window_days=window_days)
 
         # Map back to original indices via movie title
-        original_clashes = set(df.iloc[i]["title"] for i in result_original[result_original["has_clash"]].index)
-        shuffled_clashes = set(df_shuffled.iloc[i]["title"] for i in result_shuffled[result_shuffled["has_clash"]].index)
+        original_clashes = set(
+            df.iloc[i]["title"] for i in result_original[result_original["has_clash"]].index
+        )
+        shuffled_clashes = set(
+            df_shuffled.iloc[i]["title"]
+            for i in result_shuffled[result_shuffled["has_clash"]].index
+        )
 
         assert original_clashes == shuffled_clashes, (
             f"Clash sets differ after shuffle.\n"
@@ -101,10 +113,12 @@ class TestClashDetectionProperties:
         d1 = base_date
         d2 = base_date + timedelta(days=window_days)
 
-        df = pd.DataFrame({
-            "title": ["Movie A", "Movie B"],
-            "release_date": [d1.isoformat(), d2.isoformat()],
-        })
+        df = pd.DataFrame(
+            {
+                "title": ["Movie A", "Movie B"],
+                "release_date": [d1.isoformat(), d2.isoformat()],
+            }
+        )
         result = compute_clash_feature(df, clash_window_days=window_days)
 
         assert result["has_clash"].all(), (
@@ -123,10 +137,12 @@ class TestClashDetectionProperties:
 
         assume(d2.year <= 2025)  # stay within valid range
 
-        df = pd.DataFrame({
-            "title": ["Movie A", "Movie B"],
-            "release_date": [d1.isoformat(), d2.isoformat()],
-        })
+        df = pd.DataFrame(
+            {
+                "title": ["Movie A", "Movie B"],
+                "release_date": [d1.isoformat(), d2.isoformat()],
+            }
+        )
         result = compute_clash_feature(df, clash_window_days=window_days)
 
         assert not result["has_clash"].any(), (
@@ -150,22 +166,26 @@ class TestClashDetectionProperties:
             diff = (sorted_dates[i + 1] - sorted_dates[i]).days
             assume(diff > 14)
 
-        df = pd.DataFrame({
-            "title": [f"Movie {i}" for i in range(len(dates))],
-            "release_date": [d.isoformat() for d in sorted_dates],
-        })
+        df = pd.DataFrame(
+            {
+                "title": [f"Movie {i}" for i in range(len(dates))],
+                "release_date": [d.isoformat() for d in sorted_dates],
+            }
+        )
         result = compute_clash_feature(df, clash_window_days=7)
 
-        assert not result["has_clash"].any(), (
-            f"All {len(dates)} movies are >14 days apart — no clashes expected at window=7"
-        )
+        assert not result[
+            "has_clash"
+        ].any(), f"All {len(dates)} movies are >14 days apart — no clashes expected at window=7"
 
     def test_single_movie_no_clash(self) -> None:
         """Single movie should never clash."""
-        df = pd.DataFrame({
-            "title": ["Only Movie"],
-            "release_date": ["2024-01-01"],
-        })
+        df = pd.DataFrame(
+            {
+                "title": ["Only Movie"],
+                "release_date": ["2024-01-01"],
+            }
+        )
         result = compute_clash_feature(df, clash_window_days=7)
         assert not result["has_clash"].iloc[0]
 
@@ -185,14 +205,14 @@ class TestClashDetectionProperties:
         ),
         window_days=st.integers(min_value=1, max_value=30),
     )
-    def test_clash_count_within_bounds(
-        self, dates: list[date], window_days: int
-    ) -> None:
+    def test_clash_count_within_bounds(self, dates: list[date], window_days: int) -> None:
         """Number of clashing movies can't exceed total movies."""
-        df = pd.DataFrame({
-            "title": [f"Movie {i}" for i in range(len(dates))],
-            "release_date": [d.isoformat() for d in dates],
-        })
+        df = pd.DataFrame(
+            {
+                "title": [f"Movie {i}" for i in range(len(dates))],
+                "release_date": [d.isoformat() for d in dates],
+            }
+        )
         result = compute_clash_feature(df, clash_window_days=window_days)
         n_clash = result["has_clash"].sum()
         assert 0 <= n_clash <= len(dates)

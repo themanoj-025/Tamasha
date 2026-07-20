@@ -6,8 +6,8 @@ from typing import Any, Optional
 
 from pydantic import BaseModel, Field
 
-
 # ── Predict Rating ────────────────────────────────────────────────────
+
 
 class PredictRatingRequest(BaseModel):
     """Request body for rating prediction."""
@@ -30,6 +30,7 @@ class PredictRatingResponse(BaseModel):
 
 
 # ── Predict Box Office ────────────────────────────────────────────────
+
 
 class PredictBoxOfficeRequest(BaseModel):
     """Request body for box-office prediction."""
@@ -55,6 +56,7 @@ class PredictBoxOfficeResponse(BaseModel):
 
 # ── Actor Info ────────────────────────────────────────────────────────
 
+
 class ActorInfoResponse(BaseModel):
     """Response body for actor information."""
 
@@ -68,6 +70,7 @@ class ActorInfoResponse(BaseModel):
 
 
 # ── Model Info ────────────────────────────────────────────────────────
+
 
 class ModelInfoResponse(BaseModel):
     """Response body for model information."""

@@ -7,8 +7,6 @@ be picked correctly.
 from __future__ import annotations
 
 import numpy as np
-import pandas as pd
-import pytest
 from sklearn.linear_model import LinearRegression
 
 from tamasha.models.model_selection import train_and_compare
@@ -31,7 +29,12 @@ def test_mae_selection_correct():
     }
 
     comparison, best_name, best_model = train_and_compare(
-        X, y, task_name="test", models=models, cv_folds=3, metric="MAE",
+        X,
+        y,
+        task_name="test",
+        models=models,
+        cv_folds=3,
+        metric="MAE",
     )
 
     # Both models should perform reasonably
@@ -47,7 +50,12 @@ def test_comparison_csv_contains_expected_columns():
 
     models = {"LinearRegression": LinearRegression()}
     comparison, best_name, best_model = train_and_compare(
-        X, y, task_name="test_cols", models=models, cv_folds=2, metric="MAE",
+        X,
+        y,
+        task_name="test_cols",
+        models=models,
+        cv_folds=2,
+        metric="MAE",
     )
 
     expected_cols = ["model", "MAE", "RMSE", "R2", "training_time_s"]
@@ -63,7 +71,12 @@ def test_best_model_refit_on_full_data():
 
     models = {"LinearRegression": LinearRegression()}
     _, _, best_model = train_and_compare(
-        X, y, task_name="test_refit", models=models, cv_folds=2, metric="MAE",
+        X,
+        y,
+        task_name="test_refit",
+        models=models,
+        cv_folds=2,
+        metric="MAE",
     )
 
     # After refit, model should have coefficients

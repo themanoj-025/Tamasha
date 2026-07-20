@@ -6,9 +6,7 @@ in the test data.
 
 from __future__ import annotations
 
-import numpy as np
 import pandas as pd
-import pytest
 
 from tamasha.network.chemistry_pairs import detect_chemistry_pairs
 
@@ -22,8 +20,11 @@ def test_known_chemistry_pair_detected():
     df = pd.DataFrame(
         {
             "title": [
-                "Joint Hit 1", "Joint Hit 2", "Joint Hit 3",
-                "Solo X", "Solo Y",
+                "Joint Hit 1",
+                "Joint Hit 2",
+                "Joint Hit 3",
+                "Solo X",
+                "Solo Y",
             ],
             "cast": [
                 "Actor X, Actor Y",

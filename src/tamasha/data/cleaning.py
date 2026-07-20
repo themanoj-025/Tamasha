@@ -106,6 +106,7 @@ def parse_currency_column(
 
 # ── Inflation adjustment ──────────────────────────────────────────────
 
+
 def _india_cpi_deflator(year: int) -> float:
     """Return a rough CPI-based deflator factor relative to 2024.
 
@@ -155,9 +156,7 @@ def inflation_adjust(
     years = pd.to_numeric(df[year_column], errors="coerce")
     values = pd.to_numeric(df[value_column], errors="coerce")
 
-    deflator = years.apply(
-        lambda y: 1.0 + 0.06 * (base_year - y) if pd.notna(y) else np.nan
-    )
+    deflator = years.apply(lambda y: 1.0 + 0.06 * (base_year - y) if pd.notna(y) else np.nan)
     adjusted = values / deflator
     adjusted.name = f"{value_column}_adj{base_year}"
     logger.info(
@@ -169,6 +168,7 @@ def inflation_adjust(
 
 
 # ── General cleaning ──────────────────────────────────────────────────
+
 
 def clean_joined_dataset(df: pd.DataFrame) -> pd.DataFrame:
     """Apply standard cleaning to the joined dataset.

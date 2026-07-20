@@ -19,13 +19,17 @@ from sklearn.preprocessing import LabelEncoder
 
 from tamasha.config import settings
 
-
 # ── Dummy artifacts for PredictionService / API tests ────────────────
 
 _FAKE_RATING_COLS = [
-    "genre_Action", "genre_Drama", "genre_Romance",
-    "director_encoded", "cast_size", "runtime_minutes",
-    "budget_inr", "decade_2020",
+    "genre_Action",
+    "genre_Drama",
+    "genre_Romance",
+    "director_encoded",
+    "cast_size",
+    "runtime_minutes",
+    "budget_inr",
+    "decade_2020",
 ]
 
 _FAKE_BOX_COLS = _FAKE_RATING_COLS + ["avg_bankability_score"]
@@ -57,20 +61,24 @@ def install_dummy_artifacts(
     # Bankability scores (optional, for family of tests that need it)
     if reports_dir is not None:
         reports_dir.mkdir(parents=True, exist_ok=True)
-        bank_df = pd.DataFrame({
-            "actor": ["Actor Known", "Actor AlsoKnown", "Shah Rukh Khan"],
-            "type": ["actor", "actor", "actor"],
-            "bankability_score": [1.5, 0.8, 1.2],
-            "film_count": [5, 3, 10],
-        })
+        bank_df = pd.DataFrame(
+            {
+                "actor": ["Actor Known", "Actor AlsoKnown", "Shah Rukh Khan"],
+                "type": ["actor", "actor", "actor"],
+                "bankability_score": [1.5, 0.8, 1.2],
+                "film_count": [5, 3, 10],
+            }
+        )
         bank_df.to_csv(reports_dir / "bankability_scores.csv", index=False)
 
-        chem_df = pd.DataFrame({
-            "actor_1": ["Actor Known", "Actor Known"],
-            "actor_2": ["Actor AlsoKnown", "Shah Rukh Khan"],
-            "joint_films": [2, 3],
-            "uplift": [0.05, 0.08],
-        })
+        chem_df = pd.DataFrame(
+            {
+                "actor_1": ["Actor Known", "Actor Known"],
+                "actor_2": ["Actor AlsoKnown", "Shah Rukh Khan"],
+                "joint_films": [2, 3],
+                "uplift": [0.05, 0.08],
+            }
+        )
         chem_df.to_csv(reports_dir / "chemistry_pairs.csv", index=False)
 
 
@@ -87,6 +95,7 @@ def _fit_dummy(cols: list[str], constant: float, path: Path) -> None:
 # ``TestClient(app)``-based tests (test_api_contract.py, test_api.py)
 # always find valid model files in the default settings paths.
 
+
 def pytest_configure() -> None:
     """One-time hook: install dummy artifacts in the default models/reports dirs.
 
@@ -99,6 +108,7 @@ def pytest_configure() -> None:
 
 
 # ── Function-scoped fixtures for PredictionService tests ─────────────
+
 
 @pytest.fixture
 def dummy_models_dir(tmp_path: Path) -> Path:
@@ -120,6 +130,7 @@ def dummy_svc(dummy_models_dir: Path):
 
 # ── Plain-data fixtures (no disk I/O) ────────────────────────────────
 
+
 @pytest.fixture
 def sample_movie_df() -> pd.DataFrame:
     """A small synthetic movie DataFrame for testing."""
@@ -127,12 +138,21 @@ def sample_movie_df() -> pd.DataFrame:
         {
             "title": ["Movie A", "Movie B", "Movie C", "Movie D", "Movie E"],
             "year": [2020, 2021, 2022, 2020, 2023],
-            "genre": ["Action, Drama", "Comedy, Romance", "Drama, Thriller",
-                      "Action, Comedy", "Romance, Drama"],
-            "cast": ["Actor X, Actor Y", "Actor Y, Actor Z", "Actor X, Actor Z",
-                     "Actor W, Actor X", "Actor Y, Actor W"],
-            "director": ["Director A", "Director B", "Director A",
-                         "Director C", "Director B"],
+            "genre": [
+                "Action, Drama",
+                "Comedy, Romance",
+                "Drama, Thriller",
+                "Action, Comedy",
+                "Romance, Drama",
+            ],
+            "cast": [
+                "Actor X, Actor Y",
+                "Actor Y, Actor Z",
+                "Actor X, Actor Z",
+                "Actor W, Actor X",
+                "Actor Y, Actor W",
+            ],
+            "director": ["Director A", "Director B", "Director A", "Director C", "Director B"],
             "rating": [7.5, 6.8, 8.2, 6.0, 7.9],
             "budget_inr": [50e6, 30e6, 80e6, 20e6, 60e6],
             "collection_inr": [150e6, 80e6, 300e6, 50e6, 200e6],

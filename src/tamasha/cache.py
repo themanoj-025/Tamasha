@@ -56,7 +56,9 @@ def _make_key(payload: dict[str, Any], model_version: str = "") -> str:
     return hashlib.sha256(key_input.encode()).hexdigest()
 
 
-def get_cached_prediction(payload: dict[str, Any], model_version: str = "") -> Optional[dict[str, Any]]:
+def get_cached_prediction(
+    payload: dict[str, Any], model_version: str = ""
+) -> Optional[dict[str, Any]]:
     """Look up a cached prediction result.
 
     Parameters
@@ -106,7 +108,9 @@ def set_cached_prediction(
     logger.debug("Cache SET for key=%s (ttl=%ds)", key[:12], ttl)
 
 
-def get_cached_explanation(payload: dict[str, Any], model_version: str = "") -> Optional[dict[str, Any]]:
+def get_cached_explanation(
+    payload: dict[str, Any], model_version: str = ""
+) -> Optional[dict[str, Any]]:
     """Look up a cached LLM explanation (longer TTL)."""
     cache = _get_cache()
     key = f"explain:{_make_key(payload, model_version)}"
@@ -123,6 +127,3 @@ def set_cached_explanation(
     cache = _get_cache()
     key = f"explain:{_make_key(payload, model_version)}"
     cache.set(key, result, expire=ttl)
-
-
-

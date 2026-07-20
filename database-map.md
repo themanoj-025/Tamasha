@@ -197,8 +197,11 @@ All have the same schema:
 | `R2_std` | `float` | R² standard deviation |
 | `training_time_s` | `float` | Training time in seconds |
 
-The comparison CSVs now include a boolean `tuned` column indicating whether the model
-was optimized via RandomizedSearchCV before the CV comparison.
+The comparison CSVs include a boolean `tuned` column indicating whether the model
+was optimized via RandomizedSearchCV (n_iter=15) before the CV comparison.
+
+Scatter plots use `cross_val_predict()` for genuine out-of-fold predictions that
+match the reported CV metrics (verified by a dedicated consistency assertion test).
 
 ### Files:
 

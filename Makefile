@@ -15,8 +15,8 @@ install:  ## Install dependencies (choose extras with EXTRAS, e.g. EXTRAS=xgboos
 train:  ## Run the full training pipeline (data -> features -> model comparison -> best model selection)
 	python -m tamasha.train_pipeline
 
-test:  ## Run all tests with coverage
-	python -m pytest tests/ -v --cov=src/tamasha --cov-report=term-missing
+test:  ## Run all tests with coverage (70% threshold)
+	python -m pytest tests/ -v --cov=src/tamasha --cov=api --cov-config=pyproject.toml --cov-report=term-missing --cov-fail-under=70
 
 lint:  ## Run pre-commit checks on all files
 	pre-commit run --all-files

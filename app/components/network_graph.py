@@ -6,7 +6,7 @@ cast/crew collaboration network.
 
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Optional
 
 import networkx as nx
 import pandas as pd
@@ -70,14 +70,8 @@ def render_force_directed_graph(
         node_size.append(10 + score * 40)
 
         # Color
-        is_highlighted = (
-            highlight_actor is not None
-            and node.lower() == highlight_actor.lower()
-        )
-        is_neighbor = (
-            highlight_actor is not None
-            and G.has_edge(node, highlight_actor)
-        )
+        is_highlighted = highlight_actor is not None and node.lower() == highlight_actor.lower()
+        is_neighbor = highlight_actor is not None and G.has_edge(node, highlight_actor)
         if is_highlighted:
             node_color.append("#ff6b6b")
         elif is_neighbor:
@@ -88,9 +82,7 @@ def render_force_directed_graph(
         # Hover
         node_text.append(node)
         node_hover.append(
-            f"<b>{node}</b><br>"
-            f"Bankability: {score:.3f}<br>"
-            f"Connections: {G.degree(node)}"
+            f"<b>{node}</b><br>" f"Bankability: {score:.3f}<br>" f"Connections: {G.degree(node)}"
         )
 
     node_trace = go.Scatter(

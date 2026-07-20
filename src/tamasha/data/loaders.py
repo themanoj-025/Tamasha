@@ -114,8 +114,7 @@ def load_imdb_india(path: Optional[Path] = None) -> pd.DataFrame:
     path = path or settings.DATA_RAW / "IMDb Movies India.csv"
     if not path.exists():
         raise FileNotFoundError(
-            f"IMDB India Movies CSV not found at {path}. "
-            f"Please download from Kaggle first."
+            f"IMDB India Movies CSV not found at {path}. " f"Please download from Kaggle first."
         )
     df = pd.read_csv(path, encoding="latin1")
     logger.info("Loaded IMDB India: %s rows x %s cols", df.shape[0], df.shape[1])
@@ -137,9 +136,7 @@ def load_imdb_india(path: Optional[Path] = None) -> pd.DataFrame:
     # Build a unified cast column from Actor 1/2/3
     cast_cols = [c for c in ["actor_1", "actor_2", "actor_3"] if c in df.columns]
     df["cast"] = df[cast_cols].apply(
-        lambda row: ", ".join(
-            c for c in row if pd.notna(c) and str(c).strip().lower() != "nan"
-        ),
+        lambda row: ", ".join(c for c in row if pd.notna(c) and str(c).strip().lower() != "nan"),
         axis=1,
     )
     df = df.drop(columns=cast_cols)
@@ -179,8 +176,7 @@ def load_bollywood_boxoffice(path: Optional[Path] = None) -> pd.DataFrame:
     path = path or settings.DATA_RAW / "Top 1000 Bollywood Movies and their boxoffice.csv"
     if not path.exists():
         raise FileNotFoundError(
-            f"Bollywood Box Office CSV not found at {path}. "
-            f"Please download from Kaggle first."
+            f"Bollywood Box Office CSV not found at {path}. " f"Please download from Kaggle first."
         )
     df = pd.read_csv(path)
     logger.info("Loaded Bollywood Box Office: %s rows x %s cols", df.shape[0], df.shape[1])

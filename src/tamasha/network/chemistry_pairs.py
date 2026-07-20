@@ -12,9 +12,6 @@ from typing import Optional
 
 import numpy as np
 import pandas as pd
-from scipy import stats
-
-from tamasha.network.bankability_score import compute_bankability_scores
 
 logger = logging.getLogger(__name__)
 
@@ -76,12 +73,7 @@ def detect_chemistry_pairs(
     df["_performance"] = performance
 
     # Parse cast lists
-    df["_cast_list"] = (
-        df[cast_column]
-        .fillna("")
-        .astype(str)
-        .str.split(r"\s*,\s*")
-    )
+    df["_cast_list"] = df[cast_column].fillna("").astype(str).str.split(r"\s*,\s*")
 
     # Build co-appearance dictionary
     pair_films: dict[tuple[str, str], list[float]] = {}

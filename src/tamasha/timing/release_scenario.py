@@ -17,8 +17,6 @@ from typing import Any, Optional
 import numpy as np
 import pandas as pd
 
-from tamasha.features.movie_features import build_feature_matrix
-
 logger = logging.getLogger(__name__)
 
 
@@ -191,7 +189,10 @@ def simulate_scenarios(
 
     for scenario in festival_scenarios:
         features = _build_feature_vector_from_profile(
-            profile, feature_columns, bankability_map, director_encoder,
+            profile,
+            feature_columns,
+            bankability_map,
+            director_encoder,
         )
         pred = float(model.predict(features)[0])
 

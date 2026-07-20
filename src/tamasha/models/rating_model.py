@@ -15,11 +15,7 @@ import pandas as pd
 
 from tamasha.config import settings
 from tamasha.features.movie_features import build_feature_matrix
-from tamasha.models.model_selection import (
-    get_all_models,
-    save_model,
-    train_and_compare,
-)
+from tamasha.models.model_selection import get_all_models, save_model, train_and_compare
 
 logger = logging.getLogger(__name__)
 
@@ -72,8 +68,7 @@ def train_rating_model(
         candidates = [c for c in df.columns if "rating" in c.lower()]
         if not candidates:
             raise ValueError(
-                "No rating column found in DataFrame. "
-                "Please specify ``rating_column``."
+                "No rating column found in DataFrame. " "Please specify ``rating_column``."
             )
         rating_column = candidates[0]
         logger.info("Auto-detected rating column: %s", rating_column)

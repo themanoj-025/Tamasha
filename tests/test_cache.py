@@ -8,10 +8,6 @@ Verifies:
 
 from __future__ import annotations
 
-import hashlib
-import json
-from unittest.mock import patch, MagicMock
-
 from tamasha.cache import _make_key, get_cached_prediction, set_cached_prediction
 
 

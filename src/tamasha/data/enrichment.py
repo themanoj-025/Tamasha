@@ -26,15 +26,10 @@ from pathlib import Path
 from typing import Any, Optional
 
 import httpx
-import requests
 import pandas as pd
+import requests
 from dotenv import load_dotenv
-from tenacity import (
-    retry,
-    stop_after_attempt,
-    wait_exponential_jitter,
-    retry_if_exception_type,
-)
+from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential_jitter
 
 from tamasha.config import settings
 
@@ -112,11 +107,13 @@ def _build_params(title: str, year: Optional[int] = None) -> dict[str, Any]:
 
 
 @retry(
-    retry=retry_if_exception_type((
-        requests.Timeout,
-        requests.ConnectionError,
-        TMDbServerError,
-    )),
+    retry=retry_if_exception_type(
+        (
+            requests.Timeout,
+            requests.ConnectionError,
+            TMDbServerError,
+        )
+    ),
     wait=wait_exponential_jitter(initial=1, max=20),
     stop=stop_after_attempt(4),
     reraise=True,
@@ -206,7 +203,9 @@ def _search_tmdb(title: str, year: Optional[int] = None) -> Optional[dict[str, A
 # ── Public API ────────────────────────────────────────────────────────
 
 
-def get_movie_data(title: str, year: Optional[int] = None, force: bool = False) -> Optional[dict[str, Any]]:
+def get_movie_data(
+    title: str, year: Optional[int] = None, force: bool = False
+) -> Optional[dict[str, Any]]:
     """Get plot summary, release date, and poster path for a movie.
 
     Results are cached locally.  Subsequent calls for the same ``(title, year)``
@@ -321,9 +320,19 @@ def enrich_dataset(
     logger.info("=" * 60)
     logger.info("TMDb Enrichment Complete")
     logger.info("  Movies attempted:   %d", total)
-    logger.info("  Plot coverage:      %.1f%% (%d with plot)", plot_coverage, sum(1 for p in plots if p.strip()))
-    logger.info("  Date coverage:      %.1f%% (%d with date)", date_coverage, sum(1 for d in dates if d.strip()))
-    logger.info("  Overall matches:    %.1f%% (%d/%d)", match_count / total * 100, match_count, total)
+    logger.info(
+        "  Plot coverage:      %.1f%% (%d with plot)",
+        plot_coverage,
+        sum(1 for p in plots if p.strip()),
+    )
+    logger.info(
+        "  Date coverage:      %.1f%% (%d with date)",
+        date_coverage,
+        sum(1 for d in dates if d.strip()),
+    )
+    logger.info(
+        "  Overall matches:    %.1f%% (%d/%d)", match_count / total * 100, match_count, total
+    )
     logger.info("=" * 60)
 
     coverage = {
@@ -339,12 +348,15 @@ def enrich_dataset(
 
 # ── Async fetch (httpx.AsyncClient + tenacity async) ──────────────────
 
+
 @retry(
-    retry=retry_if_exception_type((
-        httpx.TimeoutException,
-        httpx.ConnectError,
-        TMDbServerError,
-    )),
+    retry=retry_if_exception_type(
+        (
+            httpx.TimeoutException,
+            httpx.ConnectError,
+            TMDbServerError,
+        )
+    ),
     wait=wait_exponential_jitter(initial=1, max=20),
     stop=stop_after_attempt(4),
     reraise=True,
@@ -435,7 +447,9 @@ async def _enrich_async(
     sem = asyncio.Semaphore(concurrency)
 
     async def _fetch_one(i: int) -> tuple[int, str, str]:
-        cache_key = f"{titles[i].strip().lower()}|{years[i]}" if years[i] else titles[i].strip().lower()
+        cache_key = (
+            f"{titles[i].strip().lower()}|{years[i]}" if years[i] else titles[i].strip().lower()
+        )
         if cache_key in cache:
             data = cache[cache_key]
             has_plot = bool(data and data.get("overview", "").strip())
@@ -535,7 +549,9 @@ def enrich_dataset_async(
         else:
             years_list.append(None)
 
-    logger.info("Enriching %d movies from TMDb (async httpx, concurrency=%d)...", total, concurrency)
+    logger.info(
+        "Enriching %d movies from TMDb (async httpx, concurrency=%d)...", total, concurrency
+    )
 
     # Run the async enrichment — asyncio.run() bridges sync→async
     results = asyncio.run(_enrich_async(titles, years_list, _CACHE, concurrency))
@@ -564,9 +580,19 @@ def enrich_dataset_async(
     logger.info("=" * 60)
     logger.info("TMDb Enrichment Complete (async httpx)")
     logger.info("  Movies attempted:   %d", total)
-    logger.info("  Plot coverage:      %.1f%% (%d with plot)", plot_coverage, sum(1 for p in plots if p.strip()))
-    logger.info("  Date coverage:      %.1f%% (%d with date)", date_coverage, sum(1 for d in dates if d.strip()))
-    logger.info("  Overall matches:    %.1f%% (%d/%d)", match_count / total * 100, match_count, total)
+    logger.info(
+        "  Plot coverage:      %.1f%% (%d with plot)",
+        plot_coverage,
+        sum(1 for p in plots if p.strip()),
+    )
+    logger.info(
+        "  Date coverage:      %.1f%% (%d with date)",
+        date_coverage,
+        sum(1 for d in dates if d.strip()),
+    )
+    logger.info(
+        "  Overall matches:    %.1f%% (%d/%d)", match_count / total * 100, match_count, total
+    )
     logger.info("=" * 60)
 
     coverage = {

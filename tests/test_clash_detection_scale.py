@@ -43,10 +43,12 @@ class TestClashDetectionScale:
             else:
                 dates.append(base + timedelta(days=random.randint(0, 3650)))
 
-        df = pd.DataFrame({
-            "title": [f"Movie {i}" for i in range(len(dates))],
-            "release_date": [d.isoformat() for d in dates],
-        })
+        df = pd.DataFrame(
+            {
+                "title": [f"Movie {i}" for i in range(len(dates))],
+                "release_date": [d.isoformat() for d in dates],
+            }
+        )
 
         start = time.perf_counter()
         result = compute_clash_feature(df, clash_window_days=7)
@@ -68,6 +70,6 @@ class TestClashDetectionScale:
         if len(dup_dates) >= 2:
             first_dup_date = dup_dates.iloc[0]
             same_day = result[dates_series == first_dup_date]
-            assert same_day["has_clash"].all(), (
-                f"Movies on {first_dup_date.date()} should all be flagged as clashing"
-            )
+            assert same_day[
+                "has_clash"
+            ].all(), f"Movies on {first_dup_date.date()} should all be flagged as clashing"

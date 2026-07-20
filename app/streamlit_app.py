@@ -40,6 +40,7 @@ if css_path.exists():
 # ── Ensure NLTK VADER data is available ──────────────────────────────
 try:
     import nltk
+
     nltk.download("vader_lexicon", quiet=True)
 except Exception:
     pass
@@ -61,7 +62,9 @@ st.sidebar.markdown(
 # Animated status indicator
 healthy = _svc.healthy
 dot_color = "#4ade80" if healthy else "#f87171"
-status_text = "Models loaded &mdash; ready" if healthy else "Models not trained &mdash; run: make train"
+status_text = (
+    "Models loaded &mdash; ready" if healthy else "Models not trained &mdash; run: make train"
+)
 st.sidebar.markdown(
     f"""
     <div class="sidebar-status">
@@ -106,13 +109,17 @@ st.sidebar.markdown(
 # ── Page routing ──────────────────────────────────────────────────────
 if page == "🔮 Predict a Release":
     from app.pages._1_Predict_a_Release import show as show_page1
+
     show_page1()
 elif page == "⭐ Star Network Explorer":
     from app.pages._2_Star_Network_Explorer import show as show_page2
+
     show_page2()
 elif page == "📊 Industry Trends":
     from app.pages._3_Industry_Trends import show as show_page3
+
     show_page3()
 elif page == "📈 Model Performance":
     from app.pages._4_Model_Performance import show as show_page4
+
     show_page4()

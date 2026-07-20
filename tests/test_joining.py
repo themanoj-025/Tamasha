@@ -2,9 +2,7 @@
 
 from __future__ import annotations
 
-import numpy as np
 import pandas as pd
-import pytest
 
 from tamasha.data.joining import fuzzy_join_datasets, generate_join_quality_report
 
@@ -36,7 +34,10 @@ def test_fuzzy_join_similar_title(sample_imdb_df, sample_boxoffice_df):
         ignore_index=True,
     )
     boxoffice_extra = pd.concat(
-        [boxoffice_extra, pd.DataFrame({"title": ["Movie E"], "year": [2023], "box_office": ["₹200 Cr"]})],
+        [
+            boxoffice_extra,
+            pd.DataFrame({"title": ["Movie E"], "year": [2023], "box_office": ["₹200 Cr"]}),
+        ],
         ignore_index=True,
     )
 

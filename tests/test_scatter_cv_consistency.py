@@ -11,8 +11,8 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import cross_val_predict, KFold
 from sklearn.metrics import mean_absolute_error
+from sklearn.model_selection import KFold, cross_val_predict
 
 from tamasha.models.model_selection import get_all_models
 
@@ -45,8 +45,9 @@ class TestScatterCVConsistency:
         models = get_all_models()
 
         # Test at least the top 3 models (those with tuning spaces)
-        top_models = [name for name in ["GradientBoosting", "XGBoost", "RandomForest"]
-                      if name in models]
+        top_models = [
+            name for name in ["GradientBoosting", "XGBoost", "RandomForest"] if name in models
+        ]
 
         for model_name in top_models:
             model_cls = models[model_name].__class__
@@ -67,7 +68,9 @@ class TestScatterCVConsistency:
             # Compute out-of-fold predictions via cross_val_predict
             m_oof = model_cls(**model_params)
             y_oof = cross_val_predict(
-                m_oof, X, y,
+                m_oof,
+                X,
+                y,
                 cv=KFold(n_splits=5, shuffle=True, random_state=42),
                 n_jobs=1,
             )

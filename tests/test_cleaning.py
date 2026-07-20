@@ -4,14 +4,8 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
-import pytest
 
-from tamasha.data.cleaning import (
-    clean_joined_dataset,
-    inflation_adjust,
-    parse_currency_column,
-    parse_inr_value,
-)
+from tamasha.data.cleaning import clean_joined_dataset, inflation_adjust, parse_inr_value
 
 
 class TestParseInrValue:

@@ -51,6 +51,7 @@ jobs:
           python -m pytest tests/ -v \
             --cov=src/tamasha \
             --cov=api \
+            --cov-config=pyproject.toml \
             --cov-report=term-missing \
             --cov-report=xml \
             --cov-fail-under=70

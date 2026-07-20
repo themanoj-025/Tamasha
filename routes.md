@@ -18,7 +18,7 @@ st.sidebar.selectbox("Navigate", pages)
 | 1 | `1_Predict_a_Release` | `app/pages/_1_Predict_a_Release.py` | 🔮 Predict a Release | Movie form → predicted rating + box office + scenario comparison |
 | 2 | `2_Star_Network_Explorer` | `app/pages/_2_Star_Network_Explorer.py` | ⭐ Star Network Explorer | Searchable actor graph, Bankability Scores, chemistry pairs |
 | 3 | `3_Industry_Trends` | `app/pages/_3_Industry_Trends.py` | 📈 Industry Trends | Genre trends, festival analysis, plot-tone findings, poster CV results |
-| 4 | `4_Model_Performance` | `app/pages/_4_Model_Performance.py` | 📊 Model Performance | Comparison charts, SHAP plots, model info table |
+| 4 | `4_Model_Performance` | `app/pages/_4_Model_Performance.py` | 📊 Model Performance | Comparison charts, SHAP plots (global + per-prediction), model info table |
 
 ### Page Entry Points
 
@@ -90,13 +90,24 @@ PAGES[selected_page]()
 {
   "title": "My Bollywood Film",
   "predicted_rating": 7.42,
-  "model_name": "LightGBM (tuned)",
-  "model_mae": 0.96
+  "model_name": "GradientBoosting (tuned)",
+  "model_mae": 0.9534,
+  "shap_explanations": {
+    "top_features": [
+      {"feature": "genre_Drama", "value": 1.0, "shap_value": 0.42},
+      {"feature": "director_encoded", "value": 142.0, "shap_value": 0.31},
+      {"feature": "budget_inr", "value": 800000000.0, "shap_value": 0.18},
+      {"feature": "cast_size", "value": 8.0, "shap_value": 0.12},
+      {"feature": "runtime_minutes", "value": 150.0, "shap_value": 0.08}
+    ]
+  }
 }
 ```
 
 **Errors**:
-- `503`: Model not found (run `make train`)
+- `401`: Missing or invalid X-API-Key header (all protected endpoints)
+- `413`: Request body exceeds 100KB limit
+- `503`: Model not found (run `make train`) or SHA-256 integrity check failed
 - `500`: Prediction failure
 
 #### 3. `POST /predict-boxoffice`
@@ -119,8 +130,8 @@ PAGES[selected_page]()
 {
   "title": "My Bollywood Film",
   "predicted_boxoffice_cr": 175.4,
-  "model_name": "GradientBoosting (tuned)",
-  "model_mae": 75.3,
+  "model_name": "XGBoost (tuned)",
+  "model_mae": 73.6,
   "scenarios": {
     "Normal": 175.4,
     "Diwali": 219.3,
@@ -134,7 +145,9 @@ PAGES[selected_page]()
 ```
 
 **Errors**:
-- `503`: Model not found
+- `401`: Missing or invalid X-API-Key header
+- `413`: Request body exceeds 100KB limit
+- `503`: Model not found or SHA-256 integrity check failed
 - `500`: Prediction failure
 
 #### 4. `GET /actor/{name}`
@@ -161,6 +174,7 @@ PAGES[selected_page]()
 ```
 
 **Errors**:
+- `401`: Missing or invalid X-API-Key header
 - `404`: Actor not found in Bankability dataset
 
 #### 5. `GET /model-info`
@@ -169,20 +183,26 @@ PAGES[selected_page]()
 ```json
 {
   "rating_model": {
-    "name": "LightGBM (tuned)",
-    "algorithm": "LightGBM",
-    "mae": 0.96,
-    "rmse": 1.22,
-    "r2": 0.22,
-    "features_used": ["genre", "cast_size", "director", "runtime", "budget", "decade"]
-  },
-  "boxoffice_model": {
     "name": "GradientBoosting (tuned)",
     "algorithm": "GradientBoosting",
-    "mae": 75.3,
+    "mae": 0.9534,
+    "rmse": 1.2228,
+    "r2": 0.2162,
+    "features_used": ["genre", "cast_size", "director", "runtime", "budget", "decade"],
+    "version": "v1",
+    "train_date": "2026-01-15T10:30:00Z",
+    "tuning_iterations": 15
+  },
+  "boxoffice_model": {
+    "name": "XGBoost (tuned)",
+    "algorithm": "XGBoost",
+    "mae": 73.6,
     "rmse": 36.9,
-    "r2": 0.30,
-    "features_used": ["genre", "cast_size", "director", "runtime", "budget", "decade", "avg_bankability_score"]
+    "r2": 0.21,
+    "features_used": ["genre", "cast_size", "director", "runtime", "budget", "decade", "avg_bankability_score"],
+    "version": "v1",
+    "train_date": "2026-01-15T10:35:00Z",
+    "tuning_iterations": 15
   }
 }
 ```
@@ -217,7 +237,25 @@ No prefix is applied — paths are absolute.
 
 ---
 
-## 4. Authentication
+## 4. Request Body Size Limits
+
+All POST endpoints enforce a **100KB** maximum request body to prevent resource
+exhaustion. Requests exceeding this threshold receive HTTP 413 (Payload Too Large)
+with the standard error response shape:
+
+```json
+{
+  "error_code": "PAYLOAD_TOO_LARGE",
+  "message": "Request body exceeds 100KB limit",
+  "request_id": "req_abc123"
+}
+```
+
+The 100KB threshold is generous for this API's typical payload (largest legitimate
+payload is ~50KB even with 100+ actor names). The limit is enforced via incremental
+body-reading middleware that aborts once the threshold is exceeded.
+
+## 5. Authentication
 
 All protected endpoints require the `X-API-Key` header:
 
@@ -225,39 +263,66 @@ All protected endpoints require the `X-API-Key` header:
 curl -H "X-API-Key: tamasha-dev-key-2026" http://localhost:8000/predict-rating ...
 ```
 
-The health endpoint (`/health`) and documentation endpoints (`/docs`, `/openapi.json`, `/redoc`)
-are exempt from authentication.
+The health endpoint (`/health`), documentation endpoints (`/docs`, `/openapi.json`, `/redoc`),
+and `/metrics` are exempt from authentication.
 
-Configured via `API_KEY` env var in `.env`.
+Configured via `API_KEY` env var in `.env`. Default dev key: `tamasha-dev-key-2026`.
+Change to a strong random value in production.
 
----
+## 6. Rate Limiting
 
-## 5. Rate Limiting
+All endpoints are rate-limited to **60 requests per minute** via slowapi (configurable
+via `RATE_LIMIT` env var, e.g. `120/minute`). Limits are keyed by the `X-API-Key` header
+value, falling back to client IP. When exceeded, returns `429 Too Many Requests`.
 
-All endpoints (including health) are rate-limited to **60 requests per minute** via slowapi.
-Limits are keyed by the `X-API-Key` header value, falling back to client IP.
-When exceeded, returns `429 Too Many Requests`.
+Rate-limit headers on every response:
+- `X-RateLimit-Limit`: Maximum requests per window
+- `X-RateLimit-Remaining`: Remaining requests in current window
 
----
+## 7. Request ID
 
-## 6. CORS Configuration
+Every response includes an `X-Request-ID` header (format: `req_<uuid_hex>`).
+Request IDs are passed to `structlog` context vars for structured log correlation.
+Even 401/413 error responses include the `X-Request-ID` header for debuggability.
+
+## 8. CORS Configuration
 
 CORS is restricted to the origins configured in `ALLOWED_ORIGINS` env var:
 
 ```python
-# Config: ALLOWED_ORIGINS=http://localhost:8501,http://localhost:8000
+# Default: ALLOWED_ORIGINS=http://localhost:8501,http://localhost:8000
+# In production: https://your-dashboard.streamlit.app,https://your-api.onrender.com
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8501", "http://localhost:8000"],
+    allow_origins=settings.allowed_origins_list,  # parsed from comma-separated env var
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 ```
 
----
+## 9. /metrics Endpoint
 
-## 7. Streamlit Cloud Entry Point
+`GET /metrics` returns Prometheus text-exposition format with:
+- Request count by endpoint
+- Latency histogram (p50/p95/p99)
+- Error rate by endpoint
+
+This endpoint is **NOT** protected by X-API-Key authentication (designed for internal
+Prometheus scraping). Exposed at `/metrics` with `include_in_schema=False`.
+
+## 10. Observability (Local Docker)
+
+```bash
+docker compose -f docker-compose.observability.yml up -d
+# Prometheus: http://localhost:9090
+# Grafana:    http://localhost:3000 (admin/admin)
+```
+
+Grafana auto-provisions a dashboard with request count, latency percentiles, and
+error rate by endpoint. Dashboard JSON: `ops/grafana/dashboards/tamasha-overview.json`.
+
+## 11. Streamlit Cloud Entry Point
 
 - **File**: `app/streamlit_app.py`
 - **Command**: `streamlit run app/streamlit_app.py`
@@ -265,12 +330,11 @@ app.add_middleware(
 - **System deps**: `packages.txt` (`libgl1-mesa-glx`, `libglib2.0-0` for OpenCV)
 - **NLTK**: VADER lexicon downloaded at startup
 
----
-
-## 8. Render Deployment (FastAPI)
+## 12. Render Deployment (FastAPI)
 
 - **Blueprint file**: `render.yaml`
 - **Service**: Web Service
 - **Build command**: `pip install -e . && python -m nltk.downloader vader_lexicon -d /opt/nltk_data`
 - **Start command**: `gunicorn -w 1 -k uvicorn.workers.UvicornWorker api.main:app --bind 0.0.0.0:$PORT --timeout 120`
+- **Env vars**: `TMDB_API_KEY`, `TMDB_ACCESS_TOKEN`, `API_KEY`, `ALLOWED_ORIGINS`, `RATE_LIMIT`
 - **Python version**: 3.11

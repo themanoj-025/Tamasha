@@ -13,18 +13,14 @@ from fastapi.testclient import TestClient
 from pydantic import ValidationError
 
 from api.main import app
-from api.schemas import (
-    PredictBoxOfficeRequest,
-    PredictBoxOfficeResponse,
-    PredictRatingRequest,
-    PredictRatingResponse,
-)
+from api.schemas import PredictBoxOfficeRequest, PredictRatingRequest, PredictRatingResponse
 
 client = TestClient(app)
 client.headers["X-API-Key"] = "tamasha-dev-key-2026"
 
 
 # ── Schema validation tests (pure Pydantic, no network) ──────────────
+
 
 class TestPredictRatingSchema:
     """Validate PredictRatingRequest/PredictRatingResponse schemas."""
@@ -128,6 +124,7 @@ class TestActorInfoSchema:
 
 
 # ── API endpoint contract tests ──────────────────────────────────────
+
 
 class TestHealthEndpoint:
     """Tests for the GET /health endpoint."""

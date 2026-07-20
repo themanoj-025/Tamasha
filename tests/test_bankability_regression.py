@@ -10,9 +10,7 @@ input with known actors and time-decay behavior.
 
 from __future__ import annotations
 
-import numpy as np
 import pandas as pd
-
 
 from tamasha.network.bankability_score import compute_bankability_scores
 
@@ -56,12 +54,14 @@ def _hand_compute_reference() -> pd.DataFrame:
       Movie C: w=0.62996, perf=0.7 → weighted_sum=0.44097, total_weight=0.62996
       Total: sum=0.44097, weight=0.62996 → score=0.7000
     """
-    return pd.DataFrame({
-        "actor": ["ActorY", "ActorX", "DirZ", "ActorZ", "DirY"],
-        "type": ["actor", "actor", "director", "actor", "director"],
-        "bankability_score": [0.7614, 0.7116, 0.7116, 0.6442, 0.7000],
-        "film_count": [2, 2, 2, 2, 1],
-    })
+    return pd.DataFrame(
+        {
+            "actor": ["ActorY", "ActorX", "DirZ", "ActorZ", "DirY"],
+            "type": ["actor", "actor", "director", "actor", "director"],
+            "bankability_score": [0.7614, 0.7116, 0.7116, 0.6442, 0.7000],
+            "film_count": [2, 2, 2, 2, 1],
+        }
+    )
 
 
 class TestBankabilityRegression:
@@ -69,13 +69,15 @@ class TestBankabilityRegression:
 
     def test_matches_hand_computed_reference(self) -> None:
         """Vectorized output matches manually derived expectations."""
-        df = pd.DataFrame({
-            "title": ["Movie A", "Movie B", "Movie C"],
-            "cast": ["ActorX, ActorY", "ActorX, ActorZ", "ActorY, ActorZ"],
-            "director": ["DirZ", "DirZ", "DirY"],
-            "year": [2024, 2023, 2022],
-            "rating": [8.0, 6.0, 7.0],
-        })
+        df = pd.DataFrame(
+            {
+                "title": ["Movie A", "Movie B", "Movie C"],
+                "cast": ["ActorX, ActorY", "ActorX, ActorZ", "ActorY, ActorZ"],
+                "director": ["DirZ", "DirZ", "DirY"],
+                "year": [2024, 2023, 2022],
+                "rating": [8.0, 6.0, 7.0],
+            }
+        )
 
         result = compute_bankability_scores(
             df,
@@ -93,7 +95,9 @@ class TestBankabilityRegression:
 
         # Compare bankability scores with tolerance
         for _, row in merged.iterrows():
-            assert abs(row["bankability_score_actual"] - row["bankability_score_expected"]) < 0.01, (
+            assert (
+                abs(row["bankability_score_actual"] - row["bankability_score_expected"]) < 0.01
+            ), (
                 f"{row['actor']} ({row['type']}): "
                 f"actual={row['bankability_score_actual']:.4f}, "
                 f"expected={row['bankability_score_expected']:.4f}"
@@ -101,13 +105,15 @@ class TestBankabilityRegression:
 
     def test_film_count_matches_expected(self) -> None:
         """Film counts should match the expected values."""
-        df = pd.DataFrame({
-            "title": ["Movie A", "Movie B", "Movie C"],
-            "cast": ["ActorX, ActorY", "ActorX, ActorZ", "ActorY, ActorZ"],
-            "director": ["DirZ", "DirZ", "DirY"],
-            "year": [2024, 2023, 2022],
-            "rating": [8.0, 6.0, 7.0],
-        })
+        df = pd.DataFrame(
+            {
+                "title": ["Movie A", "Movie B", "Movie C"],
+                "cast": ["ActorX, ActorY", "ActorX, ActorZ", "ActorY, ActorZ"],
+                "director": ["DirZ", "DirZ", "DirY"],
+                "year": [2024, 2023, 2022],
+                "rating": [8.0, 6.0, 7.0],
+            }
+        )
 
         result = compute_bankability_scores(
             df,

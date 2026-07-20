@@ -5,9 +5,7 @@ Uses a small synthetic graph with a hand-computed expected score.
 
 from __future__ import annotations
 
-import numpy as np
 import pandas as pd
-import pytest
 
 from tamasha.network.bankability_score import compute_bankability_scores
 

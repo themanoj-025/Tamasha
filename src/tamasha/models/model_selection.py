@@ -10,23 +10,23 @@ All models are evaluated on the same k-fold split and same feature set.
 
 from __future__ import annotations
 
-import logging
-import time
-from pathlib import Path
-from datetime import datetime, timezone
-from typing import Any, Optional, Union
-
 import hashlib
 import json
+import logging
+import time
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any, Optional, Union
+
 import joblib
 import numpy as np
 import pandas as pd
 from scipy import stats
-from sklearn.linear_model import LinearRegression, Ridge, Lasso
-from sklearn.tree import DecisionTreeRegressor
-from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
-from sklearn.model_selection import KFold, cross_val_predict, RandomizedSearchCV
+from sklearn.ensemble import GradientBoostingRegressor, RandomForestRegressor
+from sklearn.linear_model import Lasso, LinearRegression, Ridge
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from sklearn.model_selection import KFold, RandomizedSearchCV, cross_val_predict
+from sklearn.tree import DecisionTreeRegressor
 
 from tamasha.config import settings
 
@@ -51,9 +51,18 @@ _MODEL_REGISTRY: dict[str, tuple[Any, dict[str, Any]]] = {
 
 # Optional heavy models — only imported if available
 _EXTRA_MODEL_REGISTRY: dict[str, tuple[str, dict[str, Any]]] = {
-    "XGBoost": ("xgboost.XGBRegressor", {"n_estimators": 200, "max_depth": 6, "random_state": 42, "verbosity": 0}),
-    "LightGBM": ("lightgbm.LGBMRegressor", {"n_estimators": 200, "max_depth": 6, "random_state": 42, "verbose": -1}),
-    "CatBoost": ("catboost.CatBoostRegressor", {"iterations": 200, "depth": 6, "random_state": 42, "verbose": 0}),
+    "XGBoost": (
+        "xgboost.XGBRegressor",
+        {"n_estimators": 200, "max_depth": 6, "random_state": 42, "verbosity": 0},
+    ),
+    "LightGBM": (
+        "lightgbm.LGBMRegressor",
+        {"n_estimators": 200, "max_depth": 6, "random_state": 42, "verbose": -1},
+    ),
+    "CatBoost": (
+        "catboost.CatBoostRegressor",
+        {"iterations": 200, "depth": 6, "random_state": 42, "verbose": 0},
+    ),
 }
 
 # ── Hyperparameter search spaces for RandomizedSearchCV ──────────────
@@ -79,11 +88,12 @@ _TUNING_SPACES: dict[str, dict[str, Any]] = {
     },
     "LightGBM": {
         "n_estimators": [100, 200, 300],
-        "max_depth": [4, 6, 8],          # bounded depth to prevent overfitting on small datasets
-        "learning_rate": [0.05, 0.1],     # min 0.05 ensures convergence with 200-300 trees
+        "max_depth": [4, 6, 8],  # bounded depth to prevent overfitting on small datasets
+        "learning_rate": [0.05, 0.1],  # min 0.05 ensures convergence with 200-300 trees
         "num_leaves": [15, 31, 63],
     },
 }
+
 
 def _import_extra_model(import_path: str) -> Any:
     """Dynamically import an optional model class.
@@ -135,6 +145,7 @@ def get_all_models() -> dict[str, Any]:
 
 
 # ── Training and comparison ──────────────────────────────────────────
+
 
 def _get_metric_value(y_true: np.ndarray, y_pred: np.ndarray, metric: str) -> float:
     """Compute a single scalar metric.
@@ -226,7 +237,9 @@ def train_and_compare(
             if name in _TUNING_SPACES:
                 logger.info("  Tuning %s (n_iter=%d) ...", name, tune_n_iter)
                 best_est, best_params = tune_model(
-                    name, X_arr, y_arr,
+                    name,
+                    X_arr,
+                    y_arr,
                     cv_folds=cv_folds,
                     n_iter=tune_n_iter,
                     random_state=random_state,
@@ -266,7 +279,8 @@ def train_and_compare(
             y_train, y_val = y_arr[train_idx], y_arr[val_idx]
 
             model_clone = (
-                model.__class__(**model.get_params()) if hasattr(model, "get_params")
+                model.__class__(**model.get_params())
+                if hasattr(model, "get_params")
                 else model.__class__()
             )
             model_clone.fit(X_train, y_train)
@@ -282,14 +296,8 @@ def train_and_compare(
 
         elapsed = time.perf_counter() - start_time
 
-        avg = {
-            k: np.mean([f[k] for f in fold_metrics])
-            for k in fold_metrics[0]
-        }
-        std = {
-            k: np.std([f[k] for f in fold_metrics])
-            for k in fold_metrics[0]
-        }
+        avg = {k: np.mean([f[k] for f in fold_metrics]) for k in fold_metrics[0]}
+        std = {k: np.std([f[k] for f in fold_metrics]) for k in fold_metrics[0]}
 
         results.append(
             {
@@ -308,7 +316,12 @@ def train_and_compare(
         tuned_tag = " (TUNED)" if tune and name in tuned_params_log else ""
         logger.info(
             "%s%s — MAE=%.4f, RMSE=%.4f, R²=%.4f (%.1fs)",
-            name, tuned_tag, avg["MAE"], avg["RMSE"], avg["R2"], elapsed,
+            name,
+            tuned_tag,
+            avg["MAE"],
+            avg["RMSE"],
+            avg["R2"],
+            elapsed,
         )
 
     # ── Significance test between top 2 (out-of-fold predictions) ──
@@ -322,17 +335,26 @@ def train_and_compare(
             oof_preds = []
             for model_obj in top2_model_instances:
                 # Create a fresh clone for cross_val_predict
-                m = model_obj.__class__(**model_obj.get_params()) if hasattr(model_obj, "get_params") else model_obj.__class__()
+                m = (
+                    model_obj.__class__(**model_obj.get_params())
+                    if hasattr(model_obj, "get_params")
+                    else model_obj.__class__()
+                )
                 preds = cross_val_predict(
-                    m, X_arr, y_arr,
+                    m,
+                    X_arr,
+                    y_arr,
                     cv=KFold(n_splits=cv_folds, shuffle=True, random_state=random_state),
                     n_jobs=1,
                 )
                 oof_preds.append(preds)
 
             sig_result = compare_models_significance(
-                y_arr, oof_preds[0], oof_preds[1],
-                name_a=top2_names[0], name_b=top2_names[1],
+                y_arr,
+                oof_preds[0],
+                oof_preds[1],
+                name_a=top2_names[0],
+                name_b=top2_names[1],
             )
 
             logger.info("")
@@ -341,7 +363,9 @@ def train_and_compare(
             logger.info("    OOF MAE %s: %.4f", top2_names[1], sig_result["mae_b"])
             logger.info("    p-value: %.4f", sig_result["p_value"])
             if sig_result["significant"]:
-                logger.info("    → %s is SIGNIFICANTLY better (p < 0.05)", sig_result["better_model"])
+                logger.info(
+                    "    → %s is SIGNIFICANTLY better (p < 0.05)", sig_result["better_model"]
+                )
             else:
                 logger.info("    → Difference is NOT statistically significant (p >= 0.05)")
             logger.info("")
@@ -352,9 +376,7 @@ def train_and_compare(
 
     # Sort by selection metric
     ascending = metric != "R2"
-    comparison_sorted = comparison.sort_values(metric, ascending=ascending).reset_index(
-        drop=True
-    )
+    comparison_sorted = comparison.sort_values(metric, ascending=ascending).reset_index(drop=True)
     best_name = comparison_sorted.iloc[0]["model"]
 
     logger.info(
@@ -386,6 +408,7 @@ def train_and_compare(
 
 
 # ── Hyperparameter tuning with RandomizedSearchCV ────────────────────
+
 
 def tune_model(
     name: str,
@@ -437,15 +460,21 @@ def tune_model(
         param_dist = _TUNING_SPACES[name]
 
         search = RandomizedSearchCV(
-            model, param_dist, n_iter=n_iter,
-            cv=cv_folds, scoring="neg_mean_absolute_error",
-            n_jobs=-1, random_state=random_state,
+            model,
+            param_dist,
+            n_iter=n_iter,
+            cv=cv_folds,
+            scoring="neg_mean_absolute_error",
+            n_jobs=-1,
+            random_state=random_state,
         )
         search.fit(X, y)
 
         logger.info(
             "Tuned %s: best MAE=%.4f (params: %s)",
-            name, -search.best_score_, search.best_params_,
+            name,
+            -search.best_score_,
+            search.best_params_,
         )
         return search.best_estimator_, search.best_params_
     except Exception as exc:
@@ -454,6 +483,7 @@ def tune_model(
 
 
 # ── Statistical significance test ─────────────────────────────────────
+
 
 def compare_models_significance(
     y_true: np.ndarray,
@@ -496,10 +526,14 @@ def compare_models_significance(
     better = name_a if mae_a < mae_b else name_b
 
     logger.info(
-        "Significance test: %s MAE=%.4f vs %s MAE=%.4f, "
-        "p=%.4f, significant=%s, winner=%s",
-        name_a, mae_a, name_b, mae_b,
-        p_value, significant, better,
+        "Significance test: %s MAE=%.4f vs %s MAE=%.4f, " "p=%.4f, significant=%s, winner=%s",
+        name_a,
+        mae_a,
+        name_b,
+        mae_b,
+        p_value,
+        significant,
+        better,
     )
 
     return {
@@ -512,6 +546,7 @@ def compare_models_significance(
 
 
 # ── Model versioning ──────────────────────────────────────────────────
+
 
 def sha256_of_file(path: Path) -> str:
     """Compute SHA-256 hash of a file.
@@ -593,7 +628,10 @@ def save_model_with_version(
     meta_path.write_text(json.dumps(meta, indent=2))
 
     logger.info(
-        "Model v%d for '%s' saved to %s", next_version, task_name, model_path,
+        "Model v%d for '%s' saved to %s",
+        next_version,
+        task_name,
+        model_path,
     )
     return {"version": next_version, "path": model_path, "metadata_path": meta_path}
 

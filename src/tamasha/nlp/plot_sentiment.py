@@ -8,14 +8,11 @@ returns per-movie sentiment scores.
 from __future__ import annotations
 
 import logging
-from typing import Any, Optional
+from typing import Any
 
 import nltk
-import numpy as np
 import pandas as pd
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
-
-from tamasha.config import settings
 
 logger = logging.getLogger(__name__)
 
