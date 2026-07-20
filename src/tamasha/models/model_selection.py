@@ -309,33 +309,42 @@ def train_and_compare(
             name, tuned_tag, avg["MAE"], avg["RMSE"], avg["R2"], elapsed,
         )
 
-    # ── Significance test between top 2 ─────────────────────────────
+    # ── Significance test between top 2 (out-of-fold predictions) ──
     if len(results) >= 2:
         sorted_idx = np.argsort([r["MAE"] for r in results])
         top2_names = [results[i]["model"] for i in sorted_idx[:2]]
-        top2_models = [compare_models[results[i]["model"].replace(" (tuned)", "")] for i in sorted_idx[:2]]
+        top2_model_instances = [compare_models[name] for name in top2_names]
 
-        top2_preds = []
-        for model in top2_models:
-            m = model.__class__(**model.get_params()) if hasattr(model, "get_params") else model.__class__()
-            m.fit(X_arr, y_arr)
-            top2_preds.append(m.predict(X_arr))
+        # Use cross_val_predict for genuine out-of-fold predictions
+        try:
+            oof_preds = []
+            for model_obj in top2_model_instances:
+                # Create a fresh clone for cross_val_predict
+                m = model_obj.__class__(**model_obj.get_params()) if hasattr(model_obj, "get_params") else model_obj.__class__()
+                preds = cross_val_predict(
+                    m, X_arr, y_arr,
+                    cv=KFold(n_splits=cv_folds, shuffle=True, random_state=random_state),
+                    n_jobs=1,
+                )
+                oof_preds.append(preds)
 
-        sig_result = compare_models_significance(
-            y_arr, top2_preds[0], top2_preds[1],
-            name_a=top2_names[0], name_b=top2_names[1],
-        )
+            sig_result = compare_models_significance(
+                y_arr, oof_preds[0], oof_preds[1],
+                name_a=top2_names[0], name_b=top2_names[1],
+            )
 
-        logger.info("")
-        logger.info("  Significance test: %s vs %s", top2_names[0], top2_names[1])
-        logger.info("    MAE %s: %.4f", top2_names[0], sig_result["mae_a"])
-        logger.info("    MAE %s: %.4f", top2_names[1], sig_result["mae_b"])
-        logger.info("    p-value: %.4f", sig_result["p_value"])
-        if sig_result["significant"]:
-            logger.info("    → %s is SIGNIFICANTLY better (p < 0.05)", sig_result["better_model"])
-        else:
-            logger.info("    → Difference is NOT statistically significant (p >= 0.05)")
-        logger.info("")
+            logger.info("")
+            logger.info("  Significance test (out-of-fold): %s vs %s", top2_names[0], top2_names[1])
+            logger.info("    OOF MAE %s: %.4f", top2_names[0], sig_result["mae_a"])
+            logger.info("    OOF MAE %s: %.4f", top2_names[1], sig_result["mae_b"])
+            logger.info("    p-value: %.4f", sig_result["p_value"])
+            if sig_result["significant"]:
+                logger.info("    → %s is SIGNIFICANTLY better (p < 0.05)", sig_result["better_model"])
+            else:
+                logger.info("    → Difference is NOT statistically significant (p >= 0.05)")
+            logger.info("")
+        except Exception as exc:
+            logger.warning("  Significance test failed (non-blocking): %s", exc)
 
     comparison = pd.DataFrame(results)
 
