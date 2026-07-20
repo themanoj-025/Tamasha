@@ -7,28 +7,45 @@ once at startup and inject it into route handlers via ``Depends()``.
 from __future__ import annotations
 
 import logging
+import uuid
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
+import structlog
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 
 from tamasha.predict import PredictionService
 
-logger = logging.getLogger(__name__)
+# ── Structured logging via structlog ──────────────────────────────────
+
+structlog.configure(
+    processors=[
+        structlog.contextvars.merge_contextvars,
+        structlog.processors.add_log_level,
+        structlog.processors.TimeStamper(fmt="iso"),
+        structlog.dev.ConsoleRenderer() if __debug__
+        else structlog.processors.JSONRenderer(),
+    ],
+    wrapper_class=structlog.make_filtering_bound_logger(logging.INFO),
+    context_class=dict,
+    logger_factory=structlog.PrintLoggerFactory(),
+    cache_logger_on_first_use=True,
+)
+
+logger: structlog.stdlib.BoundLogger = structlog.get_logger()  # type: ignore[assignment]
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Build PredictionService on startup, clean up on shutdown."""
-    logger.info("Tamasha API starting up...")
+    logger.info("Tamaha API starting up...")
     svc = PredictionService()
     svc.load()
     app.state.prediction_service = svc
-    logger.info("PredictionService loaded. Healthy: %s", svc.healthy)
+    logger.info("prediction_service_loaded", healthy=svc.healthy)
     yield
     logger.info("Tamasha API shutting down...")
-    # Nothing explicit to clean up — model files remain on disk
 
 
 app = FastAPI(
@@ -37,6 +54,18 @@ app = FastAPI(
     version="0.1.0",
     lifespan=lifespan,
 )
+
+# ── Request‑ID middleware ─────────────────────────────────────────────
+
+@app.middleware("http")
+async def add_request_id(request, call_next):
+    request_id = str(uuid.uuid4())[:8]
+    structlog.contextvars.clear_contextvars()
+    structlog.contextvars.bind_contextvars(request_id=request_id)
+    response = await call_next(request)
+    response.headers["X-Request-ID"] = request_id
+    return response
+
 
 # ── CORS — restricted in production ───────────────────────────────────
 app.add_middleware(

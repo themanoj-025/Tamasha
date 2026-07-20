@@ -13,11 +13,13 @@ from __future__ import annotations
 import logging
 import time
 from pathlib import Path
+from datetime import datetime
 from typing import Any, Optional, Union
 
 import joblib
 import numpy as np
 import pandas as pd
+from scipy import stats
 from sklearn.linear_model import LinearRegression, Ridge, Lasso
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
@@ -52,6 +54,34 @@ _EXTRA_MODEL_REGISTRY: dict[str, tuple[str, dict[str, Any]]] = {
     "CatBoost": ("catboost.CatBoostRegressor", {"iterations": 200, "depth": 6, "random_state": 42, "verbose": 0}),
 }
 
+# ── Hyperparameter search spaces for RandomizedSearchCV ──────────────
+
+_TUNING_SPACES: dict[str, dict[str, Any]] = {
+    "RandomForest": {
+        "n_estimators": [100, 200, 300],
+        "max_depth": [10, 15, 20, None],
+        "min_samples_split": [2, 5, 10],
+        "min_samples_leaf": [1, 2, 4],
+    },
+    "GradientBoosting": {
+        "n_estimators": [100, 200, 300],
+        "max_depth": [3, 5, 7],
+        "learning_rate": [0.01, 0.05, 0.1],
+        "min_samples_split": [2, 5, 10],
+    },
+    "XGBoost": {
+        "n_estimators": [100, 200, 300],
+        "max_depth": [4, 6, 8],
+        "learning_rate": [0.01, 0.05, 0.1],
+        "subsample": [0.8, 1.0],
+    },
+    "LightGBM": {
+        "n_estimators": [100, 200, 300],
+        "max_depth": [4, 6, 8, -1],
+        "learning_rate": [0.01, 0.05, 0.1],
+        "num_leaves": [15, 31, 63],
+    },
+}
 
 def _import_extra_model(import_path: str) -> Any:
     """Dynamically import an optional model class.
@@ -260,6 +290,197 @@ def train_and_compare(
     logger.info("Best model %s refit on full dataset.", best_name)
 
     return comparison_sorted, best_name, best_model
+
+
+# ── Hyperparameter tuning with RandomizedSearchCV ────────────────────
+
+def tune_model(
+    name: str,
+    X: np.ndarray,
+    y: np.ndarray,
+    cv_folds: int = 5,
+    n_iter: int = 10,
+    random_state: int = 42,
+) -> tuple[Any, dict[str, Any]]:
+    """Run ``RandomizedSearchCV`` for a given model if a search space exists.
+
+    Parameters
+    ----------
+    name : str
+        Model name (must be in ``_TUNING_SPACES``).
+    X : np.ndarray
+        Feature matrix.
+    y : np.ndarray
+        Target vector.
+    cv_folds : int, default=5
+        Number of CV folds for tuning.
+    n_iter : int, default=10
+        Number of parameter settings sampled.
+    random_state : int, default=42
+        Random state.
+
+    Returns
+    -------
+    tuple[Any, dict[str, Any]]
+        ``(best_estimator, best_params)``.  If no search space is defined
+        for this model, returns ``(None, {})``.
+    """
+    if name not in _TUNING_SPACES:
+        return None, {}
+
+    from sklearn.model_selection import RandomizedSearchCV
+
+    # Get the model class and its default params
+    if name in _MODEL_REGISTRY:
+        cls, default_kwargs = _MODEL_REGISTRY[name]
+    elif name in _EXTRA_MODEL_REGISTRY:
+        import_path, default_kwargs = _EXTRA_MODEL_REGISTRY[name]
+        cls = _import_extra_model(import_path)
+        if cls is None:
+            return None, {}
+    else:
+        return None, {}
+
+    try:
+        model = cls(**default_kwargs)
+        param_dist = _TUNING_SPACES[name]
+
+        search = RandomizedSearchCV(
+            model, param_dist, n_iter=n_iter,
+            cv=cv_folds, scoring="neg_mean_absolute_error",
+            n_jobs=-1, random_state=random_state,
+        )
+        search.fit(X, y)
+
+        logger.info(
+            "Tuned %s: best MAE=%.4f (params: %s)",
+            name, -search.best_score_, search.best_params_,
+        )
+        return search.best_estimator_, search.best_params_
+    except Exception as exc:
+        logger.warning("Tuning failed for %s: %s", name, exc)
+        return None, {}
+
+
+# ── Statistical significance test ─────────────────────────────────────
+
+def compare_models_significance(
+    y_true: np.ndarray,
+    preds_a: np.ndarray,
+    preds_b: np.ndarray,
+    name_a: str = "Model A",
+    name_b: str = "Model B",
+) -> dict[str, Any]:
+    """Run a Wilcoxon signed-rank test between two models' absolute errors.
+
+    Parameters
+    ----------
+    y_true : np.ndarray
+        Ground truth.
+    preds_a : np.ndarray
+        Predictions from model A.
+    preds_b : np.ndarray
+        Predictions from model B.
+    name_a : str, default="Model A"
+        Display name for model A.
+    name_b : str, default="Model B"
+        Display name for model B.
+
+    Returns
+    -------
+    dict
+        ``{"mae_a": float, "mae_b": float, "p_value": float,
+           "significant": bool, "better_model": str}``
+    """
+    errors_a = np.abs(y_true - preds_a)
+    errors_b = np.abs(y_true - preds_b)
+
+    mae_a = float(np.mean(errors_a))
+    mae_b = float(np.mean(errors_b))
+
+    # Wilcoxon signed-rank test (paired, two-sided)
+    stat, p_value = stats.wilcoxon(errors_a, errors_b)
+
+    significant = p_value < 0.05
+    better = name_a if mae_a < mae_b else name_b
+
+    logger.info(
+        "Significance test: %s MAE=%.4f vs %s MAE=%.4f, "
+        "p=%.4f, significant=%s, winner=%s",
+        name_a, mae_a, name_b, mae_b,
+        p_value, significant, better,
+    )
+
+    return {
+        "mae_a": mae_a,
+        "mae_b": mae_b,
+        "p_value": float(p_value),
+        "significant": bool(significant),
+        "better_model": better,
+    }
+
+
+# ── Model versioning ──────────────────────────────────────────────────
+
+def save_model_with_version(
+    model: Any,
+    task_name: str,
+    metadata: dict[str, Any] | None = None,
+    models_dir: Path | None = None,
+) -> dict[str, Any]:
+    """Save a model with versioned metadata.
+
+    Creates ``models/v{N}/{task_name}_model.pkl`` and a
+    ``models/v{N}/metadata.json`` with training info.
+
+    Parameters
+    ----------
+    model : Any
+        Trained estimator.
+    task_name : str
+        e.g. ``"rating"`` or ``"boxoffice"``.
+    metadata : dict, optional
+        Extra metadata to include (CV scores, data hash, etc.).
+    models_dir : Path, optional
+        Root models directory.  Defaults to ``settings.MODELS_DIR``.
+
+    Returns
+    -------
+    dict
+        ``{"version": int, "path": Path, "metadata_path": Path}``
+    """
+    models_dir = models_dir or settings.MODELS_DIR
+
+    # Find next version number
+    version_dirs = sorted(models_dir.glob("v*"))
+    next_version = 1
+    if version_dirs:
+        existing = [int(d.name[1:]) for d in version_dirs if d.name[1:].isdigit()]
+        if existing:
+            next_version = max(existing) + 1
+
+    version_dir = models_dir / f"v{next_version}"
+    version_dir.mkdir(parents=True, exist_ok=True)
+
+    model_path = version_dir / f"{task_name}_model.pkl"
+    joblib.dump(model, model_path)
+
+    meta = {
+        "version": next_version,
+        "task": task_name,
+        "timestamp": datetime.now(datetime.timezone.utc).isoformat(),
+        "model_type": type(model).__name__,
+    }
+    if metadata:
+        meta.update(metadata)
+
+    meta_path = version_dir / "metadata.json"
+    meta_path.write_text(json.dumps(meta, indent=2))
+
+    logger.info(
+        "Model v%d for '%s' saved to %s", next_version, task_name, model_path,
+    )
+    return {"version": next_version, "path": model_path, "metadata_path": meta_path}
 
 
 def save_model(model: Any, path: Union[str, Path]) -> Path:

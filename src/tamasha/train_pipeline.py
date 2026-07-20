@@ -483,7 +483,17 @@ def main() -> None:
         prefix: str,
         n_top: int = 3,
     ) -> None:
-        """Generate predicted-vs-actual scatter plots for top N models."""
+        """Generate predicted-vs-actual scatter plots for top N models.
+
+        .. note::
+
+           These scatter plots are generated from a **single 80/20 train/test
+           split**, not from the cross-validation folds used to compute the
+           comparison metrics.  This means the MAE/RMSE shown in the scatter
+           plots may differ slightly from the CV-based numbers in the model
+           comparison tables.  A future improvement would use
+           ``cross_val_predict`` to produce out-of-fold predictions instead.
+        """
         if not comp_csv.exists() or len(X_all) < 10:
             return
         comp_df = pd.read_csv(comp_csv)
@@ -491,6 +501,7 @@ def main() -> None:
         logger.info("  Top %d models for %s: %s", n_top, prefix, top_models)
 
         # Single train/test split for consistent comparison
+        # NOTE: uses single split (not CV) — see docstring for caveat
         X_train, X_test, y_train, y_test = train_test_split(
             X_all, y_all, test_size=0.2, random_state=42
         )

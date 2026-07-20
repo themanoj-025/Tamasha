@@ -57,9 +57,37 @@ class Settings(BaseSettings):
     POSTER_IMAGE_SIZE: tuple[int, int] = (224, 224)
     POSTER_SAMPLE_SIZE: int = 200
 
-    # ── Release timing ─────────────────────────────────────────────────
+    # ── Festival / release-window multipliers ───────────────────────────
     FESTIVAL_CLASH_WINDOW_DAYS: int = 7
     """Number of days before/after a major release to consider a 'clash'."""
+    FESTIVAL_MULTIPLIERS: dict[str, float] = {
+        "Normal": 1.0,
+        "Diwali": 1.25,
+        "Eid": 1.18,
+        "Christmas": 1.12,
+        "Independence Day": 1.08,
+        "Republic Day": 1.05,
+        "New Year": 1.10,
+    }
+    """
+    Estimated box-office multipliers for different release windows.
+
+    .. note::
+
+       These are **domain-expert priors**, not derived from historical
+       data.  In a production system these should be periodically
+       re-estimated from opening-weekend performance grouped by festival
+       window with appropriate controls for selection bias (studios
+       release their best films in festival windows, so the multiplier
+       captures both the genuine uplift and the quality-selection effect).
+
+       Current estimates are based on industry heuristics:
+       - Diwali (1.25×): strongest release window
+       - Eid (1.18×): strong, especially for action/family films
+       - Christmas (1.12×): solid family window
+       - Others: moderate (1.05-1.10×)
+       - Normal (1.0×): baseline non-festival release
+    """
 
     # ── Logging ────────────────────────────────────────────────────────
     LOG_LEVEL: str = "INFO"

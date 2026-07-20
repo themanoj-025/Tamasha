@@ -13,6 +13,18 @@
 
 ---
 
+### 🌐 Live Demo
+
+▶️ **Dashboard:** [`https://tamasha.streamlit.app`](https://tamasha.streamlit.app) *(deploy via Streamlit Community Cloud)*
+
+▶️ **API:** [`https://tamasha-api.onrender.com/docs`](https://tamasha-api.onrender.com/docs) *(deploy via Render Blueprint)*
+
+> **Note:** Replace the URLs above with your actual deployed URLs after following the deployment instructions below.
+
+---
+
+### 📊 Key Results At a Glance
+
 ### ⚡ Key Results At a Glance
 
 | Metric | Value |
@@ -484,7 +496,7 @@ Output: `reports/model_comparison_*.csv`, `reports/figures/*.png`, `models/best_
 ### ✅ Run Tests
 
 ```bash
-make test      # 46 tests, all passing
+make test      # 103 tests, all passing
 ```
 
 ### 🖥 Start the Dashboard
@@ -582,12 +594,55 @@ Make sure to create a `.env` file with your TMDb credentials before running.
 | **Explainability** | SHAP |
 | **Dashboard** | Streamlit, Plotly |
 | **API** | FastAPI, Pydantic, uvicorn |
-| **Testing** | pytest, pytest-cov (46 tests ✅) |
-| **DevOps** | Docker, docker-compose, GitHub Actions |
+| **Testing** | pytest, pytest-cov, Hypothesis (103 tests ✅) |
+| **DevOps** | Docker, docker-compose, GitHub Actions, multi-stage builds |
 | **Code Quality** | black, isort, ruff, pre-commit |
 | **Image Processing** | OpenCV, Pillow |
 | **External APIs** | TMDb (themoviedb.org) |
 | **Visualization** | Matplotlib, Plotly |
+
+---
+
+## ⚖️ Responsible AI & Known Limitations
+
+This project is an **ML portfolio showcase**, not a financial advisory tool.
+The predictions it produces should be interpreted with the following caveats:
+
+### Model Limitations
+
+| Limitation | Impact |
+|------------|--------|
+| **Low R²** (~0.22–0.35) | Predictions are directionally useful but should not inform real financial decisions |
+| **Small training set** (~800–12K samples) | Results may not generalize to films very different from the training distribution |
+| **VADER sentiment** | Trained on social media text, not Bollywood Hinglish plot summaries — genre-tone correlations are experimental |
+| **Static dataset** | Models are not updated with new box office data; predictions for 2025+ films extrapolate from pre-2024 patterns |
+| **Festival multipliers** | Estimated from industry heuristics, not data — see config docs for caveats |
+
+### Cost / Latency Budget (hypothetical 1,000 DAU)
+
+| Component | Cost/month | Latency (p50) | Notes |
+|-----------|:----------:|:-------------:|-------|
+| FastAPI inference (2 vCPU) | ~$25 (Railway/Fly.io) | ~50ms | Static model, no training |
+| Streamlit dashboard | ~$0 (Streamlit Community) | ~200ms | Loads once; caches via st.cache_resource |
+| Redis cache (optional) | ~$15 (Upstash free tier) | ~1ms | Eliminates repeated predictions |
+| **Total (inference only)** | **~$25–40/mo** | **~50ms** | No databases, no queues |
+| Training pipeline | ~$0.50/run (compute) | ~15 min | One-time or monthly retrain |
+| TMDb API | Free (rate-limited) | ~3s per movie | ~$0 for 1K movies |
+
+### What This Project Does NOT Claim
+
+- It does **not** predict box office with confidence suitable for real investment decisions
+- It does **not** account for marketing budget, release competition, or social media buzz
+- It does **not** handle regional cinema beyond Bollywood (Hindi)
+- It does **not** use inflation-adjusted financial figures
+- The poster CV module **found no signal** — this is honestly reported as a null result
+
+### How to Interpret Predictions
+
+Treat rating predictions as **±1 point** (the MAE) and box office predictions as **±₹80 Cr**.
+The scenario comparison between release windows is a **relative simulation**, not
+an absolute forecast. Read the model comparison section to understand which models
+performed best and by how much.
 
 ---
 
