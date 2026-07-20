@@ -9,7 +9,8 @@
 | 3 | `POST` | `/predict-boxoffice` | `PredictBoxOfficeRequest` | `PredictBoxOfficeResponse` | ✅ Required | 60/min | Predict box office with scenarios |
 | 4 | `GET` | `/actor/{name}` | Path param `name: str` | `ActorInfoResponse` | ✅ Required | 60/min | Bankability Score + chemistry |
 | 5 | `GET` | `/model-info` | — | `ModelInfoResponse` | ✅ Required | 60/min | Deployed model metadata |
-| 6 | `GET` | `/docs` | — | HTML | ❌ Exempt | 60/min | Swagger UI documentation |
+| 6 | `GET` | `/metrics` | — | `text/plain` | ❌ Exempt | None | Prometheus metrics (internal scraper) |
+| 7 | `GET` | `/docs` | — | HTML | ❌ Exempt | 60/min | Swagger UI documentation |
 
 ---
 
@@ -90,26 +91,34 @@ Each chemistry pair dict:
 
 ## Shared Prediction Logic
 
-Both the FastAPI endpoints and the Streamlit dashboard call the **same** functions from `tamasha.predict`. There is no separate prediction implementation.
+Both the FastAPI endpoints and the Streamlit dashboard use the **same** underlying
+`PredictionService` class from `tamasha.predict`:
+
+- **FastAPI**: `PredictionService` is built once at startup via the lifespan context
+  manager and injected into route handlers via FastAPI's `Depends()`.
+- **Streamlit**: `PredictionService` is cached via `st.cache_resource` so models
+  aren't reloaded on every rerun.
+- Both access the same model files (`models/*.pkl`) directly — there is no
+  HTTP boundary between the dashboard and the API.
 
 ```python
-# api/routers/predict.py
-from tamasha.predict import predict_rating, predict_boxoffice
+# api/routers/predict.py — receives service via dependency injection
+from fastapi import Depends
+from api.main import get_prediction_service
+from tamasha.predict import PredictionService
 
-# api/routers/network.py
-from tamasha.predict import get_actor_info
+@router.post("/predict-rating")
+async def predict_rating_endpoint(...,
+    service: PredictionService = Depends(get_prediction_service)):
+    return await service.predict_rating_async(title, genres, cast, ...)
 
-# api/routers/model_info.py
-from tamasha.predict import get_model_info
-
-# app/pages/_1_Predict_a_Release.py
-from tamasha.predict import predict_rating, predict_boxoffice
-
-# app/pages/_2_Star_Network_Explorer.py
-from tamasha.predict import get_actor_info, get_bankability_scores, get_chemistry_pairs
-
-# app/pages/_4_Model_Performance.py
-from tamasha.predict import get_comparison_csv, get_model_info
+# app/pages/_1_Predict_a_Release.py — uses cached singleton
+from tamasha.predict import PredictionService
+@st.cache_resource
+def get_service():
+    svc = PredictionService()
+    svc.load()
+    return svc
 ```
 
 ---
@@ -137,9 +146,27 @@ All endpoints are rate-limited to **60 requests per minute** (configurable via
 Rate-limit headers are included on every response:
 - `X-RateLimit-Limit`: Maximum requests per window
 - `X-RateLimit-Remaining`: Remaining requests in current window
-- ~~`X-RateLimit-Reset`: (not yet available with slowapi)~~
 
 When exceeded, returns `429 Too Many Requests`.
+
+## Request Body Size Limits
+
+All POST endpoints are protected by a **100KB** maximum request body size limit.
+Requests exceeding this threshold receive HTTP 413 (Payload Too Large) with the
+standard error response shape:
+
+```json
+{
+  "error_code": "PAYLOAD_TOO_LARGE",
+  "message": "Request body exceeds 100KB limit",
+  "request_id": "req_abc123"
+}
+```
+
+This protects against resource exhaustion from oversized payloads.
+
+The 100KB threshold is generous for this API's typical payload (largest legitimate
+payload is ~50KB even with 100+ actor names).
 
 ---
 
@@ -150,8 +177,9 @@ When exceeded, returns `429 Too Many Requests`.
 | `200` | Success | All endpoints |
 | `401` | Unauthorized | Missing or invalid X-API-Key header |
 | `404` | Not found | Actor not in Bankability dataset |
+| `413` | Payload Too Large | Request body exceeds 100KB limit |
 | `429` | Too Many Requests | Rate limit exceeded (60 req/min) |
-| `503` | Service unavailable | Model not trained (missing .pkl) |
+| `503` | Service unavailable | Model not trained (missing .pkl) or SHA-256 integrity check failed |
 | `500` | Internal error | Prediction failure, data error |
 
 ---
@@ -171,20 +199,28 @@ All data files are lazy-loaded and cached in memory after first access.
 
 ## Testing
 
-API tests in `tests/test_api.py` use FastAPI's `TestClient`:
+API tests use FastAPI's `TestClient` across multiple test files:
+
+| Test File | Focus | Test Count |
+|-----------|-------|:----------:|
+| `tests/test_api.py` | Smoke tests — health, prediction endpoints | 10+ |
+| `tests/test_api_contract.py` | Schema validation — negative budget, oversized genres, empty cast, consistent error shapes | 10+ |
+| `tests/test_auth.py` | API key validation, exempt paths, CORS, request body limits, /health degraded | 17 |
+| `tests/test_predict_service.py` | PredictionService concurrency (20 threads), edge cases, graceful degradation | 15 |
 
 ```python
 from fastapi.testclient import TestClient
 from api.main import app
+import os
 
 # Protected endpoints require X-API-Key header
 client = TestClient(app)
-client.headers["X-API-Key"] = "tamasha-dev-key-2026"
+client.headers["X-API-Key"] = os.getenv("API_KEY", "tamasha-dev-key-2026")
 
 def test_health():
     response = client.get("/health")
     assert response.status_code == 200
-    assert response.json()["status"] == "ok"
+    assert response.json()["status"] in ("ok", "degraded")
 
 def test_predict_rating():
     response = client.post("/predict-rating", json={...})

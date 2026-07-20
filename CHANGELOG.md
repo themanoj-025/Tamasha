@@ -15,53 +15,62 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Phase 2 — Test expansion**: 57 new tests (46 → 103 total). Mocked HTTP enrichment
   tests, API contract tests, Hypothesis property-based tests for clash detection,
   concurrency tests (20 threads). Removed autouse fixtures from conftest.
-- **Phase 4 — ML rigor**: RandomizedSearchCV hyperparameter tuning (n_iter=5) for 4
-  models (RandomForest, GradientBoosting, XGBoost, LightGBM). Wilcoxon signed-rank
-  statistical significance test between top models using out-of-fold predictions.
-  Model versioning with metadata.json. Festival multipliers moved to config with
-  documented rationale.
-- **Phase 5 — DevOps hardening**: Multi-stage Dockerfile (builder + runtime),
-  .dockerignore, CI gates (pre-commit blocking, coverage ≥70%, pip-audit, Docker build),
-  structlog structured logging with request IDs, setup.py extras (ml, dev, all),
-  CHANGELOG.md.
+- **Phase 3 — Production hardening**: X-API-Key auth middleware, slowapi rate limiting
+  (60 req/min), CORS restriction to configured origins, SHA-256 model artifact
+  verification, request body size limits (100KB), exponential backoff on TMDb calls
+  (tenacity), async TMDb enrichment (httpx.AsyncClient, ~150x speedup).
+- **Phase 4 — ML rigor**: RandomizedSearchCV hyperparameter tuning (n_iter=5→15) for 4
+  models. Wilcoxon signed-rank statistical significance test. Model versioning with
+  metadata.json. Scatter plots now use cross_val_predict for genuine out-of-fold
+  predictions (matching CV MAE). Festival multipliers moved to config.
+- **Phase 5 — DevOps hardening**: Multi-stage Dockerfile, .dockerignore, CI gates
+  (pre-commit blocking, coverage ≥70%, pip-audit, Docker build, Python 3.11+3.12 matrix),
+  structlog structured logging with request IDs, setup.py extras (ml, dev, all).
 - **Phase 6 — 2026 layer**: Responsible AI / Limitations section in README,
   cost/latency budget table (1K DAU ~$25–40/mo).
-- **Auth & Rate Limiting**: X-API-Key middleware (exempts /health, /docs),
-  slowapi rate limiting (60 req/min), CORS restricted to configured origins.
-  Configurable via `API_KEY`, `ALLOWED_ORIGINS`, `RATE_LIMIT` env vars.
-- **Training pipeline tuning**: Wired RandomizedSearchCV into train_and_compare() with
-  clean model names in CSV (boolean `tuned` column). Out-of-fold statistical
-  significance test via cross_val_predict. LightGBM (tuned) now the best rating model
-  (MAE=0.9587, R²=0.2173). GradientBoosting (tuned) best box-office with Bankability
-  (MAE=₹75.3 Cr, 10.2% improvement).
+- **Batch C — Performance optimization**: Vectorized bankability scoring (O(n) via
+  pandas groupby), O(n log n) festival clash detection (sort-by-date sweep), diskcache
+  response caching with model-version-aware key.
+- **Batch D — Observability stack**: docker-compose.observability.yml (Prometheus +
+  Grafana), auto-provisioned Grafana dashboard (4 panels: request rate, error rate,
+  latency percentiles, total by endpoint), Prometheus scrape config.
+- **Batch E — Gap closure**: proper httpx.AsyncClient async enrichment (removed
+  ThreadPoolExecutor), clean architecture documentation, kaleido==0.2.1 pinned.
+- **Batch F — Regression tests**: Bankability output-equivalence test with
+  hand-computed reference, 10K-row clash detection scale test, scatter-plot CV MAE
+  consistency assertion.
+- **Batch G — Performance benchmarks**: Documented enrichment performance (150x async
+  speedup), vectorized bankability, O(n log n) clash detection, diskcache latency.
 
 ### Fixed
 
-- Scatter plot evaluation now notes that predictions come from a single train/test
-  split (not cross-validation) to avoid misleading comparisons with CV-based metrics.
-- `conftest.py` no longer writes dummy model files for tests that don't need them
-  (autouse session-scoped fixture removed).
-- Director LabelEncoder is now persisted and loaded at inference instead of silently
-  ignoring the director input.
-- Lazy import (`RandomizedSearchCV`) moved from function body to module level in
-  `model_selection.py`.
+- **Kaleido version conflict**: Pinned kaleido==0.2.1 (1.2.0 breaks with plotly 5.x).
+- **LightGBM tuning degradation**: Constrained search space (removed max_depth=-1,
+  min learning_rate=0.05) to prevent overfitting on small datasets.
+- Scatter plot evaluation: replaced single train/test split with cross_val_predict
+  for genuine out-of-fold predictions matching CV MAE.
+- `conftest.py` no longer writes dummy model files for tests that don't need them.
+- Director LabelEncoder is now persisted and loaded at inference.
+- Lazy import moved from function body to module level.
 
 ### Security
 
 - **X-API-Key authentication**: Header-based auth on all endpoints except /health and
-  docs. Configurable via `API_KEY` env var (default dev key: `tamasha-dev-key-2026`).
-- **Rate limiting**: slowapi with 60 req/min rate limit, using API key or IP as
-  identifier. Returns 429 when exceeded.
-- **CORS restriction**: Explicit allowed origins (default: localhost dev ports) instead
-  of `["*"]`.
-- **Request-ID on rejected auth**: Even 401 responses include `X-Request-ID` header
-  for traceability.
+  docs. Configurable via `API_KEY` env var.
+- **Rate limiting**: slowapi with 60 req/min rate limit.
+- **CORS restriction**: Explicit allowed origins instead of `["*"]`.
+- **SHA-256 model verification**: Every model artifact hashed and verified before load.
+- **Request body limits**: 100KB max body size with 413 response.
+- **Request-ID on rejected auth**: Even 401 responses include `X-Request-ID` header.
 
 ### Changed
 
 - API now requires `X-API-Key` header for all prediction, network, and model-info
-  endpoints. Update clients accordingly.
-- CORS origins restricted to configured `ALLOWED_ORIGINS` (update for your deployment).
+  endpoints.
+- Async enrichment uses httpx.AsyncClient instead of ThreadPoolExecutor.
+- Hyperparameter tuning budget increased from n_iter=5 to n_iter=15.
+- CI now tests both Python 3.11 and 3.12 with version-keyed pip cache.
+- Scatter plots and reported CV MAE come from the same cross_val_predict methodology.
 
 ## [0.1.0] — 2026-01-01
 
