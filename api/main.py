@@ -86,6 +86,8 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 _AUTH_EXEMPT_PATHS = {"/health", "/docs", "/openapi.json", "/redoc"}
 
+# Health endpoint now reports integrity failures from PredictionService
+
 
 @app.middleware("http")
 async def verify_api_key_middleware(request, call_next):
@@ -99,6 +101,32 @@ async def verify_api_key_middleware(request, call_next):
         return JSONResponse(
             status_code=401,
             content={"detail": "Invalid or missing API key. Provide via X-API-Key header."},
+            headers={"X-Request-ID": request_id},
+        )
+    return await call_next(request)
+
+
+# ── Request body size limit (100KB) ────────────────────────────────
+# 100KB is generous for this API's payloads: a predict-rating request
+# is ~200 bytes; the largest legitimate payload is a cast list of ~50
+# actors at ~20 bytes each = ~1KB. 100KB provides a safety margin while
+# blocking payloads that could OOM the model loading path.
+_MAX_BODY_BYTES = 100 * 1024  # 100 KB
+
+
+@app.middleware("http")
+async def limit_request_size(request, call_next):
+    content_length = request.headers.get("content-length", "0")
+    try:
+        body_size = int(content_length)
+    except ValueError:
+        body_size = 0
+    if body_size > _MAX_BODY_BYTES:
+        request_id = str(uuid.uuid4())[:8]
+        logger.warning("request_too_large", path=request.url.path, size=body_size, request_id=request_id)
+        return JSONResponse(
+            status_code=413,
+            content={"detail": f"Request body too large ({body_size} bytes). Maximum allowed is {_MAX_BODY_BYTES} bytes."},
             headers={"X-Request-ID": request_id},
         )
     return await call_next(request)
