@@ -177,7 +177,9 @@ API tests in `tests/test_api.py` use FastAPI's `TestClient`:
 from fastapi.testclient import TestClient
 from api.main import app
 
+# Protected endpoints require X-API-Key header
 client = TestClient(app)
+client.headers["X-API-Key"] = "tamasha-dev-key-2026"
 
 def test_health():
     response = client.get("/health")
@@ -187,4 +189,10 @@ def test_health():
 def test_predict_rating():
     response = client.post("/predict-rating", json={...})
     assert response.status_code in (200, 503)  # 503 if model not trained
+
+def test_auth_blocks_no_key():
+    # Without API key, protected endpoints return 401
+    noauth = TestClient(app)
+    response = noauth.post("/predict-rating", json={...})
+    assert response.status_code == 401
 ```
