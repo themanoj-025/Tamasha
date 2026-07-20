@@ -331,7 +331,7 @@ def enrich_dataset(
 # ── Async enrichment ──────────────────────────────────────────────────
 
 
-def _fetch_one_async(
+async def _fetch_one_async(
     idx: int,
     title: str,
     year: Optional[int],

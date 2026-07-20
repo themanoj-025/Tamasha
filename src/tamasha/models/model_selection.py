@@ -13,7 +13,7 @@ from __future__ import annotations
 import logging
 import time
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Optional, Union
 
 import hashlib
@@ -582,7 +582,7 @@ def save_model_with_version(
     meta = {
         "version": next_version,
         "task": task_name,
-        "timestamp": datetime.now(datetime.timezone.utc).isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "model_type": type(model).__name__,
         "sha256": model_hash,
     }
