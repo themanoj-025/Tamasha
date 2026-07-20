@@ -1,56 +1,63 @@
-# Byte-compiled / optimized / DLL files
+# ── Byte-compiled / optimized / DLL files ─────────────────────────────────
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 
-# Data files
+# ── Data files (large, raw, and processed) ────────────────────────────────
 data/raw/*
 data/processed/*
 !data/raw/.gitkeep
 !data/processed/.gitkeep
 
-# Model artifacts
+# ── Model artifacts (all formats + versioned subdirectories) ──────────────
 models/*.pkl
 models/*.joblib
 models/*.onnx
 models/*.json
+models/**/*.pkl
+models/**/*.joblib
+models/**/*.onnx
+models/**/*.json
 !models/.gitkeep
 
-# Environment
+# ── Environment files ─────────────────────────────────────────────────────
 .env
-.streamlit/
+.env.*
+!.env.example
+.streamlit/secrets.toml
+!.streamlit/secrets.toml.example
 .venv/
 venv/
 env/
 
-# IDE
+# ── IDE / Editor ──────────────────────────────────────────────────────────
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
+*.code-workspace
 
-# OS
+# ── OS ────────────────────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
 
-# Jupyter
+# ── Jupyter ───────────────────────────────────────────────────────────────
 .ipynb_checkpoints/
 *.ipynb_checkpoints/
 
-# Reports (keep figures, ignore temp)
+# ── Reports (ignore loose HTML/PNG, keep figures and CSVs) ────────────────
 reports/*.html
 reports/*.png
-!reports/figures/
 
-# Kaggle
+# ── Kaggle ────────────────────────────────────────────────────────────────
 kaggle.json
 
-# Docker
+# ── Docker ────────────────────────────────────────────────────────────────
 .docker/
 
-# Distribution / packaging
+# ── Distribution / packaging ──────────────────────────────────────────────
 .Python
 build/
 develop-eggs/
@@ -68,23 +75,35 @@ wheels/
 .installed.cfg
 *.egg
 
-# Testing / CI
+# ── Testing / CI / Coverage ──────────────────────────────────────────────
 .pytest_cache/
 .coverage
 .coverage.*
+coverage.xml
+.coverage.xml
 htmlcov/
-coverage/
+coverage/  # Generated pytest-cov combined report
 .tox/
 .nox/
 
-# Type checking
+# ── Type checking ─────────────────────────────────────────────────────────
 .mypy_cache/
 .pytype/
 .typings/
+.dmypy.json
 
-# CatBoost training artifacts
+# ── CatBoost training artifacts ───────────────────────────────────────────
 catboost_info/
 
-# Logs
+# ── Logs ──────────────────────────────────────────────────────────────────
 *.log
 logs/
+
+# ── Cache / Temp ──────────────────────────────────────────────────────────
+*.db
+*.sqlite
+tmp/
+temp/
+
+# ── Python version / runtime ──────────────────────────────────────────────
+.python-version
