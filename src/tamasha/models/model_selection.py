@@ -23,7 +23,7 @@ from scipy import stats
 from sklearn.linear_model import LinearRegression, Ridge, Lasso
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
-from sklearn.model_selection import KFold
+from sklearn.model_selection import KFold, cross_val_predict
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
 from tamasha.config import settings
@@ -289,11 +289,10 @@ def train_and_compare(
             for k in fold_metrics[0]
         }
 
-        label = f"{name} (tuned)" if tune and name in tuned_params_log else name
-
         results.append(
             {
-                "model": label,
+                "model": name,
+                "tuned": tune and name in tuned_params_log,
                 "MAE": avg["MAE"],
                 "MAE_std": std["MAE"],
                 "RMSE": avg["RMSE"],

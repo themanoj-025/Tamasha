@@ -257,6 +257,8 @@ def main() -> None:
     best_rating, comparison_rating = train_rating_model(
         df_rating,
         rating_column="rating",
+        tune=True,
+        tune_n_iter=5,
     )
 
     best_rating_name = comparison_rating.iloc[0]["model"]
@@ -436,6 +438,8 @@ def main() -> None:
         boxoffice_column=box_target,
         bankability_df=None,
         run_label="boxoffice",  # Function appends "_baseline"
+        tune=True,
+        tune_n_iter=5,
     )
 
     baseline_best_name = comparison_boxoffice_baseline.iloc[0]["model"]
@@ -459,6 +463,8 @@ def main() -> None:
         boxoffice_column=box_target,
         bankability_df=bankability_scores,
         run_label="boxoffice",  # Function appends "_with_bankability"
+        tune=True,
+        tune_n_iter=5,
     )
 
     bank_best_name = comparison_boxoffice_with_bank.iloc[0]["model"]

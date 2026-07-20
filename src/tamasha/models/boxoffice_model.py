@@ -33,6 +33,8 @@ def train_boxoffice_model(
     cv_folds: int = 5,
     save_dir: Optional[Union[str, Path]] = None,
     run_label: str = "boxoffice",
+    tune: bool = False,
+    tune_n_iter: int = 10,
 ) -> tuple[Any, pd.DataFrame]:
     """Run the box-office model comparison and save the winner.
 
@@ -55,6 +57,11 @@ def train_boxoffice_model(
         Directory to save outputs.
     run_label : str, default="boxoffice"
         Label for CSV naming.
+    tune : bool, default=False
+        If True, run ``RandomizedSearchCV`` for models with search spaces
+        defined in ``_TUNING_SPACES``.
+    tune_n_iter : int, default=10
+        Number of parameter settings sampled per tuned model.
 
     Returns
     -------
@@ -119,6 +126,8 @@ def train_boxoffice_model(
         cv_folds=cv_folds,
         metric=metric,
         save_csv=str(csv_path),
+        tune=tune,
+        tune_n_iter=tune_n_iter,
     )
 
     # Save best model (with bankability version)
