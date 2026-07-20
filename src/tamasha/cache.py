@@ -51,7 +51,7 @@ def _make_key(payload: dict[str, Any], model_version: str = "") -> str:
         SHA-256 hex digest suitable as a cache key.
     """
     # Sort keys for deterministic serialization
-    canonical = json.dumps(payload, sort_keys=True, default=str)
+    canonical = json.dumps(payload, sort_keys=True)
     key_input = f"{model_version}:{canonical}"
     return hashlib.sha256(key_input.encode()).hexdigest()
 
@@ -125,10 +125,4 @@ def set_cached_explanation(
     cache.set(key, result, expire=ttl)
 
 
-def clear_cache() -> int:
-    """Clear all cached predictions. Returns number of entries removed."""
-    cache = _get_cache()
-    count = len(cache)
-    cache.clear()
-    logger.info("Prediction cache cleared (%d entries removed)", count)
-    return count
+
