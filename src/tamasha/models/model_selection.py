@@ -23,7 +23,7 @@ from scipy import stats
 from sklearn.linear_model import LinearRegression, Ridge, Lasso
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
-from sklearn.model_selection import KFold, cross_val_predict
+from sklearn.model_selection import KFold, cross_val_predict, RandomizedSearchCV
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
 from tamasha.config import settings
@@ -418,8 +418,6 @@ def tune_model(
     """
     if name not in _TUNING_SPACES:
         return None, {}
-
-    from sklearn.model_selection import RandomizedSearchCV
 
     # Get the model class and its default params
     if name in _MODEL_REGISTRY:

@@ -21,6 +21,7 @@ from api.schemas import (
 )
 
 client = TestClient(app)
+client.headers["X-API-Key"] = "tamasha-dev-key-2026"
 
 
 # ── Schema validation tests (pure Pydantic, no network) ──────────────

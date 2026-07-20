@@ -2,6 +2,7 @@
 
 Uses a ``lifespan`` context manager to build the ``PredictionService``
 once at startup and inject it into route handlers via ``Depends()``.
+Exposes rate-limited, auth-guarded endpoints with structured logging.
 """
 
 from __future__ import annotations
@@ -12,9 +13,15 @@ from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
 import structlog
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
+from slowapi.util import get_remote_address
 
+from tamasha.config import settings
 from tamasha.predict import PredictionService
 
 # ── Structured logging via structlog ──────────────────────────────────
@@ -36,10 +43,12 @@ structlog.configure(
 logger: structlog.stdlib.BoundLogger = structlog.get_logger()  # type: ignore[assignment]
 
 
+# ── App factory ──────────────────────────────────────────────────────
+
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Build PredictionService on startup, clean up on shutdown."""
-    logger.info("Tamaha API starting up...")
+    logger.info("Tamasha API starting up...")
     svc = PredictionService()
     svc.load()
     app.state.prediction_service = svc
@@ -48,12 +57,49 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     logger.info("Tamasha API shutting down...")
 
 
+# ── Rate limiter ─────────────────────────────────────────────────────
+
+def _rate_limit_key(request) -> str:
+    """Use API key as the rate-limit identifier if present; fall back to IP."""
+    api_key = request.headers.get("X-API-Key", "")
+    if api_key:
+        return api_key
+    return get_remote_address(request)
+
+
+limiter = Limiter(key_func=_rate_limit_key, default_limits=[settings.RATE_LIMIT])
+
 app = FastAPI(
     title="Tamasha API",
     description="Bollywood Movie Intelligence Platform API",
     version="0.1.0",
     lifespan=lifespan,
 )
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+
+# ── API key authentication middleware ─────────────────────────────────
+# Exempts health-check and OpenAPI doc endpoints.
+
+_AUTH_EXEMPT_PATHS = {"/health", "/docs", "/openapi.json", "/redoc"}
+
+
+@app.middleware("http")
+async def verify_api_key_middleware(request, call_next):
+    if request.url.path in _AUTH_EXEMPT_PATHS:
+        return await call_next(request)
+
+    api_key = request.headers.get("X-API-Key", "")
+    if api_key != settings.API_KEY:
+        logger.warning("auth_rejected", path=request.url.path)
+        return JSONResponse(
+            status_code=401,
+            content={"detail": "Invalid or missing API key. Provide via X-API-Key header."},
+        )
+    return await call_next(request)
+
 
 # ── Request‑ID middleware ─────────────────────────────────────────────
 
@@ -68,13 +114,23 @@ async def add_request_id(request, call_next):
 
 
 # ── CORS — restricted in production ───────────────────────────────────
+
+_allowed_origins = [
+    o.strip() for o in settings.ALLOWED_ORIGINS.split(",") if o.strip()
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+logger.info("cors_configured", allowed_origins=_allowed_origins)
+
+
+# ── Apply rate‑limiting middleware (after CORS so headers aren't stripped) ─
+
+app.add_middleware(SlowAPIMiddleware)
 
 
 # ── Dependency injection helper ──────────────────────────────────────

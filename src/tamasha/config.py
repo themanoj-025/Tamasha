@@ -89,6 +89,22 @@ class Settings(BaseSettings):
        - Normal (1.0×): baseline non-festival release
     """
 
+    # ── Auth ───────────────────────────────────────────────────────────
+    API_KEY: str = "tamasha-dev-key-2026"
+    """API key for authenticating requests (X-API-Key header).
+
+    Default dev key is documented; set a strong random value via
+    the ``API_KEY`` env var in production.
+    """
+    ALLOWED_ORIGINS: str = "http://localhost:8501,http://localhost:8000"
+    """Comma-separated list of allowed CORS origins.
+    Set via env var for production deployments.
+    """
+
+    # ── Rate limiting ───────────────────────────────────────────────────
+    RATE_LIMIT: str = "60/minute"
+    """Global rate limit string (slowapi format)."""
+
     # ── Logging ────────────────────────────────────────────────────────
     LOG_LEVEL: str = "INFO"
 
