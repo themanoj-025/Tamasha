@@ -79,8 +79,8 @@ _TUNING_SPACES: dict[str, dict[str, Any]] = {
     },
     "LightGBM": {
         "n_estimators": [100, 200, 300],
-        "max_depth": [4, 6, 8, -1],
-        "learning_rate": [0.01, 0.05, 0.1],
+        "max_depth": [4, 6, 8],          # bounded depth to prevent overfitting on small datasets
+        "learning_rate": [0.05, 0.1],     # min 0.05 ensures convergence with 200-300 trees
         "num_leaves": [15, 31, 63],
     },
 }

@@ -231,9 +231,9 @@ Step 2: Enriched BO ──fuzzy──→ IMDb India   (matches on title + year �
 
 | Model | MAE (₹) ↓ | R² ↑ |
 |-------|:---------:|:----:|
-| **🏆 GradientBoosting (tuned)** | **83,80,50,818** | **0.210** |
-| RandomForest (tuned) | 84,21,88,937 | 0.298 |
-| XGBoost (tuned) | 86,33,68,422 | 0.048 |
+| **🏆 XGBoost (tuned)** | **83,30,63,046** | **0.154** |
+| GradientBoosting (tuned) | 83,80,50,818 | 0.255 |
+| RandomForest (tuned) | 87,85,70,059 | 0.272 |
 | CatBoost | 88,12,73,765 | 0.237 |
 | DecisionTree | 91,70,42,745 | -0.186 |
 | LightGBM (tuned) | 1,19,39,98,815 | -0.435 |
@@ -245,10 +245,10 @@ Step 2: Enriched BO ──fuzzy──→ IMDb India   (matches on title + year �
 
 | Model | MAE (₹) ↓ | R² ↑ |
 |-------|:---------:|:----:|
-| **🏆 GradientBoosting (tuned)** | **75,25,17,831** | **0.295** |
-| CatBoost | 80,73,40,545 | 0.288 |
-| RandomForest (tuned) | 81,12,15,885 | 0.302 |
-| XGBoost (tuned) | 78,83,85,779 | 0.104 |
+| **🏆 XGBoost (tuned)** | **73,61,19,014** | **0.213** |
+| GradientBoosting (tuned) | 78,54,05,986 | 0.245 |
+| RandomForest (tuned) | 80,74,89,699 | 0.302 |
+| CatBoost | 81,01,23,181 | 0.294 |
 | DecisionTree | 91,49,65,370 | 0.011 |
 | LightGBM (tuned) | 1,14,62,23,960 | -0.173 |
 | Ridge | 1,19,35,20,668 | -0.455 |
@@ -258,15 +258,15 @@ Step 2: Enriched BO ──fuzzy──→ IMDb India   (matches on title + year �
 ### 🔥 The Headline Result
 
 ```diff
-  Baseline MAE:       ₹83.8 Cr  (GradientBoosting, tuned)
-+ With Bankability:   ₹75.3 Cr  (GradientBoosting, tuned)
+  Baseline MAE:       ₹83.3 Cr  (XGBoost, tuned)
++ With Bankability:   ₹73.6 Cr  (XGBoost, tuned)
 +───────────────────────────────────────────
-+ Improvement:        -10.2% MAE reduction 🎯
++ Improvement:        -11.6% MAE reduction 🎯
 ```
 
-**Adding the Bankability Score feature improved box-office prediction error by 10.2%.**
+**Adding the Bankability Score feature improved box-office prediction error by 11.6%.**
 
-**Significance test:** GradientBoosting vs XGBoost → **p=0.6554** (not significant — top tree models are statistically tied at n=812). This is the single strongest piece of evidence in the project that the network analysis feature engineering actually mattered — not just that a model was trained.
+**Significance test:** XGBoost vs GradientBoosting → **p=0.4375** (not significant — top tree models are statistically tied at n=812). This is the single strongest piece of evidence in the project that the network analysis feature engineering actually mattered — not just that a model was trained.
 
 <p align="center">
   <img src="reports/figures/boxoffice_with_bank_comparison.png" alt="Box Office Model Comparison" width="95%">
