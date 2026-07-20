@@ -31,6 +31,8 @@ def train_rating_model(
     metric: str = "MAE",
     cv_folds: int = 5,
     save_dir: Optional[Union[str, Path]] = None,
+    tune: bool = False,
+    tune_n_iter: int = 10,
 ) -> tuple[Any, pd.DataFrame]:
     """Run the full rating model comparison and save the winner.
 
@@ -49,12 +51,18 @@ def train_rating_model(
     save_dir : str or Path, optional
         Directory to save outputs.  Defaults to ``settings.MODELS_DIR``
         for the model and ``settings.REPORTS_DIR`` for the CSV.
+    tune : bool, default=False
+        If True, run ``RandomizedSearchCV`` for models with search spaces
+        defined in ``_TUNING_SPACES``.
+    tune_n_iter : int, default=10
+        Number of parameter settings sampled per tuned model.
 
     Returns
     -------
     tuple[Any, pd.DataFrame]
         ``(best_model, comparison_df)``.
     """
+    """Run the full rating model comparison and save the winner."""
     if save_dir is None:
         save_dir = settings.MODELS_DIR
     save_dir = Path(save_dir)
