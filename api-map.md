@@ -2,13 +2,14 @@
 
 ## FastAPI Endpoints
 
-| # | Method | Route | Input Schema | Output Schema | Purpose | Called From |
-|:-:|--------|-------|-------------|--------------|---------|------------|
-| 1 | `GET` | `/health` | — | `dict` | Health check + version | External clients, Docker healthcheck |
-| 2 | `POST` | `/predict-rating` | `PredictRatingRequest` | `PredictRatingResponse` | Predict IMDB rating | External apps, curl/Postman |
-| 3 | `POST` | `/predict-boxoffice` | `PredictBoxOfficeRequest` | `PredictBoxOfficeResponse` | Predict box office with scenarios | External apps |
-| 4 | `GET` | `/actor/{name}` | Path param `name: str` | `ActorInfoResponse` | Bankability Score + chemistry | External apps |
-| 5 | `GET` | `/model-info` | — | `ModelInfoResponse` | Deployed model metadata | External apps, monitoring |
+| # | Method | Route | Input Schema | Output Schema | Auth | Rate Limit | Purpose |
+|:-:|--------|-------|-------------|--------------|:----:|:----------:|---------|
+| 1 | `GET` | `/health` | — | `dict` | ❌ Exempt | 60/min | Health check + version |
+| 2 | `POST` | `/predict-rating` | `PredictRatingRequest` | `PredictRatingResponse` | ✅ Required | 60/min | Predict IMDB rating |
+| 3 | `POST` | `/predict-boxoffice` | `PredictBoxOfficeRequest` | `PredictBoxOfficeResponse` | ✅ Required | 60/min | Predict box office with scenarios |
+| 4 | `GET` | `/actor/{name}` | Path param `name: str` | `ActorInfoResponse` | ✅ Required | 60/min | Bankability Score + chemistry |
+| 5 | `GET` | `/model-info` | — | `ModelInfoResponse` | ✅ Required | 60/min | Deployed model metadata |
+| 6 | `GET` | `/docs` | — | HTML | ❌ Exempt | 60/min | Swagger UI documentation |
 
 ---
 

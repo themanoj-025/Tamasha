@@ -93,17 +93,24 @@
 
 ### 5. Prediction Layer (`src/tamasha/predict.py`)
 
-This is the **shared prediction module** - both Streamlit dashboard and FastAPI call into it. Key functions:
+This is the **shared prediction module** - both Streamlit dashboard and FastAPI call into it.
+Originally used module-level mutable globals; now a thread-safe **`PredictionService` class**
+with dependency injection via FastAPI ``Depends()`` and ``st.cache_resource`` for Streamlit.
 
 | Function | Purpose | Returns |
 |----------|---------|---------|
-| `predict_rating()` | Rating from metadata | `{predicted_rating, model_name, model_mae}` |
-| `predict_boxoffice()` | Box office + scenario comparison | `{predicted_boxoffice_cr, model_name, scenarios, bankability_info}` |
-| `get_actor_info()` | Bankability + chemistry for one actor | `{name, bankability_score, film_count, top_chemistry_pairs}` |
-| `get_model_info()` | Deployed model metadata | `{rating_model: ..., boxoffice_model: ...}` |
-| `get_bankability_scores()` | Full 1,010-row DataFrame | `pd.DataFrame` |
-| `get_chemistry_pairs()` | Full chemistry pairs | `pd.DataFrame` |
-| `get_comparison_csv()` | Specific comparison CSV as DataFrame | `pd.DataFrame` or None |
+| `PredictioService.predict_rating()` | Rating from metadata (instance method) | `{predicted_rating, model_name, model_mae}` |
+| `PredictionService.predict_boxoffice()` | Box office + scenario comparison | `{predicted_boxoffice_cr, model_name, scenarios, bankability_info}` |
+| `PredictionService.get_actor_info()` | Bankability + chemistry for one actor | `{name, bankability_score, film_count, top_chemistry_pairs}` |
+| `PredictionService.get_model_info()` | Deployed model metadata | `{rating_model: ..., boxoffice_model: ...}` |
+| `PredictionService.healthy` | Property: all artifacts loaded? | `bool` |
+| Module-level wrappers | Backward-compat for Streamlit | Same signatures as before |
+
+Key design decisions:
+- Thread-safe: all instance variables set once in ``load()``, then read-only
+- Double-checked locking with ``threading.Lock()`` for safe concurrent loading
+- ``PredictionService`` built once at FastAPI startup via lifespan, injected via Depends()
+- Streamlit uses ``st.cache_resource`` for the equivalent singleton
 
 ### 6. Analysis Layer
 
@@ -135,7 +142,8 @@ This is the **shared prediction module** - both Streamlit dashboard and FastAPI 
 
 | File | Type | Routes |
 |------|------|--------|
-| `main.py` | FastAPI app | `/health`, CORS, router inclusion |
+| `main.py` | FastAPI app | `/health`, auth middleware, rate limiting, CORS, router inclusion |
+| `main.py` (middleware) | Auth + Rate limiting + Request-ID | X-API-Key check (exempts /health, /docs), slowapi 60 req/min, request-ID on all responses |
 | `schemas.py` | Pydantic models | PredictRatingRequest/Response, PredictBoxOfficeRequest/Response, ActorInfoResponse, ModelInfoResponse |
 | `routers/predict.py` | Router | POST /predict-rating, POST /predict-boxoffice |
 | `routers/network.py` | Router | GET /actor/{name} |
@@ -154,7 +162,12 @@ class Settings(BaseSettings):
     REPORTS_DIR: Path
     FIGURES_DIR: Path
     MODEL_SELECTION_METRIC: str = "MAE"  # Configurable: MAE, RMSE, R2
-    BANKABILITY_DECAY_HALFLIFE_YEARS: float = 5.0
+    CV_FOLDS: int = 5
+    BANKABILITY_DECAY_HALFLIFE_YEARS: float = 3.0
+    FESTIVAL_MULTIPLIERS: dict  # Domain-expert priors per window
+    API_KEY: str = "tamasha-dev-key-2026"  # X-API-Key header
+    ALLOWED_ORIGINS: str  # Comma-separated CORS origins
+    RATE_LIMIT: str = "60/minute"  # slowapi format
     LOG_LEVEL: str = "INFO"
 ```
 
@@ -252,18 +265,20 @@ clean + TMDb enrichment (plot summaries, release dates, poster paths)
     |     |
     |     v
     |   build_feature_matrix() -> X (36 cols), y_rating
+    |   tune_model() -> RandomizedSearchCV for RF, GBR, XGB, LGB
     |   train_and_compare(9 models, 5-fold CV) -> comparison_rating.csv
-    |   -> GradientBoosting wins -> save best_rating_model.pkl
+    |   significance test: LightGBM vs CatBoost (p=0.31, not significant)
+    |   -> LightGBM (tuned) wins -> save best_rating_model.pkl
     |
-    +--> Box office dataset (joined): 600+ rows with box office
+    +--> Box office dataset (joined): 812 rows with box office
     |     |
     |     +--> baseline: build_feature_matrix() -> X (31 cols), y_box
-    |     |   train_and_compare() -> comparison_baseline.csv
-    |     |   -> XGBoost wins (MAE=35.2 Cr)
+    |     |   tune_model() + train_and_compare() -> comparison_baseline.csv
+    |     |   -> GradientBoosting (tuned) wins (MAE=₹83.8 Cr)
     |     |
     |     +--> with Bankability: X + avg_bankability_score (32 cols)
-    |         train_and_compare() -> comparison_with_bank.csv
-    |         -> XGBoost wins (MAE=32.1 Cr, 8.7% improvement)
+    |         tune_model() + train_and_compare() -> comparison_with_bank.csv
+    |         -> GradientBoosting (tuned) wins (MAE=₹75.3 Cr, 10.2% ↑)
     |
     +--> Bankability scores: compute_bankability_scores() -> 1,010 individuals
     +--> Chemistry pairs: detect_chemistry_pairs() -> top 10
