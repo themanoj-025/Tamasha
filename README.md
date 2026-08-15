@@ -7,6 +7,31 @@
 [![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?logo=streamlit&logoColor=white)]()
 [![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)]()
 [![Tests](https://img.shields.io/badge/Tests-141_passing-brightgreen)]()
+[![CI](https://img.shields.io/github/actions/workflow/status/themanoj-025/Tamasha/ci.yml?label=CI)]()
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+---
+
+## 📋 Table of Contents
+
+- [The Problem](#the-problem)
+- [Key Results](#key-results)
+- [Fuzzy-Join Methodology](#fuzzy-join-methodology)
+- [Architecture](#architecture)
+- [The Bankability Score & Chemistry Pairing Network](#the-bankability-score--chemistry-pairing-network)
+- [Release Timing & Festival Analysis](#release-timing--festival-analysis)
+- [Plot Tone & Genre-Conditional Analysis](#plot-tone--genre-conditional-analysis)
+- [Poster CV Module](#poster-cv-module)
+- [How to Run](#how-to-run)
+- [Tech Stack](#tech-stack)
+- [Responsible AI & Known Limitations](#responsible-ai--known-limitations)
+- [License](#-license)
+- [Acknowledgements](#-acknowledgements)
+- [Show Your Support](#-show-your-support)
+
+---
+
+> 📸 **Screenshot placeholder:** Add a screenshot of the star-network explorer or the release-prediction dashboard.
 
 ---
 
@@ -194,6 +219,29 @@ uvicorn api.main:app --reload
 
 ---
 
-## License
+## 📄 License
 
 MIT License — see [LICENSE](LICENSE).
+
+---
+
+## 🙏 Acknowledgements
+
+- [IMDb India Movies](https://www.kaggle.com/datasets/adrianmcmahon/imdb-india-movies) - Primary dataset
+- [Bollywood Box Office](https://www.kaggle.com/datasets/rajugc/bollywood-movies-dataset) - Box office dataset
+- [Year Bridge](https://www.kaggle.com/datasets/vidhikishorwaghela/bollywood-movies-dataset) - Year bridging dataset
+- [TMDb](https://www.themoviedb.org/) - Release-date, plot, and poster enrichment
+
+---
+
+## ⭐ Show Your Support
+
+- ⭐ Star the repository if you enjoyed the analysis
+- 🐛 [Report a bug](https://github.com/themanoj-025/Tamasha/issues)
+- 💡 [Request a feature](https://github.com/themanoj-025/Tamasha/issues)
+
+---
+
+<p align="center">
+  Made with ❤️ by <a href="https://github.com/themanoj-025">themanoj-025</a>
+</p>
