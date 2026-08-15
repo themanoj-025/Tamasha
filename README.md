@@ -163,8 +163,8 @@ Using 200 poster images from the TMDb API, we extracted 63 hand-crafted visual f
 
 ```bash
 # Install
-git clone https://github.com/themanoj-025/tamasha.git
-cd tamasha
+git clone https://github.com/themanoj-025/Tamasha.git
+cd Tamasha
 python -m venv .venv
 pip install -r requirements.txt
 pip install -e .
@@ -245,3 +245,11 @@ MIT License — see [LICENSE](LICENSE).
 <p align="center">
   Made with ❤️ by <a href="https://github.com/themanoj-025">themanoj-025</a>
 </p>
+---
+
+## ⭐ Star History
+
+[![Last Commit](https://img.shields.io/github/last-commit/themanoj-025/Tamasha?style=flat-square)](https://github.com/themanoj-025/Tamasha)
+[![Contributors](https://img.shields.io/github/contributors/themanoj-025/Tamasha?style=flat-square)](https://github.com/themanoj-025/Tamasha/graphs/contributors)
+
+[![Star History Chart](https://api.star-history.com/svg?repos=themanoj-025/Tamasha&type=Date)](https://star-history.com/#Tamasha&Date)
