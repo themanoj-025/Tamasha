@@ -1,0 +1,14 @@
+# Prometheus configuration — scrapes the Tamasha API /metrics endpoint
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: "tamasha-api"
+    # When running locally, the API is on the host at port 8000.
+    # docker extra_hosts maps host.docker.internal → host gateway.
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["host.docker.internal:8000"]
+        labels:
+          service: "tamasha-api"

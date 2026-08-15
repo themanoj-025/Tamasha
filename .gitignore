@@ -1,0 +1,109 @@
+# ── Byte-compiled / optimized / DLL files ─────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# ── Data files (large, raw, and processed) ────────────────────────────────
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# ── Model artifacts (all formats + versioned subdirectories) ──────────────
+models/*.pkl
+models/*.joblib
+models/*.onnx
+models/*.json
+models/**/*.pkl
+models/**/*.joblib
+models/**/*.onnx
+models/**/*.json
+!models/.gitkeep
+
+# ── Environment files ─────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+!.streamlit/secrets.toml.example
+.venv/
+venv/
+env/
+
+# ── IDE / Editor ──────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.code-workspace
+
+# ── OS ────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── Jupyter ───────────────────────────────────────────────────────────────
+.ipynb_checkpoints/
+*.ipynb_checkpoints/
+
+# ── Reports (ignore loose HTML/PNG, keep figures and CSVs) ────────────────
+reports/*.html
+reports/*.png
+
+# ── Kaggle ────────────────────────────────────────────────────────────────
+kaggle.json
+
+# ── Docker ────────────────────────────────────────────────────────────────
+.docker/
+
+# ── Distribution / packaging ──────────────────────────────────────────────
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# ── Testing / CI / Coverage ──────────────────────────────────────────────
+.pytest_cache/
+.coverage
+.coverage.*
+coverage.xml
+.coverage.xml
+htmlcov/
+coverage/  # Generated pytest-cov combined report
+.tox/
+.nox/
+
+# ── Type checking ─────────────────────────────────────────────────────────
+.mypy_cache/
+.pytype/
+.typings/
+.dmypy.json
+
+# ── CatBoost training artifacts ───────────────────────────────────────────
+catboost_info/
+
+# ── Logs ──────────────────────────────────────────────────────────────────
+*.log
+logs/
+
+# ── Cache / Temp ──────────────────────────────────────────────────────────
+*.db
+*.sqlite
+tmp/
+temp/
+
+# ── Python version / runtime ──────────────────────────────────────────────
+.python-version

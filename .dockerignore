@@ -1,0 +1,54 @@
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Data (large files, not needed at runtime)
+data/raw/
+data/processed/
+
+# Models (trained locally, not committed)
+models/
+!models/.gitkeep
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Environment
+.env
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter
+notebooks/
+*.ipynb
+
+# Docker
+.docker/
+
+# Reports (generated at build time)
+reports/*.html
+reports/*.png
+reports/figures/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+*.egg

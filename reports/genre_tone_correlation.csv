@@ -1,0 +1,17 @@
+genre,n_movies,correlation,mean_compound
+Fantasy,14,0.417,-0.015
+History,17,0.4043,0.1924
+Biography,29,0.3382,0.1286
+Adventure,44,0.1743,-0.177
+Family,23,0.1367,0.0936
+Action,306,0.1336,-0.1384
+Crime,147,0.1325,-0.3153
+Thriller,98,0.0578,-0.2606
+Romance,237,0.0432,0.3581
+Musical,69,-0.0021,0.3327
+Drama,536,-0.0067,0.0943
+Comedy,314,-0.0736,0.1808
+Horror,23,-0.0772,-0.108
+Sport,18,-0.0826,0.3511
+Mystery,45,-0.2086,-0.218
+Music,19,-0.3248,0.1567
