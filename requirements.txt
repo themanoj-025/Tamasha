@@ -38,7 +38,7 @@ streamlit>=1.28,<2.0
 streamlit-option-menu>=0.3,<1.0
 
 # FastAPI
-fastapi>=0.116,<1.0  # floor 0.116: instrumentator 8.x routing fix requires it
+fastapi>=0.141.1,<1.0  # floor 0.116: instrumentator 8.x routing fix requires it
 uvicorn>=0.24,<1.0
 pydantic>=2.0,<3.0
 structlog>=24.0,<25.0
