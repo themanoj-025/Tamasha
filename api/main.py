@@ -204,9 +204,9 @@ async def health(
     if not svc._boxoffice_feature_cols:
         checks["boxoffice_features"] = "missing"
     for failure in svc.integrity_failures:
-        checks[failure["artifact"]] = (
-            f"integrity_failed (expected {failure['expected'][:8]}…, got {failure['actual'][:8]}…)"
-        )
+        checks[
+            failure["artifact"]
+        ] = f"integrity_failed (expected {failure['expected'][:8]}…, got {failure['actual'][:8]}…)"
     return {
         "status": "ok" if healthy else "degraded",
         "version": "0.1.0",
