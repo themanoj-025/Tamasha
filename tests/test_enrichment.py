@@ -23,8 +23,15 @@ def _set_tmdb_env(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 @pytest.fixture(autouse=True)
-def _clear_enrichment_cache() -> None:
-    """Reset the module-level cache before each test."""
+def _clear_enrichment_cache(_set_tmdb_env: None) -> None:
+    """Reset the module-level cache before each test.
+
+    Depends on ``_set_tmdb_env`` so the dummy credentials are set in the
+    environment before the module is imported (the module captures them at
+    import time). Without the dependency, fixture ordering is unspecified and
+    the module may be imported with no credentials, making every mocked
+    lookup return ``None``.
+    """
     import tamasha.data.enrichment as enrichment_mod
 
     enrichment_mod._CACHE.clear()
