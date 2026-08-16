@@ -55,12 +55,12 @@ class TestClashDetectionProperties:
             for j in range(i + 1, len(dates)):
                 diff = abs((dates[i] - dates[j]).days)
                 if 0 < diff <= window_days:
-                    assert i in clashes, (
-                        f"{dates[i]} and {dates[j]} are {diff} days apart but movie {i} not flagged"
-                    )
-                    assert j in clashes, (
-                        f"{dates[i]} and {dates[j]} are {diff} days apart but movie {j} not flagged"
-                    )
+                    assert (
+                        i in clashes
+                    ), f"{dates[i]} and {dates[j]} are {diff} days apart but movie {i} not flagged"
+                    assert (
+                        j in clashes
+                    ), f"{dates[i]} and {dates[j]} are {diff} days apart but movie {j} not flagged"
 
     @given(
         dates=st.lists(
@@ -121,7 +121,9 @@ class TestClashDetectionProperties:
         )
         result = compute_clash_feature(df, clash_window_days=window_days)
 
-        assert result["has_clash"].all(), (
+        assert result[
+            "has_clash"
+        ].all(), (
             f"Movies {d1} and {d2} ({window_days} days apart) should clash at window={window_days}"
         )
 
@@ -173,9 +175,9 @@ class TestClashDetectionProperties:
         )
         result = compute_clash_feature(df, clash_window_days=7)
 
-        assert not result["has_clash"].any(), (
-            f"All {len(dates)} movies are >14 days apart — no clashes expected at window=7"
-        )
+        assert not result[
+            "has_clash"
+        ].any(), f"All {len(dates)} movies are >14 days apart — no clashes expected at window=7"
 
     def test_single_movie_no_clash(self) -> None:
         """Single movie should never clash."""
