@@ -46,7 +46,7 @@ jobs:
       - name: Run dependency vulnerability scan
         run: |
           pip install pip-audit
-          pip-audit --on-demand --desc on -r requirements.txt
+          pip-audit --desc on -r requirements.txt
         continue-on-error: true  # Advisory only; not blocking
 
       - name: Run tests with pytest (coverage threshold)
