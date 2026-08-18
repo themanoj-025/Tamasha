@@ -10,7 +10,7 @@ Usage:
 from setuptools import find_packages, setup
 
 EXTRAS_ML = [
-    "xgboost>=2.0,<3.0",
+    "xgboost>=2.0,<4.0",
     "lightgbm>=4.0,<5.0",
     "catboost>=1.2,<2.0",
     "shap>=0.42,<1.0",
