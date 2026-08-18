@@ -24,7 +24,7 @@ networkx>=3.1,<4.0
 
 # Plotting / visualisation
 matplotlib>=3.7,<4.0
-plotly>=5.17,<7.0  # widened from <6.0 for Python 3.14 wheel compatibility
+plotly>=6.9.0,<7.0  # widened from <6.0 for Python 3.14 wheel compatibility
 kaleido==0.2.1  # pinned: 1.2.0+ incompatible with plotly 5.x; 0.2.1 works with 5.x and 6.x
 
 # Optional ML (install together with extras):
