@@ -95,6 +95,9 @@ coverage/  # Generated pytest-cov combined report
 # ── CatBoost training artifacts ───────────────────────────────────────────
 catboost_info/
 
+# ── Node.js ──────────────────────────────────────────────────────────
+node_modules/
+
 # ── Logs ──────────────────────────────────────────────────────────────────
 *.log
 logs/
