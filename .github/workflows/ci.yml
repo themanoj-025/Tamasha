@@ -21,6 +21,7 @@ jobs:
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
+          cache: pip
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -92,6 +93,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
+          cache: pip
         with:
           python-version: "3.11"
       - name: Install dependencies
