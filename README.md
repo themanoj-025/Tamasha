@@ -31,7 +31,15 @@
 
 ---
 
-> 📸 **Screenshot placeholder:** Add a screenshot of the star-network explorer or the release-prediction dashboard.
+## 📸 Screenshots
+
+> _To add screenshots: run `streamlit run app/streamlit_app.py`, capture your screen, save images to `docs/assets/`, and reference them below._
+>
+> **Suggested screenshots:**
+> - Star-network explorer with chemistry pairs
+> - Release prediction dashboard
+> - SHAP feature importance for box office model
+> - Festival timing analysis chart
 
 ---
 
