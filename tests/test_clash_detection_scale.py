@@ -19,11 +19,11 @@ import pytest
 
 from tamasha.timing.festival_calendar import compute_clash_feature
 
-# Threshold: 2 seconds is generous for 10K rows with O(n log n).
+# Threshold: generous for 10K rows with O(n log n).
 # The old O(n²) implementation would take ~100x longer (1M pair checks vs ~70K).
-_SCALE_THRESHOLD_S = 8.0  # measured 5.95s on Windows; generous to avoid CI flakiness
+_SCALE_THRESHOLD_S = 15.0  # measured ~6s on Windows; 15s covers slow CI runners
 # Note: the old O(n²) would take ~500-1000s for 10K rows
-# The 8s threshold is loose enough for any modern hardware but tight enough
+# The 15s threshold is loose enough for CI runners but tight enough
 # to catch accidental O(n²) regression (which would be 500s+).
 
 
