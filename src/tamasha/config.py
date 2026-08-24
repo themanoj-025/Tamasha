@@ -90,11 +90,11 @@ class Settings(BaseSettings):
     """
 
     # ── Auth ───────────────────────────────────────────────────────────
-    API_KEY: str = "tamasha-dev-key-2026"
+    API_KEY: str = ""
     """API key for authenticating requests (X-API-Key header).
 
-    Default dev key is documented; set a strong random value via
-    the ``API_KEY`` env var in production.
+    MUST be set via the ``API_KEY`` env var in production.
+    Empty string means auth is disabled (dev mode only).
     """
     ALLOWED_ORIGINS: str = "http://localhost:8501,http://localhost:8000"
     """Comma-separated list of allowed CORS origins.

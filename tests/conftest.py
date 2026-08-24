@@ -8,6 +8,7 @@ explicitly request them to avoid side effects on unrelated tests.
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 import joblib
@@ -16,6 +17,9 @@ import pandas as pd
 import pytest
 from sklearn.dummy import DummyRegressor
 from sklearn.preprocessing import LabelEncoder
+
+# Set test API key before importing settings
+os.environ.setdefault("API_KEY", "test-key-for-ci")
 
 from tamasha.config import settings
 
