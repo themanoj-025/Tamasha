@@ -410,7 +410,7 @@ def get_actor_photo_url(name: str, size: str = "w185") -> Optional[str]:
         if not profile_path:
             return None
         return f"{_IMAGE_BASE}/{size}{profile_path}"
-    except Exception:
+    except (ValueError, KeyError, TypeError, IndexError):
         return None
 
 
