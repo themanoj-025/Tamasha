@@ -25,7 +25,7 @@ def _get_genre_distribution() -> pd.DataFrame:
             all_genres.extend([x.strip() for x in g if x.strip()])
         series = pd.Series(all_genres).value_counts().head(12)
         return pd.DataFrame({"Genre": series.index, "Count": series.values})
-    except Exception:
+    except (KeyError, ValueError, TypeError):
         return pd.DataFrame({"Genre": ["Drama", "Comedy", "Action"], "Count": [0, 0, 0]})
 
 
@@ -36,7 +36,7 @@ def _get_year_trend() -> pd.DataFrame:
         years = pd.to_numeric(df["year"], errors="coerce").dropna()
         counts = years[(years >= 1990) & (years <= 2022)].value_counts().sort_index()
         return pd.DataFrame({"Year": counts.index.astype(int), "Count": counts.values})
-    except Exception:
+    except (KeyError, ValueError, TypeError):
         return pd.DataFrame({"Year": [1990], "Count": [0]})
 
 

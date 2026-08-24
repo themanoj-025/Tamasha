@@ -42,7 +42,7 @@ try:
     import nltk
 
     nltk.download("vader_lexicon", quiet=True)
-except Exception:
+except (ImportError, OSError):
     pass
 
 # Sidebar
