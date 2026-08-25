@@ -10,7 +10,7 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
-from typing import Any, Optional
+from typing import Any
 
 import diskcache
 
@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 # Cache directory under DATA_PROCESSED
 _CACHE_DIR = settings.DATA_PROCESSED / "prediction_cache"
-_CACHE: Optional[diskcache.Cache] = None
+_CACHE: diskcache.Cache | None = None
 
 _DEFAULT_TTL = 3600  # 1 hour
 _EXPLANATION_TTL = 86400  # 24 hours for LLM explanations
@@ -58,7 +58,7 @@ def _make_key(payload: dict[str, Any], model_version: str = "") -> str:
 
 def get_cached_prediction(
     payload: dict[str, Any], model_version: str = ""
-) -> Optional[dict[str, Any]]:
+) -> dict[str, Any | None]:
     """Look up a cached prediction result.
 
     Parameters
@@ -110,7 +110,7 @@ def set_cached_prediction(
 
 def get_cached_explanation(
     payload: dict[str, Any], model_version: str = ""
-) -> Optional[dict[str, Any]]:
+) -> dict[str, Any | None]:
     """Look up a cached LLM explanation (longer TTL)."""
     cache = _get_cache()
     key = f"explain:{_make_key(payload, model_version)}"

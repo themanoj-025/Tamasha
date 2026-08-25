@@ -18,7 +18,6 @@ from __future__ import annotations
 
 import logging
 from datetime import date
-from typing import Optional
 
 import pandas as pd
 
@@ -44,7 +43,7 @@ _FESTIVALS: dict[str, tuple[int, int]] = {
 _CURRENT_YEAR_FESTIVALS: dict[str, date] = {}
 
 
-def _get_festival_date(name: str, year: int) -> Optional[date]:
+def _get_festival_date(name: str, year: int) -> date | None:
     """Get an approximate date for a festival in a given year.
 
     Parameters
@@ -88,7 +87,7 @@ def is_festival_release(
     release_date: date,
     festival_windows: dict[str, date],
     window_days: int = 7,
-) -> tuple[bool, Optional[str], int]:
+) -> tuple[bool, str | None, int]:
     """Check if a release date falls near a major festival.
 
     Parameters

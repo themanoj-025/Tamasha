@@ -35,7 +35,7 @@ _CURRENCY_REGEX = re.compile(
 )
 
 
-def parse_inr_value(text: str) -> Optional[float]:
+def parse_inr_value(text: str) -> float | None:
     """Parse an INR currency string to a float value in ₹.
 
     Handles formats like ``₹100 Cr``, ``Rs. 50 lakh``, ``1.5 billion``.
@@ -75,7 +75,7 @@ def parse_inr_value(text: str) -> Optional[float]:
 def parse_currency_column(
     df: pd.DataFrame,
     column: str,
-    new_name: Optional[str] = None,
+    new_name: str | None = None,
 ) -> pd.Series:
     """Parse a column of INR currency strings into numeric rupees.
 

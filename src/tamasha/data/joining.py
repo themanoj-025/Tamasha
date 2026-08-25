@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Optional
 
 import pandas as pd
 from rapidfuzz import fuzz, process
@@ -70,8 +69,8 @@ def fuzzy_join_datasets(
     df_right: pd.DataFrame,
     left_title_col: str = "title",
     right_title_col: str = "title",
-    left_year_col: Optional[str] = None,
-    right_year_col: Optional[str] = None,
+    left_year_col: str | None = None,
+    right_year_col: str | None = None,
     score_cutoff: float = 60.0,
     year_tolerance: int = 2,
 ) -> pd.DataFrame:
@@ -183,7 +182,7 @@ def fuzzy_join_datasets(
 
 def generate_join_quality_report(
     joined_df: pd.DataFrame,
-    report_path: Optional[str] = None,
+    report_path: str | None = None,
     sample_size: int = 15,
 ) -> str:
     """Generate a Markdown quality report for the fuzzy join.

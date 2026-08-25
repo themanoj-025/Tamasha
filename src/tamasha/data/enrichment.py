@@ -23,7 +23,7 @@ import logging
 import os
 import time
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import httpx
 import pandas as pd
@@ -95,7 +95,7 @@ class TMDbServerError(Exception):
     """Raised when TMDb returns a 5xx server error (retryable)."""
 
 
-def _build_params(title: str, year: Optional[int] = None) -> dict[str, Any]:
+def _build_params(title: str, year: int | None = None) -> dict[str, Any]:
     """Build TMDb search parameters."""
     params: dict[str, Any] = {"query": title}
     if year is not None:
@@ -118,7 +118,7 @@ def _build_params(title: str, year: Optional[int] = None) -> dict[str, Any]:
     stop=stop_after_attempt(4),
     reraise=True,
 )
-def _fetch_tmdb(title: str, year: Optional[int] = None) -> Optional[dict[str, Any]]:
+def _fetch_tmdb(title: str, year: int | None = None) -> dict[str, Any | None]:
     """Fetch TMDb search results with retry/backoff via tenacity.
 
     Retryable: timeouts, connection errors, 5xx server errors.
@@ -175,7 +175,7 @@ def _fetch_tmdb(title: str, year: Optional[int] = None) -> Optional[dict[str, An
     return results[0]
 
 
-def _search_tmdb(title: str, year: Optional[int] = None) -> Optional[dict[str, Any]]:
+def _search_tmdb(title: str, year: int | None = None) -> dict[str, Any | None]:
     """Search TMDb for a movie by title and year.
 
     Wraps :func:`_fetch_tmdb` with cache handling. The tenacity
@@ -204,8 +204,8 @@ def _search_tmdb(title: str, year: Optional[int] = None) -> Optional[dict[str, A
 
 
 def get_movie_data(
-    title: str, year: Optional[int] = None, force: bool = False
-) -> Optional[dict[str, Any]]:
+    title: str, year: int | None = None, force: bool = False
+) -> dict[str, Any | None]:
     """Get plot summary, release date, and poster path for a movie.
 
     Results are cached locally.  Subsequent calls for the same ``(title, year)``
@@ -250,8 +250,8 @@ def get_movie_data(
 def enrich_dataset(
     df: Any,
     title_column: str = "title",
-    year_column: Optional[str] = None,
-    max_movies: Optional[int] = None,
+    year_column: str | None = None,
+    max_movies: int | None = None,
 ) -> tuple[dict[str, list[str]], "pd.DataFrame"]:
     """Enrich a movie DataFrame with TMDb data.
 
@@ -287,7 +287,7 @@ def enrich_dataset(
     for idx in range(total):
         row = result_df.iloc[idx]
         title = str(row[title_column])
-        year: Optional[int] = None
+        year: int | None = None
         if year_column and year_column in result_df.columns:
             try:
                 year = int(float(row[year_column]))
@@ -350,7 +350,7 @@ _PERSON_SEARCH_URL = "https://api.themoviedb.org/3/search/person"
 _IMAGE_BASE = "https://image.tmdb.org/t/p"
 
 
-def get_poster_url(title: str, year: Optional[int] = None, size: str = "w500") -> Optional[str]:
+def get_poster_url(title: str, year: int | None = None, size: str = "w500") -> str | None:
     """Get a movie poster URL from TMDb.
 
     Uses the existing cached TMDb data if available, otherwise hits the API.
@@ -377,7 +377,7 @@ def get_poster_url(title: str, year: Optional[int] = None, size: str = "w500") -
     return f"{_IMAGE_BASE}/{size}{data['poster_path']}"
 
 
-def get_actor_photo_url(name: str, size: str = "w185") -> Optional[str]:
+def get_actor_photo_url(name: str, size: str = "w185") -> str | None:
     """Search TMDb for an actor/director and return their profile photo URL.
 
     Parameters
@@ -435,8 +435,8 @@ def get_actor_photo_url(name: str, size: str = "w185") -> Optional[str]:
 async def _fetch_tmdb_async(
     client: httpx.AsyncClient,
     title: str,
-    year: Optional[int] = None,
-) -> Optional[dict[str, Any]]:
+    year: int | None = None,
+) -> dict[str, Any | None]:
     """Async TMDb search with tenacity retry/backoff.
 
     Parameters
@@ -489,7 +489,7 @@ async def _fetch_tmdb_async(
 
 async def _enrich_async(
     titles: list[str],
-    years: list[Optional[int]],
+    years: list[int | None],
     cache: dict[str, Any],
     concurrency: int = 8,
 ) -> list[tuple[int, str, str]]:
@@ -502,7 +502,7 @@ async def _enrich_async(
     ----------
     titles : list[str]
         Movie titles.
-    years : list[Optional[int]]
+    years : list[int | None]
         Corresponding years.
     cache : dict
         Shared cache dict.
@@ -577,8 +577,8 @@ async def _enrich_async(
 def enrich_dataset_async(
     df: Any,
     title_column: str = "title",
-    year_column: Optional[str] = None,
-    max_movies: Optional[int] = None,
+    year_column: str | None = None,
+    max_movies: int | None = None,
     concurrency: int = 8,
 ) -> tuple[dict[str, list[str]], "pd.DataFrame"]:
     """Enrich a movie DataFrame with TMDb data using true async I/O.
@@ -610,7 +610,7 @@ def enrich_dataset_async(
     total = min(len(result_df), max_movies) if max_movies else len(result_df)
 
     titles = [str(result_df.iloc[i][title_column]) for i in range(total)]
-    years_list: list[Optional[int]] = []
+    years_list: list[int | None] = []
     for i in range(total):
         if year_column and year_column in result_df.columns:
             try:

@@ -17,7 +17,6 @@ recent films while still acknowledging past work.
 from __future__ import annotations
 
 import logging
-from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -56,9 +55,9 @@ def compute_bankability_scores(
     cast_column: str = "cast",
     director_column: str = "director",
     year_column: str = "year",
-    rating_column: Optional[str] = None,
-    boxoffice_column: Optional[str] = None,
-    half_life: Optional[float] = None,
+    rating_column: str | None = None,
+    boxoffice_column: str | None = None,
+    half_life: float | None = None,
 ) -> pd.DataFrame:
     """Compute Bankability Scores for all actors and directors.
 

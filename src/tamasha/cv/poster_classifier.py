@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import cv2
 import numpy as np
@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 
 
 def load_poster_images(
-    image_dir: Optional[Path] = None,
+    image_dir: Path | None = None,
     target_size: tuple[int, int] = (224, 224),
 ) -> tuple[list[np.ndarray], list[int], list[str]]:
     """Load poster images from disk with hit/flop labels.
@@ -340,7 +340,7 @@ def train_poster_classifier(
 
 
 def evaluate_poster_signal(
-    image_dir: Optional[Path] = None,
+    image_dir: Path | None = None,
 ) -> dict[str, Any]:
     """Evaluate whether poster aesthetics carry independent signal.
 
