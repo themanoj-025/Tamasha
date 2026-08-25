@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
-from typing import Any, Optional
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -147,9 +147,9 @@ def simulate_scenarios(
     model: Any,
     profile: MovieProfile,
     feature_columns: list[str],
-    bankability_map: Optional[dict[str, float]] = None,
+    bankability_map: dict[str, float | None] = None,
     director_encoder: Any = None,
-    festival_scenarios: Optional[list[str]] = None,
+    festival_scenarios: list[str | None] = None,
 ) -> list[ScenarioResult]:
     """Run a release-scenario simulation for a hypothetical movie.
 

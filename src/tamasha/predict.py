@@ -17,7 +17,7 @@ import json
 import logging
 import threading
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -52,8 +52,8 @@ class PredictionService:
 
     def __init__(
         self,
-        models_dir: Optional[Path] = None,
-        reports_dir: Optional[Path] = None,
+        models_dir: Path | None = None,
+        reports_dir: Path | None = None,
     ) -> None:
         self._models_dir: Path = models_dir or settings.MODELS_DIR
         self._reports_dir: Path = reports_dir or settings.REPORTS_DIR
@@ -64,9 +64,9 @@ class PredictionService:
         self._bankability_scores: pd.DataFrame = pd.DataFrame()
         self._chemistry_pairs: pd.DataFrame = pd.DataFrame()
         self._bankability_map: dict[str, float] = {}
-        self._rating_comparison: Optional[pd.DataFrame] = None
-        self._boxoffice_baseline_comparison: Optional[pd.DataFrame] = None
-        self._boxoffice_bank_comparison: Optional[pd.DataFrame] = None
+        self._rating_comparison: pd.DataFrame | None = None
+        self._boxoffice_baseline_comparison: pd.DataFrame | None = None
+        self._boxoffice_bank_comparison: pd.DataFrame | None = None
         self._model_names: dict[str, str] = {}
         self._model_metrics: dict[str, dict[str, float]] = {}
         self._rating_feature_cols: list[str] = []
@@ -274,7 +274,7 @@ class PredictionService:
         runtime_minutes: int,
         year: int,
         expected_cols: list[str],
-        bankability_score: Optional[float] = None,
+        bankability_score: float | None = None,
     ) -> np.ndarray:
         """Build a feature vector matching the training data columns.
 
@@ -597,7 +597,7 @@ class PredictionService:
         """Return the full chemistry pairs DataFrame."""
         return self._chemistry_pairs
 
-    def get_comparison_csv(self, task: str) -> Optional[pd.DataFrame]:
+    def get_comparison_csv(self, task: str) -> pd.DataFrame | None:
         """Return a model comparison DataFrame.
 
         Parameters
@@ -615,7 +615,7 @@ class PredictionService:
 #  Module‑level singleton + thin wrappers  (Streamlit dashboard
 #  manages lifecycle via ``st.cache_resource``)
 
-_service: Optional[PredictionService] = None
+_service: PredictionService | None = None
 
 
 def _get_service() -> PredictionService:
@@ -674,6 +674,6 @@ def get_chemistry_pairs() -> pd.DataFrame:
     return _get_service().get_chemistry_pairs()
 
 
-def get_comparison_csv(task: str) -> Optional[pd.DataFrame]:
+def get_comparison_csv(task: str) -> pd.DataFrame | None:
     """Module-level wrapper — delegates to the global singleton."""
     return _get_service().get_comparison_csv(task)

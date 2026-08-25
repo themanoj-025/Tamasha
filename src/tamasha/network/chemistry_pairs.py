@@ -8,7 +8,6 @@ Bankability Scores.  Rank and report top pairs.
 from __future__ import annotations
 
 import logging
-from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -19,8 +18,8 @@ logger = logging.getLogger(__name__)
 def detect_chemistry_pairs(
     df: pd.DataFrame,
     cast_column: str = "cast",
-    rating_column: Optional[str] = None,
-    boxoffice_column: Optional[str] = None,
+    rating_column: str | None = None,
+    boxoffice_column: str | None = None,
     min_joint_films: int = 2,
     top_n: int = 10,
 ) -> pd.DataFrame:

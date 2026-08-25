@@ -11,7 +11,6 @@ from __future__ import annotations
 import logging
 import re
 from pathlib import Path
-from typing import Optional
 
 import pandas as pd
 
@@ -47,7 +46,7 @@ BOXOFFICE_COLUMN_MAP: dict[str, str] = {
 }
 
 
-def _parse_imdb_year(year_raw: str) -> Optional[int]:
+def _parse_imdb_year(year_raw: str) -> int | None:
     """Parse IMDB year string like ``"(2019)"`` into integer 2019.
 
     Parameters
@@ -66,7 +65,7 @@ def _parse_imdb_year(year_raw: str) -> Optional[int]:
     return int(match.group(1)) if match else None
 
 
-def _parse_imdb_duration(duration_raw: str) -> Optional[int]:
+def _parse_imdb_duration(duration_raw: str) -> int | None:
     """Parse IMDB duration string like ``"109 min"`` into integer minutes.
 
     Parameters
@@ -85,7 +84,7 @@ def _parse_imdb_duration(duration_raw: str) -> Optional[int]:
     return int(match.group(1)) if match else None
 
 
-def load_imdb_india(path: Optional[Path] = None) -> pd.DataFrame:
+def load_imdb_india(path: Path | None = None) -> pd.DataFrame:
     """Load the IMDB India Movies dataset.
 
     The raw dataset uses ``latin1`` encoding and has columns
@@ -150,7 +149,7 @@ def load_imdb_india(path: Optional[Path] = None) -> pd.DataFrame:
     return df
 
 
-def load_bollywood_boxoffice(path: Optional[Path] = None) -> pd.DataFrame:
+def load_bollywood_boxoffice(path: Path | None = None) -> pd.DataFrame:
     """Load the Bollywood Box Office dataset.
 
     Columns: ``Movie``, ``Worldwide``, ``India Net``, ``India Gross``,
