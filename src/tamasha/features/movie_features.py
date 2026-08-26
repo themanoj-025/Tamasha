@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Optional, Union
 
 import joblib
 import pandas as pd
@@ -22,7 +21,7 @@ logger = logging.getLogger(__name__)
 def extract_genre_features(
     df: pd.DataFrame,
     genre_column: str = "genre",
-    max_genres: Optional[int] = None,
+    max_genres: int | None = None,
 ) -> pd.DataFrame:
     """One-hot encode the genre column (assumed comma-separated).
 
@@ -95,7 +94,7 @@ def extract_cast_features(
 def save_director_encoder(
     df: pd.DataFrame,
     director_column: str = "director",
-    save_path: Optional[Union[str, Path]] = None,
+    save_path: str | Path | None = None,
 ) -> Path:
     """Fit and persist a ``LabelEncoder`` for the director column.
 
@@ -194,9 +193,9 @@ def build_feature_matrix(
     include_runtime: bool = True,
     include_decade: bool = True,
     include_budget: bool = True,
-    target_column_rating: Optional[str] = None,
-    target_column_boxoffice: Optional[str] = None,
-) -> tuple[pd.DataFrame, Optional[pd.Series], Optional[pd.Series]]:
+    target_column_rating: str | None = None,
+    target_column_boxoffice: str | None = None,
+) -> tuple[pd.DataFrame, pd.Series | None, pd.Series | None]:
     """Build a complete feature matrix (X) and optional target vectors.
 
     Parameters
