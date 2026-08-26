@@ -22,7 +22,7 @@ from api.schemas import (
 from tamasha.cache import get_cached_prediction, set_cached_prediction
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="", tags=["predict"])
+router = APIRouter(prefix="/api/v1", tags=["predict"])
 
 
 def _model_version_key(svc) -> str:
