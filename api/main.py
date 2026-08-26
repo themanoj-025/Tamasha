@@ -22,6 +22,7 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 from slowapi.util import get_remote_address
 
+from api.routers import model_info, network, predict
 from tamasha.config import settings
 from tamasha.predict import PredictionService
 
@@ -216,8 +217,6 @@ async def health(
 
 
 # Routers
-
-from api.routers import model_info, network, predict  # noqa: E402
 
 app.include_router(predict.router)
 app.include_router(network.router)

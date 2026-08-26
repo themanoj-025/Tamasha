@@ -22,25 +22,26 @@ import logging
 import sys
 from pathlib import Path
 
+# Ensure project root is on sys.path before importing tamasha.*
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+
 import numpy as np
 import pandas as pd
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-
-from tamasha.config import settings  # noqa: E402
-from tamasha.data.enrichment import enrich_dataset  # noqa: E402
-from tamasha.data.joining import fuzzy_join_datasets, generate_join_quality_report  # noqa: E402
-from tamasha.data.loaders import load_bollywood_boxoffice, load_imdb_india  # noqa: E402
-from tamasha.features.movie_features import build_feature_matrix  # noqa: E402
-from tamasha.models.boxoffice_model import (  # noqa: E402
+from tamasha.config import settings
+from tamasha.data.enrichment import enrich_dataset
+from tamasha.data.joining import fuzzy_join_datasets, generate_join_quality_report
+from tamasha.data.loaders import load_bollywood_boxoffice, load_imdb_india
+from tamasha.features.movie_features import build_feature_matrix
+from tamasha.models.boxoffice_model import (
     _compute_cast_avg_bankability,
     train_boxoffice_model,
 )
-from tamasha.models.model_selection import get_all_models  # noqa: E402
-from tamasha.models.rating_model import train_rating_model  # noqa: E402
-from tamasha.network.bankability_score import compute_bankability_scores  # noqa: E402
-from tamasha.network.chemistry_pairs import detect_chemistry_pairs  # noqa: E402
-from tamasha.nlp.plot_sentiment import (  # noqa: E402
+from tamasha.models.model_selection import get_all_models
+from tamasha.models.rating_model import train_rating_model
+from tamasha.network.bankability_score import compute_bankability_scores
+from tamasha.network.chemistry_pairs import detect_chemistry_pairs
+from tamasha.nlp.plot_sentiment import (
     genre_conditional_correlation,
     score_plot_sentiment,
 )
