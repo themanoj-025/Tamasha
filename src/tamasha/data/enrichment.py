@@ -23,7 +23,7 @@ import logging
 import os
 import time
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import httpx
 import pandas as pd
@@ -567,7 +567,7 @@ async def _enrich_async(
     output: list[tuple[int, str, str]] = []
     for i, result in enumerate(results):
         if isinstance(result, tuple):
-            output.append(result)  # type: ignore[arg-type]
+            output.append(cast(tuple[int, str, str], result))
         else:
             logger.debug("Unexpected error in async enrichment for %s: %s", titles[i], result)
             output.append((i, "", ""))

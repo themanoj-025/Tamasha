@@ -41,7 +41,7 @@ structlog.configure(
     cache_logger_on_first_use=True,
 )
 
-logger: structlog.stdlib.BoundLogger = structlog.get_logger()  # type: ignore[assignment]
+logger = structlog.get_logger()
 
 
 # App factory
