@@ -6,7 +6,6 @@ cast/crew collaboration network.
 
 from __future__ import annotations
 
-from typing import Optional
 
 import networkx as nx
 import pandas as pd
@@ -15,8 +14,8 @@ import plotly.graph_objects as go
 
 def render_force_directed_graph(
     G: nx.Graph,
-    node_scores: Optional[pd.DataFrame] = None,
-    highlight_actor: Optional[str] = None,
+    node_scores: pd.DataFrame | None = None,
+    highlight_actor: str | None = None,
     title: str = "Star Collaboration Network",
     height: int = 600,
 ) -> go.Figure:

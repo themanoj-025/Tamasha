@@ -2,14 +2,13 @@
 
 from __future__ import annotations
 
-from typing import Optional
 
 import streamlit as st
 
 
 def glass_card(
     content: str,
-    height: Optional[int] = None,
+    height: int | None = None,
 ) -> None:
     """Render a glassmorphism container card."""
     style = f"height:{height}px;" if height else ""
@@ -22,8 +21,8 @@ def glass_card(
 def metric_card(
     label: str,
     value: str,
-    delta: Optional[str] = None,
-    help_text: Optional[str] = None,
+    delta: str | None = None,
+    help_text: str | None = None,
     featured: bool = False,
     gradient_value: bool = False,
 ) -> None:
@@ -80,7 +79,7 @@ def badge(text: str, color: str = "blue") -> None:
     )
 
 
-def section_header(title: str, subtitle: Optional[str] = None) -> None:
+def section_header(title: str, subtitle: str | None = None) -> None:
     """Render a styled section header."""
     st.markdown(
         f"""
