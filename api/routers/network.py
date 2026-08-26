@@ -13,7 +13,7 @@ from api.main import get_prediction_service
 from api.schemas import ActorInfoResponse
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="", tags=["network"])
+router = APIRouter(prefix="/api/v1", tags=["network"])
 
 
 @router.get("/actor/{name}", response_model=ActorInfoResponse)

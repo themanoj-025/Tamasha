@@ -13,7 +13,7 @@ from api.main import get_prediction_service
 from api.schemas import ModelInfoResponse
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="", tags=["model-info"])
+router = APIRouter(prefix="/api/v1", tags=["model-info"])
 
 
 @router.get("/model-info", response_model=ModelInfoResponse)

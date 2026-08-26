@@ -85,7 +85,7 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 # API key authentication middleware
 # Exempts health-check and OpenAPI doc endpoints.
 
-_AUTH_EXEMPT_PATHS = {"/health", "/docs", "/openapi.json", "/redoc"}
+_AUTH_EXEMPT_PATHS = {"/health", "/docs", "/openapi.json", "/redoc", "/metrics"}
 
 # Health endpoint now reports integrity failures from PredictionService
 
