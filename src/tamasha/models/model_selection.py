@@ -16,7 +16,7 @@ import logging
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any
 
 import joblib
 import numpy as np
@@ -174,13 +174,13 @@ def _get_metric_value(y_true: np.ndarray, y_pred: np.ndarray, metric: str) -> fl
 
 
 def train_and_compare(
-    X: Union[pd.DataFrame, np.ndarray],
-    y: Union[pd.Series, np.ndarray],
+    X: pd.DataFrame | np.ndarray,
+    y: pd.Series | np.ndarray,
     task_name: str = "model",
-    models: Optional[dict[str, Any]] = None,
+    models: dict[str, Any] | None = None,
     cv_folds: int = 5,
     metric: str = "MAE",
-    save_csv: Optional[str] = None,
+    save_csv: str | None = None,
     random_state: int = 42,
     tune: bool = False,
     tune_n_iter: int = 10,
@@ -636,7 +636,7 @@ def save_model_with_version(
     return {"version": next_version, "path": model_path, "metadata_path": meta_path}
 
 
-def save_model(model: Any, path: Union[str, Path]) -> Path:
+def save_model(model: Any, path: str | Path) -> Path:
     """Save a trained model to disk via ``joblib``.
 
     Parameters
@@ -658,7 +658,7 @@ def save_model(model: Any, path: Union[str, Path]) -> Path:
     return path
 
 
-def load_model(path: Union[str, Path]) -> Any:
+def load_model(path: str | Path) -> Any:
     """Load a trained model from disk.
 
     Parameters

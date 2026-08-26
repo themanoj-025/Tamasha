@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -39,9 +39,9 @@ except ImportError:
 
 
 def plot_model_comparison(
-    comparison_csv: Union[str, Path],
-    save_path: Optional[Union[str, Path]] = None,
-) -> Optional[Any]:
+    comparison_csv: str | Path,
+    save_path: str | Path | None = None,
+) -> Any | None:
     """Generate a grouped bar chart comparing MAE/RMSE across models.
 
     Parameters
@@ -124,8 +124,8 @@ def plot_predicted_vs_actual(
     y_true: np.ndarray,
     y_pred: np.ndarray,
     model_name: str,
-    save_path: Optional[Union[str, Path]] = None,
-) -> Optional[Any]:
+    save_path: str | Path | None = None,
+) -> Any | None:
     """Generate a predicted-vs-actual scatter plot.
 
     Parameters
@@ -196,8 +196,8 @@ def plot_predicted_vs_actual(
 def plot_shap_summary(
     model: Any,
     X: pd.DataFrame,
-    save_path: Optional[Union[str, Path]] = None,
-) -> Optional[Any]:
+    save_path: str | Path | None = None,
+) -> Any | None:
     """Generate a SHAP summary plot for a model.
 
     Parameters

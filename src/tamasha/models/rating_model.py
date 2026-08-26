@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any
 
 import pandas as pd
 
@@ -22,11 +22,11 @@ logger = logging.getLogger(__name__)
 
 def train_rating_model(
     df: pd.DataFrame,
-    rating_column: Optional[str] = None,
-    models: Optional[dict[str, Any]] = None,
+    rating_column: str | None = None,
+    models: dict[str, Any] | None = None,
     metric: str = "MAE",
     cv_folds: int = 5,
-    save_dir: Optional[Union[str, Path]] = None,
+    save_dir: str | Path | None = None,
     tune: bool = False,
     tune_n_iter: int = 10,
 ) -> tuple[Any, pd.DataFrame]:
