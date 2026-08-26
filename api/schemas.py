@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -51,7 +51,7 @@ class PredictBoxOfficeResponse(BaseModel):
     predicted_boxoffice_cr: float = Field(..., description="Predicted box office in ₹ Crore")
     model_name: str = Field(..., description="Winning model name")
     model_mae: float = Field(..., description="Model's MAE on validation")
-    scenarios: Optional[dict[str, Any]] = Field(None, description="Scenario comparison results")
+    scenarios: dict[str, Any] | None = Field(None, description="Scenario comparison results")
 
 
 # Actor Info
