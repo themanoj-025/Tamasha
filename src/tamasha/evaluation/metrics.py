@@ -232,6 +232,6 @@ def plot_shap_summary(
 
         plt.close(fig)
         return fig
-    except Exception as exc:
+    except (ValueError, OSError) as exc:
         logger.warning("SHAP plot failed: %s", exc)
         return None

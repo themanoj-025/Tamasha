@@ -264,7 +264,7 @@ def main() -> None:
             f"- Date coverage: {date_coverage:.1f}% ({len(coverage['dates'])} movies)\n"
             f"- Attempted on: {enrich_title} + {enrich_year or 'N/A'}\n"
         )
-    except Exception as exc:
+    except (OSError, ValueError) as exc:
         logger.warning("TMDb enrichment failed: %s. Proceeding without enrichment.", exc)
         df_box_clean["plot_summary"] = ""
         df_box_clean["release_date"] = ""
@@ -313,7 +313,7 @@ def main() -> None:
             save_director_encoder(df_rating, director_column=director_col[0])
         else:
             logger.warning("  No director column found; skipping director encoder save.")
-    except Exception as exc:
+    except (OSError, ValueError) as exc:
         logger.warning("  Director encoder save failed (non-blocking): %s", exc)
 
     # =====================================================================
@@ -628,7 +628,7 @@ def main() -> None:
                         model_name,
                     )
                 logger.info("  Scatter plot saved: %s", save_path)
-            except Exception as exc:
+            except (OSError, ValueError) as exc:
                 logger.warning("  Scatter plot failed for %s: %s", model_name, exc)
 
     # ── Bar charts ────────────────────────────────────────────
@@ -729,7 +729,7 @@ def main() -> None:
         logger.info("  SHAP analysis complete.")
     except ImportError as exc:
         logger.info("  SKIP SHAP: %s", exc)
-    except Exception as exc:
+    except (OSError, ValueError) as exc:
         logger.info("  SHAP error (non-blocking): %s", exc)
 
     # =====================================================================
@@ -840,7 +840,7 @@ def main() -> None:
                     df_clash["has_clash"] if "has_clash" in df_clash.columns else False
                 )
 
-            except Exception as exc:
+            except (OSError, ValueError) as exc:
                 logger.warning("  Festival analysis failed: %s", exc)
         else:
             logger.info(

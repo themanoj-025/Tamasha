@@ -129,7 +129,7 @@ def get_all_models() -> dict[str, Any]:
     for name, (cls, kwargs) in _MODEL_REGISTRY.items():
         try:
             models[name] = cls(**kwargs)
-        except Exception as exc:
+        except (ValueError, OSError) as exc:
             logger.warning("Failed to instantiate %s: %s", name, exc)
 
     for name, (import_path, kwargs) in _EXTRA_MODEL_REGISTRY.items():
@@ -137,7 +137,7 @@ def get_all_models() -> dict[str, Any]:
         if cls is not None:
             try:
                 models[name] = cls(**kwargs)
-            except Exception as exc:
+            except (ValueError, OSError) as exc:
                 logger.warning("Failed to instantiate %s: %s", name, exc)
 
     logger.info("Available models: %s", list(models.keys()))
@@ -369,7 +369,7 @@ def train_and_compare(
             else:
                 logger.info("    → Difference is NOT statistically significant (p >= 0.05)")
             logger.info("")
-        except Exception as exc:
+        except (ValueError, OSError) as exc:
             logger.warning("  Significance test failed (non-blocking): %s", exc)
 
     comparison = pd.DataFrame(results)
@@ -477,7 +477,7 @@ def tune_model(
             search.best_params_,
         )
         return search.best_estimator_, search.best_params_
-    except Exception as exc:
+    except (ValueError, OSError) as exc:
         logger.warning("Tuning failed for %s: %s", name, exc)
         return None, {}
 
