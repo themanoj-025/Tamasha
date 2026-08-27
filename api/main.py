@@ -77,6 +77,26 @@ app = FastAPI(
     description="Bollywood Movie Intelligence Platform API",
     version="0.1.0",
     lifespan=lifespan,
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_tags=[
+        {
+            "name": "predict",
+            "description": "Movie rating and box office prediction endpoints",
+        },
+        {
+            "name": "network",
+            "description": "Actor/movie relationship graph and network analysis",
+        },
+        {
+            "name": "model-info",
+            "description": "Deployed model metadata, feature importance, and integrity status",
+        },
+        {
+            "name": "health",
+            "description": "Service health check and readiness probes",
+        },
+    ],
 )
 
 app.state.limiter = limiter
