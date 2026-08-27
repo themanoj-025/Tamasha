@@ -37,6 +37,6 @@ async def get_actor_info_endpoint(
         )
     except HTTPException:
         raise
-    except Exception as exc:
+    except (RuntimeError, ValueError, OSError) as exc:
         logger.exception("Failed to get actor info for %s", name)
         raise HTTPException(status_code=500, detail=str(exc))

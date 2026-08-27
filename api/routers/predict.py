@@ -68,7 +68,7 @@ async def predict_rating_endpoint(
         return response
     except HTTPException:
         raise
-    except Exception as exc:
+    except (RuntimeError, ValueError) as exc:
         logger.exception("Rating prediction failed")
         raise HTTPException(status_code=500, detail=str(exc))
 
@@ -112,6 +112,6 @@ async def predict_boxoffice_endpoint(
         return response
     except HTTPException:
         raise
-    except Exception as exc:
+    except (RuntimeError, ValueError) as exc:
         logger.exception("Box office prediction failed")
         raise HTTPException(status_code=500, detail=str(exc))
