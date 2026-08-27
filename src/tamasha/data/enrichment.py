@@ -95,6 +95,79 @@ class TMDbServerError(Exception):
     """Raised when TMDb returns a 5xx server error (retryable)."""
 
 
+class TMDbCircuitBreaker:
+    """Circuit breaker for TMDb API calls.
+
+    Prevents cascading failures by temporarily disabling TMDb calls
+    after a configurable number of consecutive failures.
+
+    States:
+        CLOSED: Normal operation — TMDb calls proceed
+        OPEN: TMDb calls are blocked (fail fast)
+        HALF_OPEN: Trial request to check if TMDb recovered
+    """
+
+    def __init__(
+        self,
+        failure_threshold: int = 5,
+        recovery_timeout: float = 60.0,
+        cooldown_multiplier: float = 2.0,
+    ):
+        self.failure_threshold = failure_threshold
+        self.recovery_timeout = recovery_timeout
+        self.cooldown_multiplier = cooldown_multiplier
+
+        self._failure_count = 0
+        self._state = "CLOSED"
+        self._last_open_time = 0.0
+        self._current_timeout = recovery_timeout
+
+    def is_open(self) -> bool:
+        """Check if the circuit breaker is open (TMDb calls blocked)."""
+        if self._state == "CLOSED":
+            return False
+
+        if self._state == "OPEN":
+            if time.monotonic() - self._last_open_time >= self._current_timeout:
+                self._state = "HALF_OPEN"
+                logger.info("TMDb circuit breaker half-open — allowing trial request")
+                return False
+            return True
+
+        return False  # HALF_OPEN — allow trial request
+
+    def record_success(self) -> None:
+        """Record a successful TMDb call. Resets the circuit breaker."""
+        self._failure_count = 0
+        self._state = "CLOSED"
+        self._current_timeout = self.recovery_timeout
+        logger.info("TMDb circuit breaker closed — API available")
+
+    def record_failure(self) -> None:
+        """Record a failed TMDb call. May open the circuit breaker."""
+        self._failure_count += 1
+        if self._failure_count >= self.failure_threshold:
+            self._state = "OPEN"
+            self._last_open_time = time.monotonic()
+            self._current_timeout *= self.cooldown_multiplier
+            logger.warning(
+                "TMDb circuit breaker OPEN after %d failures (timeout=%.1fs)",
+                self._failure_count,
+                self._current_timeout,
+            )
+
+    def reset(self) -> None:
+        """Manually reset the circuit breaker to closed state."""
+        self._failure_count = 0
+        self._state = "CLOSED"
+        self._current_timeout = self.recovery_timeout
+        logger.info("TMDb circuit breaker manually reset")
+
+
+# Module-level circuit breaker instance
+_tmdb_breaker = TMDbCircuitBreaker()
+
+
 def _build_params(title: str, year: int | None = None) -> dict[str, Any]:
     """Build TMDb search parameters."""
     params: dict[str, Any] = {"query": title}
@@ -140,6 +213,11 @@ def _fetch_tmdb(title: str, year: int | None = None) -> dict[str, Any | None]:
         The first TMDb result, or None if no match.
     """
     if not _TMDB_API_KEY and not _TMDB_ACCESS_TOKEN:
+        return None
+
+    # Check circuit breaker before making API call
+    if _tmdb_breaker.is_open():
+        logger.warning("TMDb circuit breaker open — skipping search for '%s'", title)
         return None
 
     params = _build_params(title, year)
@@ -194,8 +272,11 @@ def _search_tmdb(title: str, year: int | None = None) -> dict[str, Any | None]:
         The first result's movie object, or None if no match.
     """
     try:
-        return _fetch_tmdb(title, year)
+        result = _fetch_tmdb(title, year)
+        _tmdb_breaker.record_success()
+        return result
     except Exception as exc:
+        _tmdb_breaker.record_failure()
         logger.debug("TMDb search failed for '%s' (%s): %s", title, year, exc)
         return None
 
@@ -395,12 +476,25 @@ def get_actor_photo_url(name: str, size: str = "w185") -> str | None:
     if not _TMDB_API_KEY and not _TMDB_ACCESS_TOKEN:
         return None
 
+    # Check circuit breaker
+    if _tmdb_breaker.is_open():
+        logger.warning("TMDb circuit breaker open — skipping actor photo search for '%s'", name)
+        return None
+
     params: dict[str, Any] = {"query": name}
     if not _TMDB_ACCESS_TOKEN and _TMDB_API_KEY:
         params["api_key"] = _TMDB_API_KEY
 
     try:
+        _rate_limit()
         resp = requests.get(_PERSON_SEARCH_URL, headers=_HEADERS, params=params, timeout=10)
+        # Handle 429 Rate Limit separately
+        if resp.status_code == 429:
+            retry_after = int(resp.headers.get("Retry-After", 2))
+            logger.warning("Rate limited by TMDb (actor search). Waiting %ds...", retry_after)
+            time.sleep(retry_after)
+            _rate_limit()
+            resp = requests.get(_PERSON_SEARCH_URL, headers=_HEADERS, params=params, timeout=10)
         resp.raise_for_status()
         data = resp.json()
         results = data.get("results", [])
@@ -409,8 +503,12 @@ def get_actor_photo_url(name: str, size: str = "w185") -> str | None:
         profile_path = results[0].get("profile_path")
         if not profile_path:
             return None
+        _tmdb_breaker.record_success()
         return f"{_IMAGE_BASE}/{size}{profile_path}"
-    except (ValueError, KeyError, TypeError, IndexError):
+    except (requests.Timeout, requests.ConnectionError, TMDbServerError):
+        _tmdb_breaker.record_failure()
+        return None
+    except (ValueError, KeyError, TypeError, IndexError, requests.HTTPError):
         return None
 
 
@@ -454,6 +552,11 @@ async def _fetch_tmdb_async(
         The first TMDb result, or None if no match.
     """
     if not _TMDB_API_KEY and not _TMDB_ACCESS_TOKEN:
+        return None
+
+    # Check circuit breaker before making API call
+    if _tmdb_breaker.is_open():
+        logger.warning("TMDb circuit breaker open — skipping async search for '%s'", title)
         return None
 
     params = _build_params(title, year)
@@ -534,7 +637,9 @@ async def _enrich_async(
         async with sem:
             try:
                 result = await _fetch_tmdb_async(client, titles[i], years[i])
+                _tmdb_breaker.record_success()
             except Exception as exc:
+                _tmdb_breaker.record_failure()
                 logger.debug("Async TMDb fetch failed for %s: %s", titles[i], exc)
                 cache[cache_key] = None
                 return (i, "", "")
