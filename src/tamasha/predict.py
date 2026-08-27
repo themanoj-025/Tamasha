@@ -191,7 +191,7 @@ class PredictionService:
                 )
                 return  # Don't raise — log and mark as degraded
             logger.debug("Integrity verified for %s", model_path)
-        except Exception as exc:
+        except (ValueError, OSError) as exc:
             logger.warning("Integrity check skipped for %s: %s", model_path, exc)
 
     def _load_director_encoder(self) -> None:
@@ -420,7 +420,7 @@ class PredictionService:
                 "model_name": model_name,
                 "model_mae": model_mae,
             }
-        except Exception as exc:
+        except (ValueError, OSError) as exc:
             logger.error("Rating prediction failed: %s", exc)
             return {"predicted_rating": None, "model_name": "Error", "model_mae": None}
 
@@ -509,7 +509,7 @@ class PredictionService:
                 "scenarios": scenarios,
                 "fallback_actors": bank_info["fallback_count"] > 0,
             }
-        except Exception as exc:
+        except (ValueError, OSError) as exc:
             logger.error("Box office prediction failed: %s", exc)
             return {"predicted_boxoffice_cr": None, "model_name": "Error", "model_mae": None}
 

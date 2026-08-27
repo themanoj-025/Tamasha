@@ -275,7 +275,7 @@ def _search_tmdb(title: str, year: int | None = None) -> dict[str, Any | None]:
         result = _fetch_tmdb(title, year)
         _tmdb_breaker.record_success()
         return result
-    except Exception as exc:
+    except (OSError, ValueError) as exc:
         _tmdb_breaker.record_failure()
         logger.debug("TMDb search failed for '%s' (%s): %s", title, year, exc)
         return None
@@ -638,7 +638,7 @@ async def _enrich_async(
             try:
                 result = await _fetch_tmdb_async(client, titles[i], years[i])
                 _tmdb_breaker.record_success()
-            except Exception as exc:
+            except (OSError, ValueError) as exc:
                 _tmdb_breaker.record_failure()
                 logger.debug("Async TMDb fetch failed for %s: %s", titles[i], exc)
                 cache[cache_key] = None
