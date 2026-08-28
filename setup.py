@@ -25,7 +25,7 @@ EXTRAS_DEV = [
     "black>=23.11,<27.0",
     "isort>=5.12,<6.0",
     "ruff>=0.1,<1.0",
-    "structlog>=24.0,<25.0",
+    "structlog>=24.0,<27.0",
     "prometheus-fastapi-instrumentator>=8.1,<9.0",
     "pip-audit>=2.0,<3.0",
 ]
