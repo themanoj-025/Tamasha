@@ -7,6 +7,6 @@ This file re-exports ``main`` so existing
 continues to work unchanged.
 """
 
-from tamasha.pipeline_pkg.run import main  # noqa: F401
+from tamasha.pipeline_pkg.run import main
 
 __all__ = ["main"]

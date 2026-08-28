@@ -9,6 +9,6 @@ train_pipeline.py — Tamasha Training Pipeline
    work unchanged.
 """
 
-from tamasha.pipeline_pkg import main  # noqa: F401
+from tamasha.pipeline_pkg import main
 
 __all__ = ["main"]
