@@ -112,7 +112,7 @@ _AUTH_EXEMPT_PATHS = {"/health", "/docs", "/openapi.json", "/redoc", "/metrics"}
 
 
 @app.middleware("http")
-async def verify_api_key_middleware(request, call_next):
+async def verify_api_key_middleware(request, call_next) -> Any:
     if request.url.path in _AUTH_EXEMPT_PATHS:
         return await call_next(request)
 
@@ -137,7 +137,7 @@ _MAX_BODY_BYTES = 100 * 1024  # 100 KB
 
 
 @app.middleware("http")
-async def limit_request_size(request, call_next):
+async def limit_request_size(request, call_next) -> Any:
     content_length = request.headers.get("content-length", "0")
     try:
         body_size = int(content_length)
@@ -162,7 +162,7 @@ async def limit_request_size(request, call_next):
 
 
 @app.middleware("http")
-async def add_request_id(request, call_next):
+async def add_request_id(request, call_next) -> Any:
     request_id = str(uuid.uuid4())[:8]
     structlog.contextvars.clear_contextvars()
     structlog.contextvars.bind_contextvars(request_id=request_id)

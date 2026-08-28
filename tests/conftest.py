@@ -123,7 +123,7 @@ def dummy_models_dir(tmp_path: Path) -> Path:
 
 
 @pytest.fixture
-def dummy_svc(dummy_models_dir: Path):
+def dummy_svc(dummy_models_dir: Path) -> Any:
     """PredictionService loaded with fresh dummy artifacts."""
     from tamasha.predict import PredictionService
 

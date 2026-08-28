@@ -112,7 +112,7 @@ class TMDbCircuitBreaker:
         failure_threshold: int = 5,
         recovery_timeout: float = 60.0,
         cooldown_multiplier: float = 2.0,
-    ):
+    ) -> Any:
         self.failure_threshold = failure_threshold
         self.recovery_timeout = recovery_timeout
         self.cooldown_multiplier = cooldown_multiplier
