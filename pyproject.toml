@@ -31,7 +31,7 @@ line-length = 100
 target-version = "py311"
 
 [tool.ruff.lint]
-select = ["E", "F", "W"]  # I (import ordering) handled by isort hook
+select = ["E", "F", "W", "B", "BLE", "UP", "SIM", "C4", "RUF", "PLC", "PIE", "I"]
 ignore = ["E501"]
 
 [tool.pytest.ini_options]
