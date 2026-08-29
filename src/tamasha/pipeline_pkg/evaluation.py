@@ -225,7 +225,7 @@ evaluation.py — Steps 7-9: Box office model, release timing, SHAP.
     # ── SHAP analysis (Stage 9) ──────────────────────────────────
     _print_separator("STEP 9: SHAP Explainability")
     try:
-        import shap  # noqa: F401
+        import shap
 
         from tamasha.evaluation.metrics import plot_shap_summary
 
