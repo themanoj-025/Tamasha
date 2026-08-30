@@ -35,6 +35,7 @@ select = ["E", "F", "W", "B", "BLE", "UP", "SIM", "C4", "RUF", "PLC", "PIE", "I"
 ignore = ["E501"]
 
 [tool.pytest.ini_options]
+addopts = "-m 'not slow'"
 testpaths = ["tests"]
 addopts = "-m 'not scale'"
 markers = [
