@@ -18,7 +18,7 @@ def client():
 class TestHealthEndpoint:
     """Tests for /health endpoint."""
 
-    def test_health_returns_ok(self, client):
+    def test_health_returns_ok(self, client) -> None:
         response = client.get("/health")
         assert response.status_code == 200
         data = response.json()
@@ -29,12 +29,12 @@ class TestPredictEndpoint:
     """Tests for /predict endpoint."""
 
     @patch("tamasha.api.routers.predict._load_model")
-    def test_predict_missing_fields(self, mock_load, client):
+    def test_predict_missing_fields(self, mock_load, client) -> None:
         response = client.post("/predict", json={})
         assert response.status_code in (400, 422)
 
     @patch("tamasha.api.routers.predict._load_model")
-    def test_predict_with_title(self, mock_load, client):
+    def test_predict_with_title(self, mock_load, client) -> None:
         mock_model = MagicMock()
         mock_model.predict.return_value = [5.0]
         mock_load.return_value = (mock_model, MagicMock(), [])

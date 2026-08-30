@@ -9,7 +9,7 @@ from tamasha.predict import predict_bankability
 class TestPredictBankability:
     """Tests for predict_bankability."""
 
-    def test_predict_returns_dict(self):
+    def test_predict_returns_dict(self) -> None:
         # Mock the model and scaler
         mock_model = MagicMock()
         mock_model.predict.return_value = [5.0]

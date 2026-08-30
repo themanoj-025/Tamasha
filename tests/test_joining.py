@@ -7,7 +7,7 @@ import pandas as pd
 from tamasha.data.joining import fuzzy_join_datasets, generate_join_quality_report
 
 
-def test_fuzzy_join_exact_match(sample_imdb_df, sample_boxoffice_df):
+def test_fuzzy_join_exact_match(sample_imdb_df, sample_boxoffice_df) -> None:
     """Test that exact title matches produce correct joins."""
     result = fuzzy_join_datasets(
         sample_imdb_df,
@@ -23,7 +23,7 @@ def test_fuzzy_join_exact_match(sample_imdb_df, sample_boxoffice_df):
     assert "_match_score" in result.columns
 
 
-def test_fuzzy_join_similar_title(sample_imdb_df, sample_boxoffice_df):
+def test_fuzzy_join_similar_title(sample_imdb_df, sample_boxoffice_df) -> None:
     """Test fuzzy matching with slightly different titles."""
     # Add a movie with close-but-not-identical title
     imdb_extra = sample_imdb_df.copy()
@@ -51,7 +51,7 @@ def test_fuzzy_join_similar_title(sample_imdb_df, sample_boxoffice_df):
     assert len(result) >= 1
 
 
-def test_generate_join_report_creates_sample(sample_movie_df):
+def test_generate_join_report_creates_sample(sample_movie_df) -> None:
     """Test that the quality report contains the expected sample."""
     # Use the same df as left and right (trivially matches)
     joined = fuzzy_join_datasets(

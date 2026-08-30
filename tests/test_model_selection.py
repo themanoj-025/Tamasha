@@ -12,7 +12,7 @@ from sklearn.linear_model import LinearRegression
 from tamasha.models.model_selection import train_and_compare
 
 
-def test_mae_selection_correct():
+def test_mae_selection_correct() -> None:
     """Verify that the model with lowest MAE is auto-selected."""
     # Create a small dataset where Ridge should outperform a dummy baseline
     np.random.seed(42)
@@ -42,7 +42,7 @@ def test_mae_selection_correct():
     assert comparison.iloc[0]["MAE"] <= comparison.iloc[1]["MAE"]
 
 
-def test_comparison_csv_contains_expected_columns():
+def test_comparison_csv_contains_expected_columns() -> None:
     """Verify the comparison output has the right columns."""
     np.random.seed(42)
     X = np.random.randn(30, 2)
@@ -63,7 +63,7 @@ def test_comparison_csv_contains_expected_columns():
         assert col in comparison.columns, f"Missing column: {col}"
 
 
-def test_best_model_refit_on_full_data():
+def test_best_model_refit_on_full_data() -> None:
     """Test that the best model is refit on the full dataset."""
     np.random.seed(42)
     X = np.random.randn(30, 2)
