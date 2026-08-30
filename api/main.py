@@ -99,6 +99,17 @@ app = FastAPI(
     ],
 )
 
+# --- OpenTelemetry distributed tracing (OTEL_ENABLED=true) ---
+try:
+    from tamasha.tracing import setup_tracing
+    _otel_ok = setup_tracing("tamasha-api")
+    if _otel_ok:
+        from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+        FastAPIInstrumentor.instrument_app(app)
+except ImportError:
+    pass
+
+
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
