@@ -10,7 +10,7 @@ import pandas as pd
 from tamasha.network.bankability_score import compute_bankability_scores
 
 
-def test_bankability_scores_positive():
+def test_bankability_scores_positive() -> None:
     """Test that all bankability scores are non-negative.
 
     Note: Scores can exceed 1.0 because the performance signal
@@ -37,7 +37,7 @@ def test_bankability_scores_positive():
     assert all(s >= 0 for s in scores["bankability_score"]), "All scores should be non-negative"
 
 
-def test_bankability_actors_only_type():
+def test_bankability_actors_only_type() -> None:
     """Test that returned types are correct."""
     df = pd.DataFrame(
         {
@@ -57,7 +57,7 @@ def test_bankability_actors_only_type():
     assert "director" in scores["type"].values
 
 
-def test_bankability_hand_computed():
+def test_bankability_hand_computed() -> None:
     """Test against a hand-computed expected score."""
     # Single actor, single film, current year → weight ~1.0
     # Rating 10/10 + box office → performance should be high

@@ -21,7 +21,7 @@ client.headers["X-API-Key"] = settings.API_KEY
 class TestHealth:
     """Tests for the health endpoint."""
 
-    def test_health_returns_ok(self):
+    def test_health_returns_ok(self) -> None:
         response = client.get("/health")
         assert response.status_code == 200
         data = response.json()
@@ -32,7 +32,7 @@ class TestHealth:
 class TestPredictRating:
     """Tests for the predict-rating endpoint."""
 
-    def test_predict_rating_valid_input(self):
+    def test_predict_rating_valid_input(self) -> None:
         response = client.post(
             "/predict-rating",
             json={
@@ -49,7 +49,7 @@ class TestPredictRating:
         assert "predicted_rating" in data
         assert "model_name" in data
 
-    def test_predict_rating_missing_fields(self):
+    def test_predict_rating_missing_fields(self) -> None:
         response = client.post("/predict-rating", json={})
         assert response.status_code == 422
 
@@ -57,7 +57,7 @@ class TestPredictRating:
 class TestPredictBoxOffice:
     """Tests for the predict-boxoffice endpoint."""
 
-    def test_predict_boxoffice_valid_input(self):
+    def test_predict_boxoffice_valid_input(self) -> None:
         response = client.post(
             "/predict-boxoffice",
             json={
@@ -72,7 +72,7 @@ class TestPredictBoxOffice:
         data = response.json()
         assert "predicted_boxoffice_cr" in data
 
-    def test_predict_boxoffice_with_scenarios(self):
+    def test_predict_boxoffice_with_scenarios(self) -> None:
         response = client.post(
             "/predict-boxoffice",
             json={
@@ -90,14 +90,14 @@ class TestPredictBoxOffice:
 class TestActorInfo:
     """Tests for the actor info endpoint."""
 
-    def test_get_actor_info(self):
+    def test_get_actor_info(self) -> None:
         response = client.get("/actor/Shah Rukh Khan")
         assert response.status_code == 200
         data = response.json()
         assert "name" in data
         assert "bankability_score" in data
 
-    def test_get_unknown_actor(self):
+    def test_get_unknown_actor(self) -> None:
         # Should return 404 if actor not in Bankability dataset
         response = client.get("/actor/Unknown%20Actor")
         assert response.status_code == 404
@@ -106,7 +106,7 @@ class TestActorInfo:
 class TestModelInfo:
     """Tests for the model-info endpoint."""
 
-    def test_get_model_info(self):
+    def test_get_model_info(self) -> None:
         response = client.get("/model-info")
         assert response.status_code == 200
         data = response.json()

@@ -9,7 +9,7 @@ from tamasha.train_pipeline import select_best_model
 class TestSelectBestModel:
     """Tests for select_best_model."""
 
-    def test_returns_best_model(self):
+    def test_returns_best_model(self) -> None:
         from sklearn.ensemble import RandomForestRegressor
         from sklearn.linear_model import LinearRegression
 
@@ -22,7 +22,7 @@ class TestSelectBestModel:
         result = select_best_model(models, X, y, metric="MAE")
         assert result in models
 
-    def test_different_metrics(self):
+    def test_different_metrics(self) -> None:
         from sklearn.linear_model import LinearRegression
 
         models = {"LR": LinearRegression()}
