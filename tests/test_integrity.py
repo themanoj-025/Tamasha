@@ -21,6 +21,8 @@ from tamasha.config import settings
 from tamasha.models.model_selection import save_model_with_version, sha256_of_file
 
 
+
+pytestmark = pytest.mark.slow
 def _install_model_with_hash(tmp_path: Path) -> Path:
     """Install a dummy model with a valid SHA-256 hash in metadata.json."""
     model = DummyRegressor(strategy="constant", constant=5.0)
@@ -121,6 +123,7 @@ class TestIntegrityVerification:
     def test_corrupted_model_reported_in_health(self) -> None:
         """Corrupted model causes health to report degraded with specific artifact."""
         from tamasha.predict import PredictionService
+
 
         svc = PredictionService(
             models_dir=settings.MODELS_DIR,

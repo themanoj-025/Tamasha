@@ -15,6 +15,9 @@ from fastapi.testclient import TestClient
 from api.main import app
 from tamasha.config import settings
 
+
+
+pytestmark = pytest.mark.slow
 # A client that sends NO auth header by default
 
 _noauth_client = TestClient(app)

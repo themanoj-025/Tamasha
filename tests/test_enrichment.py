@@ -12,6 +12,8 @@ import pandas as pd
 import pytest
 import requests
 
+
+pytestmark = pytest.mark.slow
 # Monkey-patch env vars before importing the module
 
 
@@ -257,6 +259,7 @@ class TestEnrichDataset:
     def test_no_matches_returns_empty_columns(self) -> None:
         """No TMDb matches → plot_summary/release_date are empty strings."""
         from tamasha.data.enrichment import enrich_dataset
+
 
         df = pd.DataFrame(
             {
