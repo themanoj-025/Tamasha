@@ -49,12 +49,8 @@ from tamasha.nlp.plot_sentiment import (
 logger = logging.getLogger(__name__)
 
 
-
-
-"""
-data_loading.py — Step 1: Load datasets, Step 2: Fuzzy join.
-"""
-
+def load_and_join_datasets() -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Load datasets and perform fuzzy join."""
     # =====================================================================
     # STEP 1: LOAD DATA
     # =====================================================================
