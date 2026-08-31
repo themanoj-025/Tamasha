@@ -63,7 +63,7 @@ ignore = [
 ]
 
 [tool.pytest.ini_options]
-addopts = "-m 'not slow' -m 'not scale'"
+addopts = "-m 'not slow' -m 'not scale' --cov --cov-fail-under=50"
 testpaths = ["tests"]
 markers = [
     "scale: machine-dependent performance benchmarks (opt-in via 'pytest -m scale')",
