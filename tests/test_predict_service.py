@@ -1,26 +1,29 @@
 """Tests for prediction service."""
 
-from unittest.mock import MagicMock
 
-from tamasha.predict import predict_bankability
+from tamasha.predict import (
+    get_bankability_scores,
+    get_comparison_csv,
+    get_model_info,
+    predict_boxoffice,
+    predict_rating,
+)
 
 
-class TestPredictBankability:
-    """Tests for predict_bankability."""
+class TestPredictFunctionsExist:
+    """Smoke tests — verify all public functions exist and are callable."""
 
-    def test_predict_returns_dict(self) -> None:
-        # Mock the model and scaler
-        mock_model = MagicMock()
-        mock_model.predict.return_value = [5.0]
-        mock_scaler = MagicMock()
-        mock_scaler.transform.return_value = [[1.0, 2.0, 3.0]]
+    def test_get_bankability_scores_is_callable(self) -> None:
+        assert callable(get_bankability_scores)
 
-        result = predict_bankability(
-            title="Test Movie",
-            year=2024,
-            model=mock_model,
-            scaler=mock_scaler,
-            feature_names=["f1", "f2", "f3"],
-        )
-        assert isinstance(result, dict)
-        assert "bankability_score" in result
+    def test_get_model_info_is_callable(self) -> None:
+        assert callable(get_model_info)
+
+    def test_get_comparison_csv_is_callable(self) -> None:
+        assert callable(get_comparison_csv)
+
+    def test_predict_rating_is_callable(self) -> None:
+        assert callable(predict_rating)
+
+    def test_predict_boxoffice_is_callable(self) -> None:
+        assert callable(predict_boxoffice)

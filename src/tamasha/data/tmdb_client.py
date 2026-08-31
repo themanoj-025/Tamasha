@@ -31,6 +31,7 @@ _TMDB_API_KEY: str | None = os.getenv("TMDB_API_KEY")
 _TMDB_ACCESS_TOKEN: str | None = os.getenv("TMDB_ACCESS_TOKEN")
 
 _SEARCH_URL = "https://api.themoviedb.org/3/search/movie"
+_IMAGE_BASE = "https://image.tmdb.org/t/p"
 _HEADERS: dict[str, str] = {
     "accept": "application/json",
 }

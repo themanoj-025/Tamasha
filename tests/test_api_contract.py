@@ -10,10 +10,11 @@ from __future__ import annotations
 
 import os
 
+import pytest
+
 pytestmark = pytest.mark.slow
 os.environ.setdefault("API_KEY", "test-key-for-ci")
 
-import pytest
 from fastapi.testclient import TestClient
 from pydantic import ValidationError
 
