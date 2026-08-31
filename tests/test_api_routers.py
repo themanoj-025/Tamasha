@@ -1,13 +1,10 @@
 """Tests for API router endpoints."""
 
-import pytest
 from unittest.mock import MagicMock, patch
+
+import pytest
 from fastapi.testclient import TestClient
-
 from tamasha.api.main import app
-
-
-
 
 pytestmark = pytest.mark.slow
 @pytest.fixture

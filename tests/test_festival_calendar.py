@@ -25,7 +25,7 @@ class TestFestivalCalendar:
 
     def test_festival_dates_are_valid(self) -> None:
         windows = get_major_release_windows(2024)
-        for name, d in windows.items():
+        for _name, d in windows.items():
             assert isinstance(d, date)
             assert d.year == 2024
 

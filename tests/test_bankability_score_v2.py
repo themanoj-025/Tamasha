@@ -1,8 +1,6 @@
 """Tests for bankability score computation."""
 
-import math
 
-import numpy as np
 import pytest
 
 from tamasha.train_pipeline import compute_bankability_score, time_decay_weight

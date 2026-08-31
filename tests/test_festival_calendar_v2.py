@@ -1,6 +1,5 @@
 """Tests for festival calendar utility."""
 
-import pytest
 
 from tamasha.train_pipeline import get_festival_multiplier, get_nearest_festival
 

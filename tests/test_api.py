@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import os
 
-
 pytestmark = pytest.mark.slow
 os.environ.setdefault("API_KEY", "test-key-for-ci")
 
@@ -12,7 +11,6 @@ from fastapi.testclient import TestClient
 
 from api.main import app
 from tamasha.config import settings
-
 
 client = TestClient(app)
 client.headers["X-API-Key"] = settings.API_KEY

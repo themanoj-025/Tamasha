@@ -1,7 +1,6 @@
 """Tests for prediction service."""
 
-import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 from tamasha.predict import predict_bankability
 
