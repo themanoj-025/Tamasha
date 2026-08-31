@@ -8,7 +8,7 @@ from tamasha.api.main import app
 
 pytestmark = pytest.mark.slow
 @pytest.fixture
-def client():
+def client() -> None:
     return TestClient(app)
 
 
