@@ -1,7 +1,7 @@
 # Core data & ML
 pandas>=2.0,<3.0
 numpy>=1.24,<3.0  # widened from <2.0 to support Python 3.14 (numpy 2.x has wheels; 1.x doesn't)
-scikit-learn>=1.3,<2.0
+scikit-learn>=1.7.2,<2.0
 opencv-python>=4.8  # cv2 — image processing used by api/src
 python-dotenv>=1.0  # dotenv
 requests>=2.31
