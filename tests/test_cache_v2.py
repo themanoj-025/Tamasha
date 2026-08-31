@@ -1,8 +1,6 @@
 """Tests for prediction response cache."""
 
 import tempfile
-
-import pytest
 from unittest.mock import patch
 
 from tamasha.cache import _make_key, get_cached_prediction, set_cached_prediction

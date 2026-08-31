@@ -1,13 +1,12 @@
 """Tests for custom exceptions."""
 
-import pytest
 
 from tamasha.exceptions import (
+    CacheError,
+    DataValidationError,
+    EnrichmentError,
     ModelNotFoundError,
     PredictionError,
-    DataValidationError,
-    CacheError,
-    EnrichmentError,
 )
 
 

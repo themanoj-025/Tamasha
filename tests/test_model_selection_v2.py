@@ -1,7 +1,6 @@
 """Tests for model selection logic."""
 
 import numpy as np
-import pytest
 
 from tamasha.train_pipeline import select_best_model
 

@@ -6,7 +6,6 @@ cast/crew collaboration network.
 
 from __future__ import annotations
 
-
 import networkx as nx
 import pandas as pd
 import plotly.graph_objects as go

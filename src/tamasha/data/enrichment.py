@@ -15,7 +15,6 @@ from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_ex
 
 from tamasha.data.tmdb_client import (
     _CACHE,
-    _CACHE_PATH,
     _HEADERS,
     _IMAGE_BASE,
     _PERSON_SEARCH_URL,
@@ -28,7 +27,6 @@ from tamasha.data.tmdb_client import (
     _load_cache,
     _rate_limit,
     _save_cache,
-    _search_tmdb,
     get_movie_data,
 )
 
@@ -290,7 +288,7 @@ def enrich_dataset_async(
     year_column: str | None = None,
     max_movies: int | None = None,
     concurrency: int = 8,
-) -> tuple[dict[str, list[str]], "pd.DataFrame"]:
+) -> tuple[dict[str, list[str]], pd.DataFrame]:
     """Enrich a movie DataFrame with TMDb data using true async I/O.
 
     Uses ``httpx.AsyncClient`` (not ThreadPoolExecutor) for genuine

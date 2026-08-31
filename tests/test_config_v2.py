@@ -1,6 +1,5 @@
 """Tests for configuration settings."""
 
-import pytest
 
 from tamasha.config import Settings
 

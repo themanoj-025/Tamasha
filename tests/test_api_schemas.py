@@ -1,6 +1,5 @@
 """Tests for API request/response schemas."""
 
-import pytest
 
 from tamasha.api.schemas import PredictionRequest, PredictionResponse
 

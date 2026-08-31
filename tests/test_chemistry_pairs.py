@@ -1,6 +1,5 @@
 """Tests for chemistry pairs feature engineering."""
 
-import pytest
 
 from tamasha.train_pipeline import compute_chemistry_score
 

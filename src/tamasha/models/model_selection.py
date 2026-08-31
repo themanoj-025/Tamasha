@@ -13,19 +13,15 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
-import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 import joblib
 import numpy as np
-import pandas as pd
-from scipy import stats
 from sklearn.ensemble import GradientBoostingRegressor, RandomForestRegressor
 from sklearn.linear_model import Lasso, LinearRegression, Ridge
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
-from sklearn.model_selection import KFold, RandomizedSearchCV, cross_val_predict
 from sklearn.tree import DecisionTreeRegressor
 
 from tamasha.config import settings
@@ -242,7 +238,7 @@ def save_model_with_version(
     meta = {
         "version": next_version,
         "task": task_name,
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "model_type": type(model).__name__,
         "sha256": model_hash,
     }

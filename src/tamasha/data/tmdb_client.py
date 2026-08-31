@@ -7,15 +7,13 @@ local caching, rate limiting, circuit breaker, and retry/backoff.
 
 from __future__ import annotations
 
-import asyncio
 import json
 import logging
 import os
 import time
 from pathlib import Path
-from typing import Any, cast
+from typing import Any
 
-import httpx
 import pandas as pd
 import requests
 from dotenv import load_dotenv
@@ -323,7 +321,7 @@ def enrich_dataset(
     title_column: str = "title",
     year_column: str | None = None,
     max_movies: int | None = None,
-) -> tuple[dict[str, list[str]], "pd.DataFrame"]:
+) -> tuple[dict[str, list[str]], pd.DataFrame]:
     """Enrich a movie DataFrame with TMDb data.
 
     Parameters

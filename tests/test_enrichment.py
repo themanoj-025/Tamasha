@@ -12,7 +12,6 @@ import pandas as pd
 import pytest
 import requests
 
-
 pytestmark = pytest.mark.slow
 # Monkey-patch env vars before importing the module
 
