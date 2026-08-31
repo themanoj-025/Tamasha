@@ -1,32 +1,29 @@
 """Tests for model selection logic."""
 
-import numpy as np
-
-from tamasha.train_pipeline import select_best_model
+from tamasha.models.model_selection import get_all_models
 
 
-class TestSelectBestModel:
-    """Tests for select_best_model."""
+class TestGetAllModels:
+    """Tests for get_all_models."""
 
-    def test_returns_best_model(self) -> None:
-        from sklearn.ensemble import RandomForestRegressor
-        from sklearn.linear_model import LinearRegression
+    def test_returns_dict(self) -> None:
+        """get_all_models should return a dict of model name → model instance."""
+        models = get_all_models()
+        assert isinstance(models, dict)
 
-        models = {
-            "LinearRegression": LinearRegression(),
-            "RandomForest": RandomForestRegressor(n_estimators=10, random_state=42),
-        }
-        X = np.random.rand(100, 5)
-        y = np.random.rand(100)
-        result = select_best_model(models, X, y, metric="MAE")
-        assert result in models
+    def test_has_models(self) -> None:
+        """Should return at least one model."""
+        models = get_all_models()
+        assert len(models) > 0
 
-    def test_different_metrics(self) -> None:
-        from sklearn.linear_model import LinearRegression
+    def test_keys_are_strings(self) -> None:
+        """All keys should be model name strings."""
+        models = get_all_models()
+        for name in models:
+            assert isinstance(name, str)
 
-        models = {"LR": LinearRegression()}
-        X = np.random.rand(100, 5)
-        y = np.random.rand(100)
-        for metric in ["MAE", "RMSE", "R2"]:
-            result = select_best_model(models, X, y, metric=metric)
-            assert result == "LR"
+    def test_values_are_sklearn_compatible(self) -> None:
+        """All values should have a predict method (sklearn-compatible)."""
+        models = get_all_models()
+        for name, model in models.items():
+            assert hasattr(model, "predict"), f"{name} has no predict method"

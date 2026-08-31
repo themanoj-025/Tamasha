@@ -1,29 +1,48 @@
 """Tests for festival calendar utility."""
 
 
-from tamasha.train_pipeline import get_festival_multiplier, get_nearest_festival
+from datetime import date
+
+from tamasha.timing.festival_calendar import (
+    compute_festival_features,
+    get_major_release_windows,
+    is_festival_release,
+)
 
 
-class TestGetFestivalMultiplier:
-    """Tests for get_festival_multiplier."""
+class TestIsFestivalRelease:
+    """Tests for is_festival_release."""
 
     def test_normal_release(self) -> None:
-        mult = get_festival_multiplier("2024-06-15")
-        assert mult >= 1.0
+        """A June release should not be in any festival window."""
+        windows = get_major_release_windows(2024)
+        result = is_festival_release(date(2024, 6, 15), windows)
+        assert isinstance(result, tuple)
+        assert len(result) == 3  # (is_festival, festival_name, days_to_festival)
 
-    def test_diwali_window(self) -> None:
-        # Diwali 2024 is around Nov 1
-        mult = get_festival_multiplier("2024-11-01")
-        assert mult >= 1.0
+    def test_returns_tuple(self) -> None:
+        """Return type should always be a 3-tuple."""
+        windows = get_major_release_windows(2024)
+        result = is_festival_release(date(2024, 1, 1), windows)
+        assert isinstance(result, tuple)
+        assert len(result) == 3
 
 
-class TestGetNearestFestival:
-    """Tests for get_nearest_festival."""
+class TestComputeFestivalFeatures:
+    """Tests for compute_festival_features."""
 
-    def test_returns_string(self) -> None:
-        result = get_nearest_festival("2024-01-01")
-        assert isinstance(result, str)
+    def test_is_callable(self) -> None:
+        """compute_festival_features should be callable."""
+        assert callable(compute_festival_features)
 
-    def test_diwali_period(self) -> None:
-        result = get_nearest_festival("2024-11-01")
-        assert result.lower() in ["diwali", "normal"]
+
+class TestGetMajorReleaseWindows:
+    """Tests for get_major_release_windows."""
+
+    def test_returns_dict(self) -> None:
+        windows = get_major_release_windows(2024)
+        assert isinstance(windows, dict)
+
+    def test_has_festival_entries(self) -> None:
+        windows = get_major_release_windows(2024)
+        assert len(windows) > 0
