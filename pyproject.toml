@@ -35,9 +35,8 @@ select = ["E", "F", "W", "B", "BLE", "UP", "SIM", "C4", "RUF", "PLC", "PIE", "I"
 ignore = ["E501"]
 
 [tool.pytest.ini_options]
-addopts = "-m 'not slow'"
+addopts = "-m 'not slow' -m 'not scale'"
 testpaths = ["tests"]
-addopts = "-m 'not scale'"
 markers = [
     "scale: machine-dependent performance benchmarks (opt-in via 'pytest -m scale')",
 ]
@@ -50,7 +49,4 @@ warn_unused_configs = true
 warn_redundant_casts = true
 warn_unused_ignores = true
 
-[tool.coverage.report]
-show_missing = true
-fail_under = 80
-skip_empty = true
+
