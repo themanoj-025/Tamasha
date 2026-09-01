@@ -31,7 +31,7 @@ def train_boxoffice_model(
     run_label: str = "boxoffice",
     tune: bool = False,
     tune_n_iter: int = 10,
-) -> tuple[Any, pd.DataFrame]:
+) -> tuple[Any, pd.DataFrame] -> None:
     """Run the box-office model comparison and save the winner.
 
     Parameters

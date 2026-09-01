@@ -223,7 +223,7 @@ def get_prediction_service() -> PredictionService:
 @app.get("/health")
 async def health(
     svc: PredictionService = Depends(get_prediction_service),
-) -> dict:
+) -> dict -> None:
     """Health check — reflects model-availability and integrity status."""
     healthy = svc.healthy
     checks: dict[str, str] = {}

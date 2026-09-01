@@ -22,7 +22,7 @@ def detect_chemistry_pairs(
     boxoffice_column: str | None = None,
     min_joint_films: int = 2,
     top_n: int = 10,
-) -> pd.DataFrame:
+) -> pd.DataFrame -> None:
     """Identify actor pairs with statistically exceptional chemistry.
 
     For every actor pair that appears in at least ``min_joint_films``:

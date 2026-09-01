@@ -87,7 +87,7 @@ def is_festival_release(
     release_date: date,
     festival_windows: dict[str, date],
     window_days: int = 7,
-) -> tuple[bool, str | None, int]:
+) -> tuple[bool, str | None, int] -> None:
     """Check if a release date falls near a major festival.
 
     Parameters
@@ -116,7 +116,7 @@ def compute_festival_features(
     date_column: str = "release_date",
     year_column: str = "year",
     window_days: int = 7,
-) -> pd.DataFrame:
+) -> pd.DataFrame -> None:
     """Compute festival-related features for a movie DataFrame.
 
     Adds columns:
@@ -200,7 +200,7 @@ def compute_clash_feature(
     df: pd.DataFrame,
     date_column: str = "release_date",
     clash_window_days: int = 7,
-) -> pd.DataFrame:
+) -> pd.DataFrame -> None:
     """Flag whether a movie clashes with another major release.
 
     A "clash" occurs when another movie in the dataset releases within
