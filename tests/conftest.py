@@ -42,7 +42,7 @@ _FAKE_BOX_COLS = _FAKE_RATING_COLS + ["avg_bankability_score"]
 def install_dummy_artifacts(
     models_dir: Path,
     reports_dir: Path | None = None,
-) -> None -> None:
+) -> None:
     """Write dummy model files, feature JSONs, and bankability CSV.
 
     Idempotent — safe to call in setup even if files already exist.

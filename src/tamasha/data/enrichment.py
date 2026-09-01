@@ -290,7 +290,7 @@ def enrich_dataset_async(
     year_column: str | None = None,
     max_movies: int | None = None,
     concurrency: int = 8,
-) -> tuple[dict[str, list[str]], pd.DataFrame] -> None:
+) -> tuple[dict[str, list[str]], pd.DataFrame]:
     """Enrich a movie DataFrame with TMDb data using true async I/O.
 
     Uses ``httpx.AsyncClient`` (not ThreadPoolExecutor) for genuine

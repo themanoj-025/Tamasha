@@ -8,7 +8,7 @@ import streamlit as st
 def glass_card(
     content: str,
     height: int | None = None,
-) -> None -> None:
+) -> None:
     """Render a glassmorphism container card."""
     style = f"height:{height}px;" if height else ""
     st.markdown(
@@ -24,7 +24,7 @@ def metric_card(
     help_text: str | None = None,
     featured: bool = False,
     gradient_value: bool = False,
-) -> None -> None:
+) -> None:
     """Render a styled metric card.
 
     Parameters

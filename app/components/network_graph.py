@@ -17,7 +17,7 @@ def render_force_directed_graph(
     highlight_actor: str | None = None,
     title: str = "Star Collaboration Network",
     height: int = 600,
-) -> go.Figure -> None:
+) -> go.Figure:
     """Render an interactive force-directed graph with Plotly.
 
     Node size encodes Bankability Score (if provided).

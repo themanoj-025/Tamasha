@@ -35,7 +35,7 @@ def _model_version_key(svc) -> str:
 async def predict_rating_endpoint(
     request: PredictRatingRequest,
     svc=Depends(get_prediction_service),
-) -> PredictRatingResponse -> None:
+) -> PredictRatingResponse:
     """Predict movie rating from cast, genre, and budget features."""
     try:
         # Check cache
@@ -77,7 +77,7 @@ async def predict_rating_endpoint(
 async def predict_boxoffice_endpoint(
     request: PredictBoxOfficeRequest,
     svc=Depends(get_prediction_service),
-) -> PredictBoxOfficeResponse -> None:
+) -> PredictBoxOfficeResponse:
     """Predict movie box office using the Bankability-enhanced model."""
     try:
         # Check cache

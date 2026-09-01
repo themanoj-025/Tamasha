@@ -29,7 +29,7 @@ def train_rating_model(
     save_dir: str | Path | None = None,
     tune: bool = False,
     tune_n_iter: int = 10,
-) -> tuple[Any, pd.DataFrame] -> None:
+) -> tuple[Any, pd.DataFrame]:
     """Run the full rating model comparison and save the winner.
 
     Parameters

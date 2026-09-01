@@ -41,7 +41,7 @@ except ImportError:
 def plot_model_comparison(
     comparison_csv: str | Path,
     save_path: str | Path | None = None,
-) -> Any | None -> None:
+) -> Any | None:
     """Generate a grouped bar chart comparing MAE/RMSE across models.
 
     Parameters
@@ -125,7 +125,7 @@ def plot_predicted_vs_actual(
     y_pred: np.ndarray,
     model_name: str,
     save_path: str | Path | None = None,
-) -> Any | None -> None:
+) -> Any | None:
     """Generate a predicted-vs-actual scatter plot.
 
     Parameters
@@ -197,7 +197,7 @@ def plot_shap_summary(
     model: Any,
     X: pd.DataFrame,
     save_path: str | Path | None = None,
-) -> Any | None -> None:
+) -> Any | None:
     """Generate a SHAP summary plot for a model.
 
     Parameters

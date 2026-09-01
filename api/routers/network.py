@@ -20,7 +20,7 @@ router = APIRouter(prefix="/api/v1", tags=["network"])
 async def get_actor_info_endpoint(
     name: str,
     svc=Depends(get_prediction_service),
-) -> ActorInfoResponse -> None:
+) -> ActorInfoResponse:
     """Get Bankability Score and top chemistry pairs for an actor."""
     try:
         info = svc.get_actor_info(name)

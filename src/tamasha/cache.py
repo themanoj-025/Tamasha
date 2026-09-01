@@ -58,7 +58,7 @@ def _make_key(payload: dict[str, Any], model_version: str = "") -> str:
 
 def get_cached_prediction(
     payload: dict[str, Any], model_version: str = ""
-) -> dict[str, Any | None] -> None:
+) -> dict[str, Any | None]:
     """Look up a cached prediction result.
 
     Parameters
@@ -88,7 +88,7 @@ def set_cached_prediction(
     result: dict[str, Any],
     model_version: str = "",
     ttl: int = _DEFAULT_TTL,
-) -> None -> None:
+) -> None:
     """Store a prediction result in cache.
 
     Parameters
@@ -110,7 +110,7 @@ def set_cached_prediction(
 
 def get_cached_explanation(
     payload: dict[str, Any], model_version: str = ""
-) -> dict[str, Any | None] -> None:
+) -> dict[str, Any | None]:
     """Look up a cached LLM explanation (longer TTL)."""
     cache = _get_cache()
     key = f"explain:{_make_key(payload, model_version)}"
@@ -122,7 +122,7 @@ def set_cached_explanation(
     result: dict[str, Any],
     model_version: str = "",
     ttl: int = _EXPLANATION_TTL,
-) -> None -> None:
+) -> None:
     """Store an LLM explanation in cache (24h TTL)."""
     cache = _get_cache()
     key = f"explain:{_make_key(payload, model_version)}"

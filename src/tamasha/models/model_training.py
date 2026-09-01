@@ -20,7 +20,7 @@ def train_and_compare(
     random_state: int = 42,
     tune: bool = False,
     tune_n_iter: int = 10,
-) -> tuple[pd.DataFrame, str, Any] -> None:
+) -> tuple[pd.DataFrame, str, Any]:
     """Train all candidate models under k-fold CV and return comparison.
 
     Parameters
@@ -253,7 +253,7 @@ def tune_model(
     cv_folds: int = 5,
     n_iter: int = 10,
     random_state: int = 42,
-) -> tuple[Any, dict[str, Any]] -> None:
+) -> tuple[Any, dict[str, Any]]:
     """Run ``RandomizedSearchCV`` for a given model if a search space exists.
 
     Parameters
@@ -327,7 +327,7 @@ def compare_models_significance(
     preds_b: np.ndarray,
     name_a: str = "Model A",
     name_b: str = "Model B",
-) -> dict[str, Any] -> None:
+) -> dict[str, Any]:
     """Run a Wilcoxon signed-rank test between two models' absolute errors.
 
     Parameters
