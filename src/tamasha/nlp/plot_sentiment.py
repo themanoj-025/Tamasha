@@ -43,7 +43,7 @@ def _get_analyzer() -> Any:
 def score_plot_sentiment(
     df: pd.DataFrame,
     plot_column: str = "plot",
-) -> pd.DataFrame:
+) -> pd.DataFrame -> None:
     """Score the sentiment of each plot summary.
 
     Returns a DataFrame with columns:
@@ -78,7 +78,7 @@ def genre_conditional_correlation(
     target_column: str,
     genre_column: str = "genre",
     min_samples: int = 10,
-) -> pd.DataFrame:
+) -> pd.DataFrame -> None:
     """Compute sentiment-target correlation within each genre.
 
     This is the key analysis: genre-conditional correlation reveals

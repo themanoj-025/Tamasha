@@ -58,7 +58,7 @@ def compute_bankability_scores(
     rating_column: str | None = None,
     boxoffice_column: str | None = None,
     half_life: float | None = None,
-) -> pd.DataFrame:
+) -> pd.DataFrame -> None:
     """Compute Bankability Scores for all actors and directors.
 
     Parameters

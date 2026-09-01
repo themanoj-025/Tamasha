@@ -22,7 +22,7 @@ def extract_genre_features(
     df: pd.DataFrame,
     genre_column: str = "genre",
     max_genres: int | None = None,
-) -> pd.DataFrame:
+) -> pd.DataFrame -> None:
     """One-hot encode the genre column (assumed comma-separated).
 
     Parameters
@@ -59,7 +59,7 @@ def extract_cast_features(
     df: pd.DataFrame,
     cast_column: str = "cast",
     director_column: str = "director",
-) -> pd.DataFrame:
+) -> pd.DataFrame -> None:
     """Extract cast-related features.
 
     Parameters
@@ -95,7 +95,7 @@ def save_director_encoder(
     df: pd.DataFrame,
     director_column: str = "director",
     save_path: str | Path | None = None,
-) -> Path:
+) -> Path -> None:
     """Fit and persist a ``LabelEncoder`` for the director column.
 
     Used during training so that the same encoding can be loaded at
@@ -131,7 +131,7 @@ def save_director_encoder(
 def extract_runtime_feature(
     df: pd.DataFrame,
     runtime_column: str = "runtime",
-) -> pd.DataFrame:
+) -> pd.DataFrame -> None:
     """Extract runtime feature (fill NaNs with median).
 
     Parameters
@@ -162,7 +162,7 @@ def extract_runtime_feature(
 def extract_decade_feature(
     df: pd.DataFrame,
     year_column: str = "year",
-) -> pd.DataFrame:
+) -> pd.DataFrame -> None:
     """Extract decade dummies from release year.
 
     Parameters
@@ -195,7 +195,7 @@ def build_feature_matrix(
     include_budget: bool = True,
     target_column_rating: str | None = None,
     target_column_boxoffice: str | None = None,
-) -> tuple[pd.DataFrame, pd.Series | None, pd.Series | None]:
+) -> tuple[pd.DataFrame, pd.Series | None, pd.Series | None] -> None:
     """Build a complete feature matrix (X) and optional target vectors.
 
     Parameters

@@ -275,7 +275,7 @@ def _search_tmdb(title: str, year: int | None = None) -> dict[str, Any | None]:
 
 def get_movie_data(
     title: str, year: int | None = None, force: bool = False
-) -> dict[str, Any | None]:
+) -> dict[str, Any | None] -> None:
     """Get plot summary, release date, and poster path for a movie.
 
     Results are cached locally.  Subsequent calls for the same ``(title, year)``
@@ -322,7 +322,7 @@ def enrich_dataset(
     title_column: str = "title",
     year_column: str | None = None,
     max_movies: int | None = None,
-) -> tuple[dict[str, list[str]], pd.DataFrame]:
+) -> tuple[dict[str, list[str]], pd.DataFrame] -> None:
     """Enrich a movie DataFrame with TMDb data.
 
     Parameters
