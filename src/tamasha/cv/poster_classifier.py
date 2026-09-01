@@ -33,8 +33,8 @@ logger = logging.getLogger(__name__)
 
 def load_poster_images(
     image_dir: Path | None = None,
-    target_size -> None:
-) -> tuple[list[np.ndarray], list[int], list[str]] -> None:
+    target_size: tuple[int, int] = (224, 224),
+) -> tuple[list[np.ndarray], list[int], list[str]]:
     """Load poster images from disk with hit/flop labels.
 
     Images should be named ``hit_<title>_<year>.jpg`` or
@@ -230,7 +230,7 @@ def train_poster_classifier(
     model_type: str = "simple_cnn",
     test_size: float = 0.3,
     random_state: int = 42,
-) -> dict[str, Any] -> None:
+) -> dict[str, Any]:
     """Train a hit/flop classifier from poster images.
 
     Since TensorFlow is not available, uses hand-crafted features
@@ -341,7 +341,7 @@ def train_poster_classifier(
 
 def evaluate_poster_signal(
     image_dir: Path | None = None,
-) -> dict[str, Any] -> None:
+) -> dict[str, Any]:
     """Evaluate whether poster aesthetics carry independent signal.
 
     Trains a classifier and reports accuracy vs. a majority-class

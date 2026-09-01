@@ -194,7 +194,7 @@ def save_model_with_version(
     task_name: str,
     metadata: dict[str, Any] | None = None,
     models_dir: Path | None = None,
-) -> dict[str, Any] -> None:
+) -> dict[str, Any]:
     """Save a model with versioned metadata.
 
     Creates ``models/v{N}/{task_name}_model.pkl`` and a

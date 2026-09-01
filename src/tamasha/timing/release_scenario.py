@@ -150,7 +150,7 @@ def simulate_scenarios(
     bankability_map: dict[str, float | None] = None,
     director_encoder: Any = None,
     festival_scenarios: list[str | None] = None,
-) -> list[ScenarioResult] -> None:
+) -> list[ScenarioResult]:
     """Run a release-scenario simulation for a hypothetical movie.
 
     Parameters

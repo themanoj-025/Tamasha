@@ -75,7 +75,7 @@ def parse_currency_column(
     df: pd.DataFrame,
     column: str,
     new_name: str | None = None,
-) -> pd.Series -> None:
+) -> pd.Series:
     """Parse a column of INR currency strings into numeric rupees.
 
     Parameters
@@ -133,7 +133,7 @@ def inflation_adjust(
     value_column: str,
     year_column: str,
     base_year: int = 2024,
-) -> pd.Series -> None:
+) -> pd.Series:
     """Adjust a currency column to ``base_year`` rupees.
 
     Parameters

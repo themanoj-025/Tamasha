@@ -19,7 +19,7 @@ router = APIRouter(prefix="/api/v1", tags=["model-info"])
 @router.get("/model-info", response_model=ModelInfoResponse)
 async def get_model_info_endpoint(
     svc=Depends(get_prediction_service),
-) -> ModelInfoResponse -> None:
+) -> ModelInfoResponse:
     """Get metadata about currently deployed models."""
     info = svc.get_model_info()
     return ModelInfoResponse(

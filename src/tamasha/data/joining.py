@@ -73,7 +73,7 @@ def fuzzy_join_datasets(
     right_year_col: str | None = None,
     score_cutoff: float = 60.0,
     year_tolerance: int = 2,
-) -> pd.DataFrame -> None:
+) -> pd.DataFrame:
     """Fuzzy-join two movie DataFrames on title (+ optional year).
 
     For every row in ``df_left``, the best fuzzy match in ``df_right``
@@ -184,7 +184,7 @@ def generate_join_quality_report(
     joined_df: pd.DataFrame,
     report_path: str | None = None,
     sample_size: int = 15,
-) -> str -> None:
+) -> str:
     """Generate a Markdown quality report for the fuzzy join.
 
     Parameters
