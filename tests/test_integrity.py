@@ -20,6 +20,8 @@ from api.main import app
 from tamasha.config import settings
 from tamasha.models.model_selection import save_model_with_version, sha256_of_file
 
+import pytest
+
 pytestmark = pytest.mark.slow
 def _install_model_with_hash(tmp_path: Path) -> Path:
     """Install a dummy model with a valid SHA-256 hash in metadata.json."""

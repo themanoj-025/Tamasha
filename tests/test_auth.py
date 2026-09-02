@@ -1,3 +1,7 @@
+import pytest
+
+pytestmark = pytest.mark.integration
+
 """Tests for API authentication, rate limiting, and CORS protection.
 
 Verifies:

@@ -6,6 +6,9 @@ import pytest
 from fastapi.testclient import TestClient
 from tamasha.api.main import app
 
+pytestmark = pytest.mark.unit
+
+
 pytestmark = pytest.mark.slow
 @pytest.fixture
 def client() -> None:
