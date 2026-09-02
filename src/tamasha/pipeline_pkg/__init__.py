@@ -1,14 +1,21 @@
 """
-pipeline_pkg — Backward-compatible re-exporter.
+Pipeline Package — ML training pipeline split into focused modules.
 
-The implementation has been consolidated back into ``train_pipeline.py``
-after a previous split attempt produced broken files.
-
-This file re-exports ``main`` so existing
-``from tamasha.train_pipeline import main`` imports continue
-to work unchanged.
+Modules:
+- data_loading: Data fetching, preprocessing, feature engineering
+- model_training: Model training, hyperparameter tuning
+- evaluation: Model evaluation, metrics, reporting
 """
 
-from tamasha.train_pipeline import main
+from .data_loading import engineer_features, load_and_preprocess
+from .evaluation import ModelEvaluator, evaluate_model
+from .model_training import train_model, tune_hyperparameters
 
-__all__ = ["main"]
+__all__ = [
+    "ModelEvaluator",
+    "engineer_features",
+    "evaluate_model",
+    "load_and_preprocess",
+    "train_model",
+    "tune_hyperparameters",
+]
