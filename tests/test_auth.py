@@ -1,3 +1,6 @@
+
+from __future__ import annotations
+
 import pytest
 
 pytestmark = pytest.mark.integration
@@ -12,7 +15,6 @@ Verifies:
 - CORS headers reflect configured origins
 """
 
-from __future__ import annotations
 
 from fastapi.testclient import TestClient
 
