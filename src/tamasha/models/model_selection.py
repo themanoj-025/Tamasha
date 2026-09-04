@@ -11,6 +11,7 @@ All models are evaluated on the same k-fold split and same feature set.
 from __future__ import annotations
 
 import hashlib
+import importlib
 import json
 import logging
 from datetime import UTC, datetime
@@ -106,7 +107,7 @@ def _import_extra_model(import_path: str) -> Any:
     """
     try:
         parts = import_path.split(".")
-        module = __import__(".".join(parts[:-1]), fromlist=[parts[-1]])
+        module = importlib.import_module(".".join(parts[:-1]))
         return getattr(module, parts[-1])
     except ImportError:
         logger.warning("Optional model %s not installed. Skipping.", import_path)
