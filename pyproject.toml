@@ -2,6 +2,9 @@
 requires = ["setuptools>=68.0"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools.packages.find]
+where = ["src"]
+
 [tool.coverage.run]
 omit = [
     "src/tamasha/train_pipeline.py",
@@ -65,6 +68,7 @@ ignore = [
 [tool.pytest.ini_options]
 addopts = "-m 'not slow' -m 'not scale' --cov --cov-fail-under=50"
 testpaths = ["tests"]
+pythonpath = ["src"]
 markers = [
     "unit: marks pure unit tests (deselect with '-m \"not unit\"')",
     "integration: marks tests requiring external services (deselect with '-m \"not integration\"')",
