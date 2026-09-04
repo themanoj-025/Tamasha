@@ -23,11 +23,6 @@ Implementation delegates to :mod:`tamasha.pipeline_pkg` modules:
 from __future__ import annotations
 
 import logging
-import sys
-from pathlib import Path
-
-# Ensure project root is on sys.path before importing tamasha.*
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 import numpy as np
 import pandas as pd
