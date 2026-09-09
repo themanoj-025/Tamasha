@@ -110,3 +110,9 @@ temp/
 
 # ── Python version / runtime ──────────────────────────────────────────────
 .python-version
+
+# ── Portfolio-standard ignores (sweep 2026-09) ──────────────
+radar_balance.txt
+.venv*/
+*.db-shm
+*.db-wal
