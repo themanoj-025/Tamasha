@@ -23,3 +23,27 @@ class ModelIntegrityError(Exception):
             f"Integrity check failed for {artifact_path}: "
             f"expected {expected_hash[:16]}…, got {actual_hash[:16]}…"
         )
+
+
+class TamashaError(Exception):
+    """Base class for all Tamasha domain errors."""
+
+
+class ModelNotFoundError(TamashaError):
+    """Raised when a requested model artifact does not exist."""
+
+
+class PredictionError(TamashaError):
+    """Raised when a prediction fails at inference time."""
+
+
+class DataValidationError(TamashaError):
+    """Raised when input data fails validation."""
+
+
+class CacheError(TamashaError):
+    """Raised when the prediction cache cannot be read or written."""
+
+
+class EnrichmentError(TamashaError):
+    """Raised when an external enrichment step (posters, plots) fails."""
