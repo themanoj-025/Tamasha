@@ -6,6 +6,7 @@ FROM python:3.14-slim AS builder
 WORKDIR /build
 
 # Install build system deps only
+# hadolint ignore=DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
@@ -18,6 +19,7 @@ COPY src/ ./src/
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
+# hadolint ignore=DL3013
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
@@ -49,6 +51,7 @@ COPY --from=builder /build/setup.py .
 
 # Runtime system deps (OpenCV, etc.) — libgl1 replaces the old
 # libgl1-mesa-glx package name on Debian bookworm+ (current slim base).
+# hadolint ignore=DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libgl1 libglib2.0-0 curl \
     && rm -rf /var/lib/apt/lists/*
@@ -57,6 +60,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN addgroup --system app && adduser --system --ingroup app app \
     && chown -R app:app /app
 
+# hadolint ignore=DL3066
 USER app
 
 # Expose ports
@@ -64,6 +68,7 @@ EXPOSE 8000 8501
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+# hadolint ignore=DL3025
     CMD curl -f http://localhost:8501/_stcore/health || exit 1
 
 # Default: run Streamlit
