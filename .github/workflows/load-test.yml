@@ -27,7 +27,7 @@ jobs:
 
       - name: Start API
         run: |
-          JWT_SECRET=ci-secret SECRET_KEY=ci-secret API_KEY=ci-key PYTHONPATH=src uvicorn api.main:app --host 127.0.0.1 --port 8000 > uvicorn.log 2>&1 &
+          JWT_SECRET=ci-secret SECRET_KEY=ci-secret API_KEY=ci-key RATE_LIMIT=10000/minute PYTHONPATH=src uvicorn api.main:app --host 127.0.0.1 --port 8000 > uvicorn.log 2>&1 &
 
       - name: Wait for health
         run: |
