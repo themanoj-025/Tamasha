@@ -11,6 +11,7 @@ import logging
 import uuid
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
+from typing import Any
 
 import structlog
 from fastapi import Depends, FastAPI
@@ -223,19 +224,9 @@ app.add_middleware(SlowAPIMiddleware)
 # Dependency injection helper
 
 
-def get_prediction_service() -> PredictionService:
-    """FastAPI dependency — yields the singleton from ``app.state``.
-
-    Falls back to creating one on the fly (for tests / scripts that
-    create ``TestClient`` without triggering the lifespan).
-    """
-    svc: PredictionService | None = getattr(app.state, "prediction_service", None)
-    if svc is None:
-        svc = PredictionService()
-        svc.load()
-        app.state.prediction_service = svc
-    return svc
-
+# Backward-compatible re-export: the canonical dependency now lives in
+# ``api.deps`` (importing it here would re-create the circular import).
+from api.deps import get_prediction_service
 
 # Health
 

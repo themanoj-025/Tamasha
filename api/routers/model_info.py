@@ -9,7 +9,7 @@ import logging
 
 from fastapi import APIRouter, Depends
 
-from api.main import get_prediction_service
+from api.deps import get_prediction_service
 from api.schemas import ModelInfoResponse
 
 logger = logging.getLogger(__name__)

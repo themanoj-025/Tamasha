@@ -9,7 +9,7 @@ import logging
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from api.main import get_prediction_service
+from api.deps import get_prediction_service
 from api.schemas import ActorInfoResponse
 
 logger = logging.getLogger(__name__)
