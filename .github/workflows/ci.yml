@@ -20,7 +20,7 @@ jobs:
           python-version: "3.11"
 
       - name: Install ruff
-        run: pip install ruff
+        run: pip install ruff==0.16.4
 
       - name: Lint with ruff (critical errors)
         run: |
@@ -140,7 +140,7 @@ jobs:
           cache: pip
           python-version: "3.11"
       - name: Install security tools
-        run: pip install bandit
+        run: pip install bandit==1.9.4
       - name: Run bandit security scan
         run: bandit -r src/ -ll
 
@@ -152,7 +152,7 @@ jobs:
       - uses: hadolint/hadolint-action@v3.5.0
         with:
           dockerfile: Dockerfile
-          failure-threshold: warning
+          failure-threshold: error
           ignore: DL3066
 
   typecheck:
@@ -168,7 +168,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install mypy
+          pip install mypy==2.3.1
       - name: Type check with mypy
         run: mypy . --ignore-missing-imports
 
