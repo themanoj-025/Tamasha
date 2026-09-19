@@ -1,6 +1,5 @@
 """Tests for custom exceptions."""
 
-
 from tamasha.exceptions import (
     CacheError,
     DataValidationError,

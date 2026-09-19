@@ -1,6 +1,5 @@
 """Tests for prediction service."""
 
-
 from tamasha.predict import (
     get_bankability_scores,
     get_comparison_csv,

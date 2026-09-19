@@ -1,6 +1,5 @@
 """Tests for bankability score computation."""
 
-
 import pytest
 
 from tamasha.network.bankability_score import _decay_weight, compute_bankability_scores

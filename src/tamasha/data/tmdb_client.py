@@ -4,7 +4,6 @@ Provides synchronous and asynchronous TMDb movie search with
 local caching, rate limiting, circuit breaker, and retry/backoff.
 """
 
-
 from __future__ import annotations
 
 import json
