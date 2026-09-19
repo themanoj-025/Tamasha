@@ -15,6 +15,7 @@ from tamasha.config import settings
 
 logger = logging.getLogger(__name__)
 
+
 class PredictionService:
     """Prediction service that loads all trained artifacts once.
 
@@ -330,4 +331,3 @@ class PredictionService:
         return vec.values.reshape(1, -1)
 
     # â”€â”€ cast bankability helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-

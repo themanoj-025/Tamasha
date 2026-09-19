@@ -103,9 +103,11 @@ app = FastAPI(
 # --- OpenTelemetry distributed tracing (OTEL_ENABLED=true) ---
 try:
     from tamasha.tracing import setup_tracing
+
     _otel_ok = setup_tracing("tamasha-api")
     if _otel_ok:
         from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+
         FastAPIInstrumentor.instrument_app(app)
 except ImportError:
     pass
@@ -207,12 +209,10 @@ async def add_security_headers(request, call_next) -> Any:
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
     response.headers["X-XSS-Protection"] = "0"
-    response.headers["Permissions-Policy"] = (
-        "camera=(), microphone=(), geolocation=(), interest-cohort=()"
-    )
-    response.headers["Content-Security-Policy"] = (
-        "default-src 'none'; frame-ancestors 'none';"
-    )
+    response.headers[
+        "Permissions-Policy"
+    ] = "camera=(), microphone=(), geolocation=(), interest-cohort=()"
+    response.headers["Content-Security-Policy"] = "default-src 'none'; frame-ancestors 'none';"
     return response
 
 

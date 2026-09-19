@@ -36,6 +36,7 @@ logger = logging.getLogger(__name__)
 
 _tmdb_breaker = TMDbCircuitBreaker()
 
+
 def get_poster_url(title: str, year: int | None = None, size: str = "w500") -> str | None:
     """Get a movie poster URL from TMDb.
 

@@ -22,6 +22,7 @@ from tamasha.models.model_selection import (
 
 logger = logging.getLogger(__name__)
 
+
 def train_and_compare(
     X: pd.DataFrame | np.ndarray,
     y: pd.Series | np.ndarray,
@@ -395,5 +396,3 @@ def compare_models_significance(
 
 
 # Model versioning
-
-

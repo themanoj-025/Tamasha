@@ -29,16 +29,11 @@ import numpy as np
 import pandas as pd
 
 from tamasha.config import settings
-from tamasha.models.boxoffice_model import (
-    _compute_cast_avg_bankability,
-)
+from tamasha.models.boxoffice_model import _compute_cast_avg_bankability
 from tamasha.models.model_selection import get_all_models
 from tamasha.network.bankability_score import compute_bankability_scores
 from tamasha.network.chemistry_pairs import detect_chemistry_pairs
-from tamasha.nlp.plot_sentiment import (
-    genre_conditional_correlation,
-    score_plot_sentiment,
-)
+from tamasha.nlp.plot_sentiment import genre_conditional_correlation, score_plot_sentiment
 
 # --- New pipeline modules ---
 from tamasha.pipeline_pkg.data_loading import (
@@ -142,14 +137,20 @@ def main() -> None:
 
     baseline_best_name = comparison_boxoffice_baseline.iloc[0]["model"]
     bank_best_name = comparison_boxoffice_with_bank.iloc[0]["model"]
-    mae_improvement = ((baseline_mae - bank_mae) / abs(baseline_mae) * 100) if baseline_mae != 0 else 0
+    mae_improvement = (
+        ((baseline_mae - bank_mae) / abs(baseline_mae) * 100) if baseline_mae != 0 else 0
+    )
 
     # ── Generate evaluation charts ───────────────────────────────
     _print_separator("Generating Evaluation Charts")
     _generate_all_charts(
-        df_rating, df_box_clean, bankability_scores,
-        best_rating, best_boxoffice_with_bank,
-        comparison_boxoffice_baseline, comparison_boxoffice_with_bank,
+        df_rating,
+        df_box_clean,
+        bankability_scores,
+        best_rating,
+        best_boxoffice_with_bank,
+        comparison_boxoffice_baseline,
+        comparison_boxoffice_with_bank,
         _get_box_target(df_box_clean),
     )
 
@@ -166,7 +167,9 @@ def main() -> None:
 
     logger.info("  Rating Model:")
     logger.info("    Algorithm: %s", best_rating_name)
-    logger.info("    MAE: %.4f | RMSE: %.4f | R²: %.4f", best_rating_mae, best_rating_rmse, best_rating_r2)
+    logger.info(
+        "    MAE: %.4f | RMSE: %.4f | R²: %.4f", best_rating_mae, best_rating_rmse, best_rating_r2
+    )
     logger.info("    Saved: models/best_rating_model.pkl")
     logger.info("")
     logger.info("  Box Office Model (Baseline):")
@@ -208,7 +211,9 @@ def _run_plot_sentiment(df_box_clean: pd.DataFrame) -> None:
     has_plot = df_box_clean["plot_summary"].str.strip().astype(bool).sum()
     logger.info(
         "  Found plot column: '%s' (%d movies with plot text out of %d)",
-        plot_col[0], has_plot, len(df_box_clean),
+        plot_col[0],
+        has_plot,
+        len(df_box_clean),
     )
 
     if has_plot < 20:
@@ -224,28 +229,47 @@ def _run_plot_sentiment(df_box_clean: pd.DataFrame) -> None:
     target_col = box_col_targets[0] if box_col_targets else None
 
     if target_col:
-        genre_corr = genre_conditional_correlation(df_box_plot, sentiment_df, target_column=target_col, genre_column="genre")
+        genre_corr = genre_conditional_correlation(
+            df_box_plot, sentiment_df, target_column=target_col, genre_column="genre"
+        )
         if len(genre_corr) > 0:
             genre_corr.to_csv(settings.REPORTS_DIR / "genre_tone_correlation.csv", index=False)
             logger.info("  Genre-tone correlations saved. Top findings:")
             for _, row in genre_corr.iterrows():
-                logger.info("    %s: corr=%.4f (n=%d movies)", row["genre"], row["correlation"], row["n_movies"])
+                logger.info(
+                    "    %s: corr=%.4f (n=%d movies)",
+                    row["genre"],
+                    row["correlation"],
+                    row["n_movies"],
+                )
         else:
-            logger.info("  No genre conditional correlations found (insufficient samples per genre).")
+            logger.info(
+                "  No genre conditional correlations found (insufficient samples per genre)."
+            )
 
     # Correlation with rating
     rating_col = [c for c in df_box_plot.columns if "rating" in c.lower() and c != "_match_score"]
     if rating_col:
-        genre_corr_rating = genre_conditional_correlation(df_box_plot, sentiment_df, target_column=rating_col[0], genre_column="genre")
+        genre_corr_rating = genre_conditional_correlation(
+            df_box_plot, sentiment_df, target_column=rating_col[0], genre_column="genre"
+        )
         if len(genre_corr_rating) > 0:
-            genre_corr_rating.to_csv(settings.REPORTS_DIR / "genre_tone_correlation_rating.csv", index=False)
+            genre_corr_rating.to_csv(
+                settings.REPORTS_DIR / "genre_tone_correlation_rating.csv", index=False
+            )
             logger.info("  Genre-tone vs RATING correlations also saved.")
 
 
 def _run_bankability_analysis(df_box_clean: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Stage 6: Bankability scores and chemistry pairs."""
-    box_rating_col = [c for c in df_box_clean.columns if "rating" in c.lower() and c != "_match_score"]
-    box_collection_col = [c for c in df_box_clean.columns if "worldwide_collection" in c.lower() or "collection_inr" in c.lower()]
+    box_rating_col = [
+        c for c in df_box_clean.columns if "rating" in c.lower() and c != "_match_score"
+    ]
+    box_collection_col = [
+        c
+        for c in df_box_clean.columns
+        if "worldwide_collection" in c.lower() or "collection_inr" in c.lower()
+    ]
     box_cast_col = [c for c in df_box_clean.columns if c.lower() == "cast" or "cast" in c.lower()]
     box_dir_col = [c for c in df_box_clean.columns if "director" in c.lower()]
     box_year_col = [c for c in df_box_clean.columns if "year" in c.lower()]
@@ -268,7 +292,13 @@ def _run_bankability_analysis(df_box_clean: pd.DataFrame) -> tuple[pd.DataFrame,
     logger.info("  Bankability scores computed for %d individuals.", len(bankability_scores))
     logger.info("  Top 5:")
     for _, row in bankability_scores.head(5).iterrows():
-        logger.info("    %s [%s]: score=%.4f (%d films)", row["actor"], row["type"], row["bankability_score"], row["film_count"])
+        logger.info(
+            "    %s [%s]: score=%.4f (%d films)",
+            row["actor"],
+            row["type"],
+            row["bankability_score"],
+            row["film_count"],
+        )
 
     bankability_scores.to_csv(settings.REPORTS_DIR / "bankability_scores.csv", index=False)
 
@@ -284,7 +314,13 @@ def _run_bankability_analysis(df_box_clean: pd.DataFrame) -> tuple[pd.DataFrame,
     if len(chemistry_pairs) > 0:
         logger.info("  Top 10 chemistry pairs identified:")
         for _, row in chemistry_pairs.iterrows():
-            logger.info("    %s & %s: uplift=%.4f (%d joint films)", row["actor_1"], row["actor_2"], row["uplift"], row["joint_films"])
+            logger.info(
+                "    %s & %s: uplift=%.4f (%d joint films)",
+                row["actor_1"],
+                row["actor_2"],
+                row["uplift"],
+                row["joint_films"],
+            )
         chemistry_pairs.to_csv(settings.REPORTS_DIR / "chemistry_pairs.csv", index=False)
     else:
         logger.info("  No chemistry pairs found (insufficient joint appearances >= 2).")
@@ -329,8 +365,16 @@ def _generate_all_charts(
                 continue
             try:
                 model = all_models[model_name].__class__(**all_models[model_name].get_params())
-                y_pred = cvp(model, X_all, y_all, cv=KFold(n_splits=5, shuffle=True, random_state=42), n_jobs=1)
-                save_path = settings.FIGURES_DIR / f"{prefix}_pred_vs_actual_{model_name.lower()}.png"
+                y_pred = cvp(
+                    model,
+                    X_all,
+                    y_all,
+                    cv=KFold(n_splits=5, shuffle=True, random_state=42),
+                    n_jobs=1,
+                )
+                save_path = (
+                    settings.FIGURES_DIR / f"{prefix}_pred_vs_actual_{model_name.lower()}.png"
+                )
                 plot_predicted_vs_actual(y_all, y_pred, model_name, save_path=save_path)
                 scatter_mae = float(np.mean(np.abs(y_all.values - y_pred)))
                 reported_mae = float(comp_df[comp_df["model"] == model_name]["MAE"].iloc[0])
@@ -338,10 +382,17 @@ def _generate_all_charts(
                 if rel_diff > 0.05:
                     logger.warning(
                         "  Scatter plot MAE (%.4f) differs from reported CV MAE (%.4f) by %.1f%% for %s",
-                        scatter_mae, reported_mae, rel_diff * 100, model_name,
+                        scatter_mae,
+                        reported_mae,
+                        rel_diff * 100,
+                        model_name,
                     )
                 else:
-                    logger.info("  Scatter plot MAE=%.4f matches reported CV MAE for %s", scatter_mae, model_name)
+                    logger.info(
+                        "  Scatter plot MAE=%.4f matches reported CV MAE for %s",
+                        scatter_mae,
+                        model_name,
+                    )
                 logger.info("  Scatter plot saved: %s", save_path)
             except (OSError, ValueError) as exc:
                 logger.warning("  Scatter plot failed for %s: %s", model_name, exc)
@@ -354,7 +405,9 @@ def _generate_all_charts(
     ]:
         csv_path = settings.REPORTS_DIR / csv_name
         if csv_path.exists():
-            plot_model_comparison(csv_path, save_path=settings.FIGURES_DIR / f"{prefix}_comparison.png")
+            plot_model_comparison(
+                csv_path, save_path=settings.FIGURES_DIR / f"{prefix}_comparison.png"
+            )
             logger.info("  Bar chart saved: %s", settings.FIGURES_DIR / f"{prefix}_comparison.png")
 
     # ── Scatter plots: Rating ──
@@ -363,7 +416,12 @@ def _generate_all_charts(
     X_rating_scatter = X_rating_scatter.select_dtypes(include=[np.number])
     y_rating_scatter = pd.to_numeric(y_rating_scatter, errors="coerce")
     valid = y_rating_scatter.notna() & ~X_rating_scatter.isna().any(axis=1)
-    _generate_scatter_plots(settings.REPORTS_DIR / "model_comparison_rating.csv", X_rating_scatter[valid], y_rating_scatter[valid], "rating")
+    _generate_scatter_plots(
+        settings.REPORTS_DIR / "model_comparison_rating.csv",
+        X_rating_scatter[valid],
+        y_rating_scatter[valid],
+        "rating",
+    )
 
     # ── Scatter plots: Box Office ──
     X_box_scatter, _, y_box_scatter = _bld(df_box_clean, target_column_boxoffice=box_target)
@@ -376,11 +434,20 @@ def _generate_all_charts(
     valid = y_box_scatter.notna() & ~X_box_scatter.isna().any(axis=1)
     _generate_scatter_plots(
         settings.REPORTS_DIR / "model_comparison_boxoffice_with_bankability.csv",
-        X_box_scatter[valid], y_box_scatter[valid], "boxoffice_with_bank",
+        X_box_scatter[valid],
+        y_box_scatter[valid],
+        "boxoffice_with_bank",
     )
 
     # ── SHAP analysis (Stage 9) ──
-    _run_shap_analysis(df_rating, df_box_clean, bankability_scores, best_rating, best_boxoffice_with_bank, box_target)
+    _run_shap_analysis(
+        df_rating,
+        df_box_clean,
+        bankability_scores,
+        best_rating,
+        best_boxoffice_with_bank,
+        box_target,
+    )
 
 
 def _run_shap_analysis(
@@ -411,7 +478,9 @@ def _run_shap_analysis(
         if len(X_rating_v) > 0:
             best_rating.fit(X_rating_v, y_rating_v)
             X_sample = X_rating_v.sample(min(100, len(X_rating_v)), random_state=42)
-            plot_shap_summary(best_rating, X_sample, save_path=settings.FIGURES_DIR / "shap_rating.png")
+            plot_shap_summary(
+                best_rating, X_sample, save_path=settings.FIGURES_DIR / "shap_rating.png"
+            )
 
         # Box office model SHAP
         X_box, _, _ = _bld(df_box_clean, target_column_boxoffice=box_target)
@@ -420,14 +489,20 @@ def _run_shap_analysis(
             X_box["avg_bankability_score"] = _compute_cast_avg_bankability(
                 df_box_clean, "cast", bankability_scores
             ).loc[X_box.index]
-        y_box = pd.to_numeric(df_box_clean[box_target], errors="coerce") if box_target in df_box_clean.columns else None
+        y_box = (
+            pd.to_numeric(df_box_clean[box_target], errors="coerce")
+            if box_target in df_box_clean.columns
+            else None
+        )
         if y_box is not None:
             valid = y_box.notna() & ~X_box.isna().any(axis=1)
             X_box_v, y_box_v = X_box[valid], y_box[valid]
             if len(X_box_v) > 0:
                 best_boxoffice.fit(X_box_v, y_box_v)
                 X_sample = X_box_v.sample(min(100, len(X_box_v)), random_state=42)
-                plot_shap_summary(best_boxoffice, X_sample, save_path=settings.FIGURES_DIR / "shap_boxoffice.png")
+                plot_shap_summary(
+                    best_boxoffice, X_sample, save_path=settings.FIGURES_DIR / "shap_boxoffice.png"
+                )
         logger.info("  SHAP analysis complete.")
     except ImportError as exc:
         logger.info("  SKIP SHAP: %s", exc)
@@ -443,11 +518,20 @@ def _run_release_timing(df_box_clean: pd.DataFrame) -> None:
         return
 
     has_dates = df_box_clean["release_date"].str.strip().astype(bool).sum()
-    logger.info("  Found release_date column: %s (%d movies with dates out of %d)", date_cols[0], has_dates, len(df_box_clean))
+    logger.info(
+        "  Found release_date column: %s (%d movies with dates out of %d)",
+        date_cols[0],
+        has_dates,
+        len(df_box_clean),
+    )
 
     if has_dates < 30:
-        logger.info("  Only %d movies have release dates — insufficient for festival analysis.", has_dates)
-        logger.info("  (Need at least 30 movies with dates for meaningful festival/clash analysis.)")
+        logger.info(
+            "  Only %d movies have release dates — insufficient for festival analysis.", has_dates
+        )
+        logger.info(
+            "  (Need at least 30 movies with dates for meaningful festival/clash analysis.)"
+        )
         return
 
     try:
@@ -459,19 +543,33 @@ def _run_release_timing(df_box_clean: pd.DataFrame) -> None:
         year_col_fest = [c for c in df_box_clean.columns if "year" in c.lower()]
         fest_year_col = year_col_fest[0] if year_col_fest else "year"
 
-        df_festival = compute_festival_features(df_box_clean, date_column="release_date", year_column=fest_year_col)
-        festival_count = df_festival["is_festival_release"].sum() if "is_festival_release" in df_festival.columns else 0
+        df_festival = compute_festival_features(
+            df_box_clean, date_column="release_date", year_column=fest_year_col
+        )
+        festival_count = (
+            df_festival["is_festival_release"].sum()
+            if "is_festival_release" in df_festival.columns
+            else 0
+        )
         logger.info("  Festival releases identified: %d / %d", festival_count, len(df_festival))
 
         box_col_fest = [c for c in df_festival.columns if "worldwide_collection" in c.lower()]
         if box_col_fest and festival_count >= 5:
             fest_mean = df_festival[df_festival["is_festival_release"]][box_col_fest[0]].mean()
             non_fest_mean = df_festival[~df_festival["is_festival_release"]][box_col_fest[0]].mean()
-            logger.info("  Avg BOX OFFICE: Festival=₹%.0f, Non-festival=₹%.0f", fest_mean, non_fest_mean)
+            logger.info(
+                "  Avg BOX OFFICE: Festival=₹%.0f, Non-festival=₹%.0f", fest_mean, non_fest_mean
+            )
             if fest_mean > non_fest_mean:
-                logger.info("  → Festival releases outperform by %.1f%%", (fest_mean - non_fest_mean) / non_fest_mean * 100)
+                logger.info(
+                    "  → Festival releases outperform by %.1f%%",
+                    (fest_mean - non_fest_mean) / non_fest_mean * 100,
+                )
             else:
-                logger.info("  → Non-festival releases outperform by %.1f%%", (non_fest_mean - fest_mean) / fest_mean * 100)
+                logger.info(
+                    "  → Non-festival releases outperform by %.1f%%",
+                    (non_fest_mean - fest_mean) / fest_mean * 100,
+                )
 
         df_clash = compute_clash_feature(df_festival, date_column="release_date")
         clash_count = df_clash["has_clash"].sum() if "has_clash" in df_clash.columns else 0
@@ -479,9 +577,13 @@ def _run_release_timing(df_box_clean: pd.DataFrame) -> None:
 
         # Save festival analysis report
         report_lines = [
-            "# Release Timing Analysis (Stage 7)", "",
-            f"Movies analyzed: {len(df_festival)}", f"Movies with valid dates: {has_dates}", "",
-            "## Festival Releases", f"Total festival releases: {festival_count}",
+            "# Release Timing Analysis (Stage 7)",
+            "",
+            f"Movies analyzed: {len(df_festival)}",
+            f"Movies with valid dates: {has_dates}",
+            "",
+            "## Festival Releases",
+            f"Total festival releases: {festival_count}",
         ]
         if box_col_fest and festival_count >= 5:
             report_lines.append(f"Average box office (festival): ₹{fest_mean:,.0f}")

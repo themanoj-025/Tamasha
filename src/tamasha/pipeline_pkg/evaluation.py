@@ -95,9 +95,7 @@ class ModelEvaluator:
         Returns:
             String representation of classification report.
         """
-        return classification_report(
-            y_true, y_pred, target_names=target_names, zero_division=0
-        )
+        return classification_report(y_true, y_pred, target_names=target_names, zero_division=0)
 
     def compare_models(
         self,
@@ -142,5 +140,7 @@ class ModelEvaluator:
         return {
             "model_name": self.model_name,
             "metrics": self.metrics.copy(),
-            "confusion_matrix": self.confusion_mat.tolist() if self.confusion_mat is not None else None,
+            "confusion_matrix": self.confusion_mat.tolist()
+            if self.confusion_mat is not None
+            else None,
         }

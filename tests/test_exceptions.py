@@ -35,5 +35,11 @@ class TestCustomExceptions:
         assert "TMDB failed" in str(exc)
 
     def test_all_are_exception_subclasses(self) -> None:
-        for cls in [ModelNotFoundError, PredictionError, DataValidationError, CacheError, EnrichmentError]:
+        for cls in [
+            ModelNotFoundError,
+            PredictionError,
+            DataValidationError,
+            CacheError,
+            EnrichmentError,
+        ]:
             assert issubclass(cls, Exception)
