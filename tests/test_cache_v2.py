@@ -43,6 +43,7 @@ class TestCachedPrediction:
         with tempfile.TemporaryDirectory() as tmpdir:
             with patch("tamasha.cache._CACHE_DIR", tmpdir):
                 import tamasha.cache as mod
+
                 mod._CACHE = None
                 result = get_cached_prediction({"test": True}, "v1")
                 assert result is None
@@ -52,6 +53,7 @@ class TestCachedPrediction:
         with tempfile.TemporaryDirectory() as tmpdir:
             with patch("tamasha.cache._CACHE_DIR", tmpdir):
                 import tamasha.cache as mod
+
                 mod._CACHE = None
                 payload = {"title": "Test"}
                 set_cached_prediction(payload, {"result": "hit"}, "v1")
