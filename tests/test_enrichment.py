@@ -262,7 +262,6 @@ class TestEnrichDataset:
         """No TMDb matches → plot_summary/release_date are empty strings."""
         from tamasha.data.enrichment import enrich_dataset
 
-
         df = pd.DataFrame(
             {
                 "title": ["Unknown Movie"],

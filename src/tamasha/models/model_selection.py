@@ -300,6 +300,7 @@ def load_model(path: str | Path) -> Any:
     logger.info("Model loaded from %s", path)
     return model
 
+
 # Re-exports for backward compatibility
 from tamasha.models.model_training import (  # noqa: F401
     compare_models_significance,

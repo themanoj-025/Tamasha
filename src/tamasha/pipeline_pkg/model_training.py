@@ -74,11 +74,15 @@ def train_boxoffice(
     # Rename suffixed columns
     col_map = {}
     for search, target in [
-        ("genre", "genre"), ("cast", "cast"), ("director", "director"),
-        ("duration_minutes", "duration_minutes"), ("budget_inr", "budget_inr"),
+        ("genre", "genre"),
+        ("cast", "cast"),
+        ("director", "director"),
+        ("duration_minutes", "duration_minutes"),
+        ("budget_inr", "budget_inr"),
     ]:
         found = [
-            c for c in df_box_model.columns
+            c
+            for c in df_box_model.columns
             if c.lower() == search or (c.lower().endswith("_left") and search in c.lower())
         ]
         if found:
@@ -129,9 +133,13 @@ def train_boxoffice(
         tune_n_iter=15,
     )
     bank_mae = comp_with_bank.iloc[0]["MAE"]
-    logger.info("  [WITH BANKABILITY] Best: %s (MAE=%.4f)", comp_with_bank.iloc[0]["model"], bank_mae)
+    logger.info(
+        "  [WITH BANKABILITY] Best: %s (MAE=%.4f)", comp_with_bank.iloc[0]["model"], bank_mae
+    )
 
-    mae_improvement = ((baseline_mae - bank_mae) / abs(baseline_mae) * 100) if baseline_mae != 0 else 0
+    mae_improvement = (
+        ((baseline_mae - bank_mae) / abs(baseline_mae) * 100) if baseline_mae != 0 else 0
+    )
     logger.info("  MAE Improvement from Bankability Score: %.1f%%", mae_improvement)
     logger.info("    Baseline MAE:      %.4f", baseline_mae)
     logger.info("    With Bankability:  %.4f", bank_mae)

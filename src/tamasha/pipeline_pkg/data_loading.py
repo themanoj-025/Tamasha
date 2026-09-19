@@ -97,10 +97,22 @@ def clean_datasets(
     """Step 3: Clean both box-office and rating datasets."""
     # Box-office focused dataset
     keep_patterns = [
-        "title_left", "title_right", "genre", "rating", "director", "year",
-        "cast", "duration_minutes", "worldwide_collection_inr",
-        "india_net_collection_inr", "india_gross_collection_inr",
-        "overseas_collection_inr", "budget_inr", "verdict", "_match_score", "year_right",
+        "title_left",
+        "title_right",
+        "genre",
+        "rating",
+        "director",
+        "year",
+        "cast",
+        "duration_minutes",
+        "worldwide_collection_inr",
+        "india_net_collection_inr",
+        "india_gross_collection_inr",
+        "overseas_collection_inr",
+        "budget_inr",
+        "verdict",
+        "_match_score",
+        "year_right",
     ]
     if yr_col:
         keep_patterns.append(yr_col)
@@ -115,7 +127,8 @@ def clean_datasets(
         df_box_clean = df_box_clean.dropna(subset=[box_col[0]])
         logger.info(
             "  Box office data: %d rows (dropped %d with missing collection)",
-            len(df_box_clean), before - len(df_box_clean),
+            len(df_box_clean),
+            before - len(df_box_clean),
         )
 
     # Budget numeric
@@ -175,7 +188,8 @@ def enrich_with_tmdb(df_box_clean: pd.DataFrame) -> pd.DataFrame:
         date_coverage = len(coverage["dates"]) / len(df_box_clean) * 100
         logger.info(
             "  TMDb enrichment complete. Plot coverage: %.1f%%, Date coverage: %.1f%%",
-            plot_coverage, date_coverage,
+            plot_coverage,
+            date_coverage,
         )
 
         (settings.REPORTS_DIR / "tmdb_enrichment_coverage.md").write_text(
