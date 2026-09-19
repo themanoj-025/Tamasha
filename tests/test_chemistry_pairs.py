@@ -1,6 +1,5 @@
 """Tests for chemistry pairs feature engineering."""
 
-
 import pandas as pd
 
 from tamasha.network.chemistry_pairs import detect_chemistry_pairs

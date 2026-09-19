@@ -1,6 +1,5 @@
 """Tests for festival calendar utility."""
 
-
 from datetime import date
 
 from tamasha.timing.festival_calendar import (
