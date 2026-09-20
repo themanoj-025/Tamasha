@@ -25,6 +25,7 @@
 - [How to Run](#how-to-run)
 - [Tech Stack](#tech-stack)
 - [Responsible AI & Known Limitations](#responsible-ai--known-limitations)
+- [🤝 Contributing](#-contributing)
 - [License](#-license)
 - [Acknowledgements](#-acknowledgements)
 - [Show Your Support](#-show-your-support)
@@ -239,6 +240,12 @@ MIT License — see [LICENSE](LICENSE).
 - [Bollywood Box Office](https://www.kaggle.com/datasets/rajugc/bollywood-movies-dataset) - Box office dataset
 - [Year Bridge](https://www.kaggle.com/datasets/vidhikishorwaghela/bollywood-movies-dataset) - Year bridging dataset
 - [TMDb](https://www.themoviedb.org/) - Release-date, plot, and poster enrichment
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ---
 
