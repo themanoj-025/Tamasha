@@ -6,7 +6,7 @@ migration record and completes the Phase-6 documentation suite.
 
 ## Tree changes in this pass
 
-```
+```text
 Before                                After
 ──────                                ─────
 docs/migration_summary.md      →      docs/migration/migration_summary.md

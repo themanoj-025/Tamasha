@@ -1,6 +1,6 @@
 # Tamasha — Folder Structure
 
-```
+```text
 Tamasha/
 ├── api/                          # FastAPI service (interface layer)
 │   ├── main.py                   # App factory: lifespan, middleware, DI, routers

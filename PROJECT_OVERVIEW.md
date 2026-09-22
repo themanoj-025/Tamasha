@@ -67,7 +67,7 @@
 
 ## 3. High-Level Architecture
 
-```
+```text
 RAW DATA LAYER
   IMDb India (15,509) ──┐
   Box Office (1,000) ───┼── Fuzzy Join → 812 matched → Feature Engineering
@@ -89,7 +89,7 @@ DEPLOYMENT LAYER
 
 ## 4. Complete Folder Structure Tree
 
-```
+```text
 Tamasha/
 ├── .dockerignore
 ├── .env.example
@@ -301,7 +301,7 @@ uvicorn api.main:app --reload
 
 ## 11. Dependency Graph Summary
 
-```
+```text
 src/tamasha/train_pipeline.py → data/* → features/* → models/* → evaluation/*
 src/tamasha/predict.py → models/* → features/*
 src/tamasha/network/* → data/joining.py
