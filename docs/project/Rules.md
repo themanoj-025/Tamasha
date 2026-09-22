@@ -26,7 +26,7 @@
 - **Naming:** snake_case (py), camelCase (JS components), descriptive.
 - **Structure:**
 
-```
+```text
 Tamasha/
 ├── app/                 # Backend app package
 │   ├── api/             # Routers/views

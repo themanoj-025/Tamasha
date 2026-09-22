@@ -2,7 +2,7 @@
 
 ## Core package (src/tamasha) internal dependencies
 
-```
+```text
 tamasha.config          ← imported by every module that needs settings
 tamasha.exceptions      ← imported by data, features, models, predict
 tamasha.cache           ← used only by predict.py / api routers (prediction caching)
@@ -23,7 +23,7 @@ tamasha.train_pipeline  ← depends on data, features, models, evaluation
 
 ## Interface layer → core
 
-```
+```text
 api.main        → tamasha.config, tamasha.predict   (PredictionService DI)
 api.routers.*   → api.main (get_prediction_service), api.schemas, tamasha.cache
 app.streamlit_app → tamasha.predict (PredictionService), app.pages.*
