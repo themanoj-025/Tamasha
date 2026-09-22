@@ -2,12 +2,12 @@
 
 <p><em>Predict ratings and box office. Uncover what drives Bollywood success — star pairings, release timing, plot tone, and poster aesthetics.</em></p>
 
-[![Python](https://img.shields.io/badge/Python_3.11+-3776AB?logo=python&logoColor=white)]()
-[![scikit-learn](https://img.shields.io/badge/scikit--learn-F7931E?logo=scikit-learn&logoColor=white)]()
-[![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?logo=streamlit&logoColor=white)]()
-[![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)]()
-[![Tests](https://img.shields.io/badge/Tests-141_passing-brightgreen)]()
-[![CI](https://img.shields.io/github/actions/workflow/status/themanoj-025/Tamasha/ci.yml?label=CI)]()
+[![Python](https://img.shields.io/badge/Python_3.11+-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![scikit-learn](https://img.shields.io/badge/scikit--learn-F7931E?logo=scikit-learn&logoColor=white)](https://scikit-learn.org/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Tests](https://img.shields.io/badge/Tests-141_passing-brightgreen)](https://github.com/themanoj-025/Tamasha/actions/workflows/ci.yml)
+[![CI](https://img.shields.io/github/actions/workflow/status/themanoj-025/Tamasha/ci.yml?label=CI)](https://github.com/themanoj-025/Tamasha/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ---
@@ -89,7 +89,7 @@ The project uses **three separate Kaggle datasets** with no common ID:
 
 ## Architecture
 
-```
+```text
 RAW DATA LAYER
   IMDb India (15,509) ──┐
   Box Office (1,000) ───┼── Fuzzy Join → 812 matched → Feature Engineering
