@@ -62,7 +62,7 @@
 | Hover | Lift 4px, thumbnail scale 1.03 |
 | Loading | Skeleton shimmer |
 
-```
+```text
 ┌─────────────────┐
 │   ████████████   │  thumbnail 16:9
 ├─────────────────┤

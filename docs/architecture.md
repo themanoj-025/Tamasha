@@ -6,7 +6,7 @@ release-timing insights through two front-ends (Streamlit app + FastAPI).
 
 ## High-level components
 
-```
+```text
                 ┌────────────────────────────────────────────┐
                 │                Interfaces                   │
                 │  Streamlit app (app/)     FastAPI (api/)    │
