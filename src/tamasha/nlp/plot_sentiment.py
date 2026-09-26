@@ -107,7 +107,7 @@ def genre_conditional_correlation(
     compound = sentiment_df["compound"]
 
     rows: list[dict[str, Any]] = []
-    unique_genres = set()
+    unique_genres: set[str] = set()
     for g_list in genres:
         unique_genres.update(g.strip() for g in g_list if g.strip())
 

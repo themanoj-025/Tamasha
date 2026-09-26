@@ -8,7 +8,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import time
-from typing import Any, cast
+from typing import Any
 
 import httpx
 import pandas as pd
@@ -140,7 +140,7 @@ async def _fetch_tmdb_async(
     client: httpx.AsyncClient,
     title: str,
     year: int | None = None,
-) -> dict[str, Any | None]:
+) -> dict[str, Any] | None:
     """Async TMDb search with tenacity retry/backoff.
 
     Parameters
@@ -191,9 +191,11 @@ async def _fetch_tmdb_async(
         for r in results:
             rd = r.get("release_date", "")
             if rd and rd.startswith(str(year)):
-                return r
+                found: dict[str, Any] = r
+                return found
 
-    return results[0]
+    first: dict[str, Any] = results[0]
+    return first
 
 
 async def _enrich_async(
@@ -231,13 +233,13 @@ async def _enrich_async(
             f"{titles[i].strip().lower()}|{years[i]}" if years[i] else titles[i].strip().lower()
         )
         if cache_key in cache:
-            data = cache[cache_key]
-            has_plot = bool(data and data.get("overview", "").strip())
-            has_date = bool(data and data.get("release_date", "").strip())
+            cached: dict[str, Any] | None = cache[cache_key]
+            has_plot = bool(cached and cached.get("overview", "").strip())
+            has_date = bool(cached and cached.get("release_date", "").strip())
             return (
                 i,
-                data["overview"] if data and has_plot else "",
-                data["release_date"] if data and has_date else "",
+                cached["overview"] if cached and has_plot else "",
+                cached["release_date"] if cached and has_date else "",
             )
 
         async with sem:
@@ -254,21 +256,21 @@ async def _enrich_async(
             cache[cache_key] = None
             return (i, "", "")
 
-        data: dict[str, Any] = {
+        info: dict[str, Any] = {
             "title": result.get("title", titles[i]),
             "overview": result.get("overview", ""),
             "release_date": result.get("release_date", ""),
             "poster_path": result.get("poster_path"),
             "tmdb_id": result.get("id"),
         }
-        cache[cache_key] = data
+        cache[cache_key] = info
 
-        has_plot = bool(data.get("overview", "").strip())
-        has_date = bool(data.get("release_date", "").strip())
+        has_plot = bool(info.get("overview", "").strip())
+        has_date = bool(info.get("release_date", "").strip())
         return (
             i,
-            data["overview"] if has_plot else "",
-            data["release_date"] if has_date else "",
+            info["overview"] if has_plot else "",
+            info["release_date"] if has_date else "",
         )
 
     async with httpx.AsyncClient(timeout=httpx.Timeout(10.0)) as client:
@@ -278,7 +280,7 @@ async def _enrich_async(
     output: list[tuple[int, str, str]] = []
     for i, result in enumerate(results):
         if isinstance(result, tuple):
-            output.append(cast(tuple[int, str, str], result))
+            output.append(result)
         else:
             logger.debug("Unexpected error in async enrichment for %s: %s", titles[i], result)
             output.append((i, "", ""))

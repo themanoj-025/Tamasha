@@ -140,16 +140,16 @@ def _build_feature_vector_from_profile(
     if "avg_bankability_score" in vec.index:
         vec["avg_bankability_score"] = profile.avg_bankability_score
 
-    return vec.values.reshape(1, -1)
+    return np.asarray(vec.values).reshape(1, -1)
 
 
 def simulate_scenarios(
     model: Any,
     profile: MovieProfile,
     feature_columns: list[str],
-    bankability_map: dict[str, float | None] = None,
+    bankability_map: dict[str, float] | None = None,
     director_encoder: Any = None,
-    festival_scenarios: list[str | None] = None,
+    festival_scenarios: list[str] | None = None,
 ) -> list[ScenarioResult]:
     """Run a release-scenario simulation for a hypothetical movie.
 
@@ -198,7 +198,7 @@ def simulate_scenarios(
 
         results.append(
             ScenarioResult(
-                scenario_name=scenario,
+                scenario_name=str(scenario),
                 predicted_boxoffice=pred,
                 festival_flag=scenario != "Normal",
                 has_clash=False,

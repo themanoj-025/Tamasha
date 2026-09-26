@@ -161,11 +161,11 @@ def _get_metric_value(y_true: np.ndarray, y_pred: np.ndarray, metric: str) -> fl
     float
     """
     if metric == "MAE":
-        return mean_absolute_error(y_true, y_pred)
+        return float(mean_absolute_error(y_true, y_pred))
     elif metric == "RMSE":
         return float(np.sqrt(mean_squared_error(y_true, y_pred)))
     elif metric == "R2":
-        return r2_score(y_true, y_pred)
+        return float(r2_score(y_true, y_pred))
     else:
         raise ValueError(f"Unknown metric: {metric}")
 

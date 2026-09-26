@@ -95,7 +95,9 @@ class ModelEvaluator:
         Returns:
             String representation of classification report.
         """
-        return classification_report(y_true, y_pred, target_names=target_names, zero_division=0)
+        return str(
+            classification_report(y_true, y_pred, target_names=target_names, zero_division=0)
+        )
 
     def compare_models(
         self,

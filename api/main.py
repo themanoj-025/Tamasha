@@ -14,7 +14,7 @@ from contextlib import asynccontextmanager
 from typing import Any
 
 import structlog
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from prometheus_fastapi_instrumentator import Instrumentator
@@ -63,7 +63,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 # Rate limiter
 
 
-def _rate_limit_key(request) -> str:
+def _rate_limit_key(request: Request) -> str:
     """Use API key as the rate-limit identifier if present; fall back to IP."""
     api_key = request.headers.get("X-API-Key", "")
     if api_key:
@@ -114,7 +114,16 @@ except ImportError:
 
 
 app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+
+def _rate_limit_handler(request: Request, exc: Exception) -> Response:
+    """Adapter so the handler satisfies Starlette's ``Exception`` signature."""
+    if isinstance(exc, RateLimitExceeded):
+        return _rate_limit_exceeded_handler(request, exc)
+    raise exc
+
+
+app.add_exception_handler(RateLimitExceeded, _rate_limit_handler)
 
 
 # API key authentication middleware
