@@ -43,7 +43,7 @@ async def predict_rating_endpoint(
         mv = _model_version_key(svc)
         cached = get_cached_prediction(cache_payload, mv)
         if cached is not None:
-            return PredictRatingResponse(**cached)
+            return PredictRatingResponse(**cached)  # type: ignore[arg-type]
 
         result = svc.predict_rating(
             genres=request.genres,
@@ -85,7 +85,7 @@ async def predict_boxoffice_endpoint(
         mv = _model_version_key(svc)
         cached = get_cached_prediction(cache_payload, mv)
         if cached is not None:
-            return PredictBoxOfficeResponse(**cached)
+            return PredictBoxOfficeResponse(**cached)  # type: ignore[arg-type]
 
         result = svc.predict_boxoffice(
             genres=request.genres,

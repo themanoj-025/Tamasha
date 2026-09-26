@@ -58,7 +58,7 @@ def _make_key(payload: dict[str, Any], model_version: str = "") -> str:
 
 def get_cached_prediction(
     payload: dict[str, Any], model_version: str = ""
-) -> dict[str, Any | None]:
+) -> dict[str, Any | None] | None:
     """Look up a cached prediction result.
 
     Parameters
@@ -75,7 +75,7 @@ def get_cached_prediction(
     """
     cache = _get_cache()
     key = _make_key(payload, model_version)
-    result = cache.get(key)
+    result: dict[str, Any | None] | None = cache.get(key)
     if result is not None:
         logger.debug("Cache HIT for key=%s", key[:12])
         return result
@@ -110,11 +110,12 @@ def set_cached_prediction(
 
 def get_cached_explanation(
     payload: dict[str, Any], model_version: str = ""
-) -> dict[str, Any | None]:
+) -> dict[str, Any | None] | None:
     """Look up a cached LLM explanation (longer TTL)."""
     cache = _get_cache()
     key = f"explain:{_make_key(payload, model_version)}"
-    return cache.get(key)
+    result: dict[str, Any | None] | None = cache.get(key)
+    return result
 
 
 def set_cached_explanation(

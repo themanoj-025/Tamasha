@@ -19,29 +19,36 @@ def _get_service() -> PredictionService:
     return _service
 
 
-def predict_rating(title: str, year: int | None = None, **kw: Any) -> dict[str, Any]:
-    return _get_service().predict_rating(title, year, **kw)
+def predict_rating(**kw: Any) -> dict[str, Any]:
+    result: dict[str, Any] = _get_service().predict_rating(**kw)
+    return result
 
 
-def predict_boxoffice(title: str, year: int | None = None, **kw: Any) -> dict[str, Any]:
-    return _get_service().predict_boxoffice(title, year, **kw)
+def predict_boxoffice(**kw: Any) -> dict[str, Any]:
+    result: dict[str, Any] = _get_service().predict_boxoffice(**kw)
+    return result
 
 
 def get_actor_info(name: str) -> dict[str, Any]:
-    return _get_service().get_actor_info(name)
+    result: dict[str, Any] = _get_service().get_actor_info(name)
+    return result
 
 
 def get_model_info() -> dict[str, Any]:
-    return _get_service().get_model_info()
+    result: dict[str, Any] = _get_service().get_model_info()
+    return result
 
 
 def get_bankability_scores() -> pd.DataFrame:
-    return _get_service().get_bankability_scores()
+    result: pd.DataFrame = _get_service().get_bankability_scores()
+    return result
 
 
 def get_chemistry_pairs() -> pd.DataFrame:
-    return _get_service().get_chemistry_pairs()
+    result: pd.DataFrame = _get_service().get_chemistry_pairs()
+    return result
 
 
 def get_comparison_csv(task: str) -> pd.DataFrame | None:
-    return _get_service().get_comparison_csv(task)
+    result: pd.DataFrame | None = _get_service().get_comparison_csv(task)
+    return result

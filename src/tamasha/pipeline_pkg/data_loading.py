@@ -7,9 +7,9 @@ import logging
 import pandas as pd
 
 from tamasha.config import settings
-from tamasha.data.enrichment import enrich_dataset
 from tamasha.data.joining import fuzzy_join_datasets, generate_join_quality_report
 from tamasha.data.loaders import load_bollywood_boxoffice, load_imdb_india
+from tamasha.data.tmdb_client import enrich_dataset
 
 logger = logging.getLogger(__name__)
 

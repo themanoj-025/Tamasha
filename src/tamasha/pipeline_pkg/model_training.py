@@ -51,7 +51,7 @@ def train_rating(
     try:
         director_col = [c for c in df_rating.columns if c.lower() == "director"]
         if director_col:
-            save_director_encoder(df_rating, rating_column=director_col[0])
+            save_director_encoder(df_rating, director_column=director_col[0])
         else:
             logger.warning("  No director column found; skipping director encoder save.")
     except (OSError, ValueError) as exc:

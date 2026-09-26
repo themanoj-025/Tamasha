@@ -43,7 +43,7 @@ _LAST_REQUEST_TIME: float = 0.0
 _MIN_INTERVAL_S = 0.25  # 4 requests per second — well within TMDb limits
 
 _CACHE_PATH: Path = settings.DATA_PROCESSED / "tmdb_cache.json"
-_CACHE: dict[str, dict[str, Any]] = {}
+_CACHE: dict[str, dict[str, Any] | None] = {}
 
 
 def _load_cache() -> None:
@@ -100,7 +100,7 @@ class TMDbCircuitBreaker:
         failure_threshold: int = 5,
         recovery_timeout: float = 60.0,
         cooldown_multiplier: float = 2.0,
-    ) -> Any:
+    ) -> None:
         self.failure_threshold = failure_threshold
         self.recovery_timeout = recovery_timeout
         self.cooldown_multiplier = cooldown_multiplier
@@ -179,7 +179,7 @@ def _build_params(title: str, year: int | None = None) -> dict[str, Any]:
     stop=stop_after_attempt(4),
     reraise=True,
 )
-def _fetch_tmdb(title: str, year: int | None = None) -> dict[str, Any | None]:
+def _fetch_tmdb(title: str, year: int | None = None) -> dict[str, Any] | None:
     """Fetch TMDb search results with retry/backoff via tenacity.
 
     Retryable: timeouts, connection errors, 5xx server errors.
@@ -236,12 +236,14 @@ def _fetch_tmdb(title: str, year: int | None = None) -> dict[str, Any | None]:
         for r in results:
             rd = r.get("release_date", "")
             if rd and rd.startswith(str(year)):
-                return r
+                found: dict[str, Any] = r
+                return found
 
-    return results[0]
+    first: dict[str, Any] = results[0]
+    return first
 
 
-def _search_tmdb(title: str, year: int | None = None) -> dict[str, Any | None]:
+def _search_tmdb(title: str, year: int | None = None) -> dict[str, Any] | None:
     """Search TMDb for a movie by title and year.
 
     Wraps :func:`_fetch_tmdb` with cache handling. The tenacity
@@ -274,7 +276,7 @@ def _search_tmdb(title: str, year: int | None = None) -> dict[str, Any | None]:
 
 def get_movie_data(
     title: str, year: int | None = None, force: bool = False
-) -> dict[str, Any | None]:
+) -> dict[str, Any] | None:
     """Get plot summary, release date, and poster path for a movie.
 
     Results are cached locally.  Subsequent calls for the same ``(title, year)``
@@ -364,11 +366,13 @@ def enrich_dataset(
                 year = None
 
         data = get_movie_data(title, year)
-        has_plot = bool(data and data.get("overview", "").strip())
-        has_date = bool(data and data.get("release_date", "").strip())
+        overview = str(data["overview"]) if data else ""
+        release_date = str(data["release_date"]) if data else ""
+        has_plot = bool(overview.strip())
+        has_date = bool(release_date.strip())
 
-        plots.append(data["overview"] if data and has_plot else "")
-        dates.append(data["release_date"] if data and has_date else "")
+        plots.append(overview if has_plot else "")
+        dates.append(release_date if has_date else "")
 
         if has_plot or has_date:
             match_count += 1

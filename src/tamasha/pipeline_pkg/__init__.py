@@ -7,15 +7,16 @@ Modules:
 - evaluation: Model evaluation, metrics, reporting
 """
 
-from .data_loading import engineer_features, load_and_preprocess
-from .evaluation import ModelEvaluator, evaluate_model
-from .model_training import train_model, tune_hyperparameters
+from .data_loading import clean_datasets, enrich_with_tmdb, load_datasets, two_step_fuzzy_join
+from .evaluation import ModelEvaluator
+from .model_training import train_boxoffice, train_rating
 
 __all__ = [
     "ModelEvaluator",
-    "engineer_features",
-    "evaluate_model",
-    "load_and_preprocess",
-    "train_model",
-    "tune_hyperparameters",
+    "clean_datasets",
+    "enrich_with_tmdb",
+    "load_datasets",
+    "train_boxoffice",
+    "train_rating",
+    "two_step_fuzzy_join",
 ]

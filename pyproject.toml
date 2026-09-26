@@ -1,3 +1,15 @@
+[project]
+name = "tamasha"
+version = "0.1.0"
+description = "Bollywood box-office intelligence — rating & BO prediction with star-chemistry networks."
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.141.1",
+    "uvicorn>=0.54.0",
+    "pydantic>=2.0",
+    "httpx>=0.28.1",
+]
+
 [build-system]
 requires = ["setuptools>=68.0"]
 build-backend = "setuptools.build_meta"
@@ -83,3 +95,9 @@ warn_return_any = true
 warn_unused_configs = true
 warn_redundant_casts = true
 warn_unused_ignores = true
+
+# Legacy `app/` package is not installed in the mypy path; the clean
+# package root is src/tamasha. Exclude the legacy app/ tree so the
+# duplicate-module-root error (components.network_graph vs
+# app.components.network_graph) does not block typecheck; tests/ are checked
+exclude = ["^app/", "^tests/"]

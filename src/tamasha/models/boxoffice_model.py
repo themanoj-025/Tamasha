@@ -99,8 +99,10 @@ def train_boxoffice_model(
         run_label = f"{run_label}_baseline"
 
     # Drop rows with missing target
-    valid = y_boxoffice.notna()
-    X, y_boxoffice = X[valid], y_boxoffice[valid]
+    if y_boxoffice is None:
+        raise ValueError("target column not found while building feature matrix")
+    valid_mask = y_boxoffice.notna()
+    X, y_boxoffice = X[valid_mask], y_boxoffice[valid_mask]
     logger.info("Box-office model: %d samples with valid target.", len(y_boxoffice))
 
     if models is None:
