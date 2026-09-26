@@ -80,8 +80,10 @@ def train_rating_model(
     )
 
     # Drop rows with missing target
-    valid = y_rating.notna()
-    X, y_rating = X[valid], y_rating[valid]
+    if y_rating is None:
+        raise ValueError("target column not found while building feature matrix")
+    valid_mask = y_rating.notna()
+    X, y_rating = X[valid_mask], y_rating[valid_mask]
     logger.info("Rating model: %d samples with valid target.", len(y_rating))
 
     if models is None:

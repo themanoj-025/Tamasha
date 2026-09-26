@@ -107,7 +107,7 @@ def detect_chemistry_pairs(
         # Solo averages
         solo_a1 = np.mean(actor_all_films.get(a1, [0]))
         solo_a2 = np.mean(actor_all_films.get(a2, [0]))
-        best_solo = max(solo_a1, solo_a2)
+        best_solo = float(max(float(solo_a1), float(solo_a2)))
 
         uplift = joint_avg - best_solo
 

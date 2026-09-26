@@ -24,7 +24,9 @@ from sklearn.preprocessing import StandardScaler
 from tamasha.config import settings
 
 # Face cascade (loaded once)
-_FACE_CASCADE_PATH = cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
+_FACE_CASCADE_PATH = (
+    cv2.data.haarcascades + "haarcascade_frontalface_default.xml"  # type: ignore[attr-defined]
+)
 _FACE_CASCADE = cv2.CascadeClassifier(_FACE_CASCADE_PATH)
 
 

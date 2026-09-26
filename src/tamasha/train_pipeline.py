@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -454,8 +455,8 @@ def _run_shap_analysis(
     df_rating: pd.DataFrame,
     df_box_clean: pd.DataFrame,
     bankability_scores: pd.DataFrame,
-    best_rating: object,
-    best_boxoffice: object,
+    best_rating: Any,
+    best_boxoffice: Any,
     box_target: str | None,
 ) -> None:
     """Stage 9: SHAP Explainability."""
