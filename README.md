@@ -6,7 +6,6 @@
 [![scikit-learn](https://img.shields.io/badge/scikit--learn-F7931E?logo=scikit-learn&logoColor=white)](https://scikit-learn.org/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
-[![Tests](https://img.shields.io/badge/Tests-141_passing-brightgreen)](https://github.com/themanoj-025/Tamasha/actions/workflows/ci.yml)
 [![CI](https://img.shields.io/github/actions/workflow/status/themanoj-025/Tamasha/ci.yml?label=CI)](https://github.com/themanoj-025/Tamasha/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
