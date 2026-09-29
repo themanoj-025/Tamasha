@@ -51,7 +51,7 @@ httpx>=0.24,<1.0
 pytest>=9.0.3,<10.0
 pytest-cov>=6.0,<8.0
 httpx>=0.24,<1.0
-hypothesis>=6.168.0,<7.0
+hypothesis>=6.168.1,<7.0
 
 # Dev
 pre-commit>=4.6.2,<5.0
