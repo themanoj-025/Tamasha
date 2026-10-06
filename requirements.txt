@@ -23,7 +23,7 @@ nltk>=3.8,<4.0
 networkx>=3.1,<4.0
 
 # Plotting / visualisation
-matplotlib>=3.10.9,<4.0
+matplotlib>=3.11.2,<4.0
 plotly>=7.1.0,<8.0  # widened from <6.0 for Python 3.14 wheel compatibility
 kaleido==1.4.0  # pinned: kaleido 1.x is required by plotly 7.x (7.0 dropped kaleido 0.2.x support); kaleido 1.x also needs Chrome/Chromium at runtime
 
