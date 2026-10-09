@@ -1,0 +1,4 @@
+actor,type,bankability_score,film_count
+Actor Known,actor,1.5,5
+Actor AlsoKnown,actor,0.8,3
+Shah Rukh Khan,actor,1.2,10

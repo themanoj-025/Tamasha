@@ -1,0 +1,103 @@
+[project]
+name = "tamasha"
+version = "0.1.0"
+description = "Bollywood box-office intelligence — rating & BO prediction with star-chemistry networks."
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.141.1",
+    "uvicorn>=0.54.0",
+    "pydantic>=2.0",
+    "httpx>=0.28.1",
+]
+
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.coverage.run]
+omit = [
+    "src/tamasha/train_pipeline.py",
+    "src/tamasha/data/loaders.py",
+    "src/tamasha/cv/poster_classifier.py",
+    "src/tamasha/evaluation/metrics.py",
+    "src/tamasha/models/boxoffice_model.py",
+    "src/tamasha/models/rating_model.py",
+    "src/tamasha/nlp/plot_sentiment.py",
+    "src/tamasha/timing/release_scenario.py",
+]
+
+[tool.coverage.report]
+show_missing = true
+precision = 2
+
+[tool.black]
+line-length = 100
+target-version = ["py311", "py312"]
+
+[tool.isort]
+profile = "black"
+line_length = 100
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = [
+    "src/tamasha/pipeline_pkg/data_processing.py",  # broken from previous split
+    "src/tamasha/pipeline_pkg/evaluation.py",       # broken from previous split
+    "src/tamasha/pipeline_pkg/model_training.py",   # broken from previous split
+    "src/tamasha/prediction_utils.py",              # broken from previous split
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "B", "BLE", "UP", "SIM", "C4", "RUF", "PLC", "PIE", "I"]
+ignore = [
+    "E501",    # line too long
+    "C408",    # unnecessary dict call — style preference
+    "PLC0415", # import-outside-top-level — lazy imports
+    "E402",    # module-import-not-at-top — Streamlit/lazy imports
+    "RUF001",  # ambiguous unicode — intentional multiplication sign
+    "RUF002",  # ambiguous unicode — intentional en-dash, quotes
+    "RUF003",  # ambiguous unicode — intentional non-breaking hyphen
+    "B008",    # function-call-in-default — FastAPI/Kivy pattern
+    "B023",    # function-defined-in-loop — closure pattern
+    "B905",    # zip-without-strict — legacy code
+    "B904",    # raise-without-from — legacy code
+    "SIM102",  # collapsible if — readability preference
+    "SIM108",  # if-else-to-ternary — readability preference
+    "SIM117",  # multiple with-statements — readability preference
+    "SIM221",  # or-true — simplification
+    "BLE001",  # blind except — defensive coding
+    "RUF013",  # implicit Optional — legacy code
+    "RUF005",  # collection-literal-in-comparison
+    "RUF059",  # unused loop variable
+    "C401",    # unnecessary generator — set comprehension
+    "F821",    # undefined name — false positives from annotations
+]
+
+[tool.pytest.ini_options]
+addopts = "-m 'not slow and not scale' --cov --cov-fail-under=50"
+testpaths = ["tests"]
+pythonpath = ["src"]
+markers = [
+    "unit: marks pure unit tests (deselect with '-m \"not unit\"')",
+    "integration: marks tests requiring external services (deselect with '-m \"not integration\"')",
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "scale: machine-dependent performance benchmarks (opt-in via 'pytest -m scale')",
+]
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+warn_return_any = true
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+
+# Legacy `app/` package is not installed in the mypy path; the clean
+# package root is src/tamasha. Exclude the legacy app/ tree so the
+# duplicate-module-root error (components.network_graph vs
+# app.components.network_graph) does not block typecheck; tests/ are checked
+exclude = ["^app/", "^tests/"]
