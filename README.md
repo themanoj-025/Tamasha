@@ -43,10 +43,10 @@
 - [Tech stack](#tech-stack)
 - [Responsible AI & known limitations](#responsible-ai--known-limitations)
 - [🗺️ Roadmap](#️-roadmap)
-- [Contributing](#-contributing)
+- [Contributing](#contributing)
 - [License](#license)
-- [Acknowledgements](#-acknowledgements)
-- [Support](#-support)
+- [Acknowledgements](#acknowledgements)
+- [Support](#support)
 
 ---
 
@@ -254,3 +254,4 @@ MIT License — see [LICENSE](LICENSE).
 - 🐛 [Report a bug](https://github.com/themanoj-025/Tamasha/issues)
 - 💡 [Request a feature](https://github.com/themanoj-025/Tamasha/issues)
 - ⭐ [Star the repository](https://github.com/themanoj-025/Tamasha)
+
