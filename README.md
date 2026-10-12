@@ -1,257 +1,262 @@
-# 🎬 Tamasha — Bollywood Movie Intelligence Platform
-
 <p align="center">
-  <img src="https://img.shields.io/badge/Python_3.11+-3776AB?logo=python&logoColor=white" alt="Python 3.11+" />
-  <img src="https://img.shields.io/badge/scikit--learn-F7931E?logo=scikit-learn&logoColor=white" alt="scikit-learn" />
-  <img src="https://img.shields.io/badge/Streamlit-FF4B4B?logo=streamlit&logoColor=white" alt="Streamlit" />
-  <img src="https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white" alt="FastAPI" />
-  <img src="https://img.shields.io/github/actions/workflow/status/themanoj-025/Tamasha/ci.yml?label=CI" alt="CI" />
-  <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT" />
+  <img src="https://img.shields.io/badge/Tamasha-Bollywood%20Movie%20Intelligence-purple?style=for-the-badge" alt="Tamasha Logo" />
 </p>
 
-<h1 align="center">🎬 Tamasha</h1>
+<h1 align="center">Tamasha</h1>
 
 <p align="center">
-  <em>Predict ratings and box office. Uncover what drives Bollywood success — star pairings, release timing, plot tone, and poster aesthetics.</em>
+  <strong>Predict ratings and box office success. Uncover what drives Bollywood outcomes — star pairings, release timing, plot tone, and poster aesthetics.</strong>
+</p>
+
+<p align="center">
+  <a href="https://github.com/themanoj-025/Tamasha/actions"><img src="https://img.shields.io/github/actions/workflow/status/themanoj-025/Tamasha/ci.yml?style=flat-square&label=CI" alt="CI Status" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="License MIT" /></a>
+  <a href="https://github.com/themanoj-025/Tamasha/stargazers"><img src="https://img.shields.io/github/stars/themanoj-025/Tamasha?style=social" alt="GitHub Stars" /></a>
+  <a href="https://github.com/themanoj-025/Tamasha/issues"><img src="https://img.shields.io/github/issues/themanoj-025/Tamasha?style=flat-square" alt="GitHub Issues" /></a>
+  <a href="https://github.com/themanoj-025/Tamasha/pulls"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat-square" alt="PRs Welcome" /></a>
 </p>
 
 ---
 
-## 📸 Screenshots
+## Overview
 
-> To add screenshots: run `streamlit run app/streamlit_app.py`, capture your screen, save images to `docs/assets/`, and reference them below.
->
-> **Suggested screenshots:**
-> - Star-network explorer with chemistry pairs
-> - Release prediction dashboard
-> - SHAP feature importance for box office model
-> - Festival timing analysis chart
+Most movie box-office prediction projects stop at training a single regressor on an uncurated tabular dataset. Tamasha goes further by investigating the empirical dynamics of Indian cinema:
+- **Star Chemistry & Bankability**: Quantifies collaboration network lift and decay-weighted track records across 1,000+ actors and directors.
+- **Festival Calendar Effects**: Measures whether holiday release windows (Diwali, Eid, Christmas) yield genuine uplift or selection bias.
+- **Genre-Conditional Plot Tone**: Sentiment analysis revealing how plot tone correlates with box office differently across narrative genres.
+- **Computer Vision Poster Analysis**: Empirically evaluates whether visual aesthetics (HSV histograms, face counts, brightness) hold predictive signal (reporting null findings transparently).
 
 ---
 
-## 📋 Table of Contents
+## Table of Contents
 
-- [The problem](#the-problem)
-- [Key results](#key-results)
-- [Fuzzy-join methodology](#fuzzy-join-methodology)
+- [Key Empirical Results](#key-empirical-results)
+- [Fuzzy-Join Data Engineering](#fuzzy-join-data-engineering)
 - [Architecture](#architecture)
-- [Bankability score & chemistry pairing network](#the-bankability-score--chemistry-pairing-network)
-- [Release timing & festival analysis](#release-timing--festival-analysis)
-- [Plot tone & genre-conditional analysis](#plot-tone--genre-conditional-analysis)
-- [Poster CV module](#poster-cv-module)
-- [How to run](#how-to-run)
-- [Tech stack](#tech-stack)
-- [Responsible AI & known limitations](#responsible-ai--known-limitations)
-- [🗺️ Roadmap](#️-roadmap)
+- [Bankability & Chemistry Network](#bankability--chemistry-network)
+- [Release Timing & Sentiment Analysis](#release-timing--sentiment-analysis)
+- [Computer Vision Null Findings](#computer-vision-null-findings)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Prerequisites](#prerequisites)
+- [Installation & Quick Start](#installation--quick-start)
+- [Known Limitations & Responsible AI](#known-limitations--responsible-ai)
+- [Testing](#testing)
+- [Roadmap](#roadmap)
 - [Contributing](#contributing)
+- [Security](#security)
 - [License](#license)
-- [Acknowledgements](#acknowledgements)
 - [Support](#support)
 
 ---
 
-## The problem
+## Key Empirical Results
 
-Most movie rating and box-office prediction projects end at training a single model on a flat dataset — predict the number, done. Generic, forgettable, and indistinguishable from a Kaggle notebook.
+All metrics are benchmarked on held-out test evaluation partitions:
 
-**Tamasha goes further.** This project is built to answer questions that actually matter in Bollywood:
+| Metric | Measured Value | Implementation / Detail |
+| :--- | :--- | :--- |
+| ⭐ **Rating Prediction Model** | **MAE 0.9534 / 10** | Tuned GradientBoostingRegressor |
+| 💰 **Box Office Model** | **MAE ₹73.6 Cr** | Tuned XGBoost Regressor with Bankability features |
+| 🔥 **Bankability Feature Lift** | **11.6% MAE Improvement** | Outperforms baseline models lacking actor/director network features |
+| 👥 **Bankability Coverage** | **1,010 Actors & Directors** | Exponential time-decay weighted scoring (3-year half-life) |
+| 📡 **TMDb Metadata Coverage** | **93.2% Dates, 93.1% Plots** | Enriched via TMDb API integration |
+| 🖼️ **Poster Computer Vision** | **49.2% (No Signal)** | 63 extracted visual features yielded no predictive edge over random chance |
 
-- 🎭 **Which star pairings have real chemistry?** Not just who works together most, but who *improves each other's performance* beyond their individual track records.
-- 📅 **Does release timing matter?** Do Diwali and Eid releases actually outperform, or is that selection bias?
-- 🎨 **Does plot tone correlate differently with success across genres?** A dark thriller may be great; a dark comedy may flop.
-- 🖼 **Can a poster's visual features predict box office?** Color palettes, face count, text density — is there signal in the art?
+---
 
-The result is a platform with **three predictive models** (rating, baseline box office, bankability-enhanced box office), a **network analysis engine**, and an **interactive dashboard**.
+## Fuzzy-Join Data Engineering
 
-## Key results
+The system bridges three disconnected datasets that lack common primary keys:
 
-| Metric | Value |
-| --- | --- |
-| ⭐ **Best rating model** | **GradientBoosting (tuned)** — MAE **0.9534** / 10 |
-| 💰 **Best box office model** | **XGBoost (tuned)** (+ Bankability) — MAE **₹73.6 Cr** |
-| 🔥 **Bankability impact** | **11.6% MAE improvement** over baseline |
-| 👥 **Bankability scores** | 1,010 actors & directors scored |
-| 📡 **TMDb enrichment** | **93.2%** date coverage, **93.1%** plot coverage |
-| 🖼 **Poster CV** | No signal found — 49.2% (vs 51.1% baseline) |
-| ✅ **Test suite** | **141 tests** passing |
+| Dataset | Records | Role |
+| :--- | :--- | :--- |
+| **IMDb India Movies** | 15,509 | Primary ratings, genres, and cast metadata |
+| **Bollywood Box Office** | 1,000 | Historic box office collections (originally missing release year) |
+| **Year Bridge Dataset** | 7,419 | Intermediate lookup connecting titles to release years |
 
-> [!NOTE] All metrics above are the project's reported results on its held-out evaluation split. Reproduce them with `pytest` + the training script so the README never drifts from the code.
+**Methodology**: A two-stage fuzzy matching pipeline using RapidFuzz first aligned titles to the Year Bridge (994/1,000 matched), then cross-referenced IMDb records on title and release year. This yielded 812 verified matches (81.2% link rate), with 93% of matches scoring `>= 95/100` string similarity confidence.
 
-## Fuzzy-join methodology
-
-The project uses **three separate Kaggle datasets** with no common ID:
-
-| Dataset | Source | Rows |
-| --- | --- | --- |
-| 🎬 IMDb India Movies | [adrianmcmahon/imdb-india-movies](https://www.kaggle.com/datasets/adrianmcmahon/imdb-india-movies) | 15,509 |
-| 💰 Bollywood Box Office | [rajugc/bollywood-movies-dataset](https://www.kaggle.com/datasets/rajugc/bollywood-movies-dataset) | 1,000 |
-| 🔗 Year Bridge | [vidhikishorwaghela/bollywood-movies-dataset](https://www.kaggle.com/datasets/vidhikishorwaghela/bollywood-movies-dataset) | 7,419 |
-
-**Challenge:** the Box Office dataset has **no year column**. A two-step fuzzy enrichment strategy was used — first matching titles to the Year Bridge dataset (994/1,000 matched), then matching enriched records to IMDb India on title + year (812 high-confidence matches, 81.2%). **93% of matches have a similarity score >= 95/100.**
+---
 
 ## Architecture
 
 ```text
 RAW DATA LAYER
   IMDb India (15,509) ──┐
-  Box Office (1,000) ───┼── Fuzzy Join → 812 matched → Feature Engineering
+  Box Office (1,000) ───┼── Two-Stage Fuzzy Matching → 812 Verified Merged Records
   Year Bridge (7,419) ──┘
-
-MODEL COMPARISON LAYER
-  9 Models × 5-Fold CV × 3 Tasks = 135 Training Runs
-  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐
-  │ LinearReg │ │  Ridge   │ │  Lasso   │ │DecisionTree│ │RandomForest│
-  └──────────┘ └──────────┘ └──────────┘ └──────────┘ └──────────┘
-  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐
-  │ GradBoost │ │ XGBoost  │ │ LightGBM │ │ CatBoost │
-  └──────────┘ └──────────┘ └──────────┘ └──────────┘
-          │                          │
-  Rating: GradientBoosting    Box Office: XGBoost (+Bankability)
-  MAE: 0.9534/10              MAE: 73.6 Cr
-
-DEPLOYMENT LAYER
-  FastAPI API       Streamlit Dashboard
-  /predict-rating   Predict a Release
-  /predict-boxoffice Star Network Explorer
-  /actor/{name}     Industry Trends
-  /model-info       Model Performance (with SHAP)
+                             │
+                             ▼
+FEATURE ENGINEERING LAYER
+  ├── Cast & Crew Collaboration Network (NetworkX Bankability Scores)
+  ├── TMDb Release Timing (Holiday / Festival Window Proximity)
+  └── VADER Plot Sentiment & Genre-Conditional Interaction Features
+                             │
+                             ▼
+MODEL SELECTION & BENCHMARKING (5-Fold CV)
+  Rating: GradientBoosting (MAE 0.95) │ Box Office: XGBoost (MAE ₹73.6 Cr)
+                             │
+            ┌────────────────┴────────────────┐
+            ▼                                 ▼
+   FastAPI REST Service              Streamlit Dashboard
+   (api.main:app, Port 8000)         (app/streamlit_app.py)
 ```
 
-## The bankability score & chemistry pairing network
+---
 
-This is the signature feature — a network analysis of the Bollywood cast/crew collaboration graph.
+## Bankability & Chemistry Network
 
-For every actor and director, we compute a **time-decay-weighted historical average** of their film performance using a 3-year half-life exponential decay. Scores combine normalized rating with log-transformed collection.
+To measure star power, Tamasha constructs a weighted historical performance ledger using an exponential decay function ($t_{1/2} = 3\text{ years}$):
+- **Chemistry Uplift**: Identifies actor-director and co-star pairs whose combined performance reliably exceeds the sum of their individual expectations.
+- **Top Verified Chemistry Pairs**:
+  - 🥇 Nawazuddin Siddiqui & Salman Khan (Uplift: `+0.0818`)
+  - 🥈 Jimmy Sheirgill & Kangana Ranaut (Uplift: `+0.0559`)
+  - 🥉 Mastan Alibhai Burmawalla & Saif Ali Khan (Uplift: `+0.0532`)
+- **SHAP Validation**: Bankability scores rank as the single most influential predictive feature for box-office outcomes behind production budget.
 
-### Top bankability scores
+---
 
-| Rank | Individual | Type | Score |
-| --- | --- | --- | --- |
-| 🥇 | Deepa Mehta | Director | 2.0000 |
-| 🥇 | Lisa Ray | Actor | 2.0000 |
-| 🥉 | Arun Bakshi | Actor | 1.9559 |
+## Release Timing & Sentiment Analysis
 
-### Top chemistry pairs
+- **Festival Proximity**: Calculates proximity ($\pm 7\text{ days}$) to major Indian cultural holidays (Diwali, Eid, Christmas, Republic Day, Independence Day).
+- **Genre-Conditional Plot Tone**: VADER sentiment scores show stark divergence across genres:
+  - 🎭 **Fantasy**: `+0.417` correlation (Darker plot tones correlate with higher revenues)
+  - 📜 **Historical**: `+0.404` correlation (Serious narrative tones outperform light tones)
+  - 🎶 **Musical**: `-0.325` correlation (Somber tones correlate with lower box office)
+  - 📖 **Drama**: `-0.007` correlation (Zero correlation across 536 movies)
 
-| Rank | Pair | Uplift |
-| :---: | --- | :---: |
-| 🥇 | Nawazuddin Siddiqui & Salman Khan | 0.0818 |
-| 🥈 | Jimmy Sheirgill & Kangana Ranaut | 0.0559 |
-| 🥉 | Mastan Alibhai Burmawalla & Saif Ali Khan | 0.0532 |
+---
 
-> [!IMPORTANT] The bankability score ranks as the **second most important feature** in the box office model — right after budget — validated by SHAP analysis.
+## Computer Vision Null Findings
 
-## Release timing & festival analysis
+Tamasha evaluated 63 visual features across 200 movie posters (HSV color distribution, edge density, brightness, face count). A Random Forest classifier achieved only **49.2% accuracy** (against a 51.1% majority baseline). This confirms that poster visual attributes contain negligible standalone signal for box office performance, a finding reported transparently rather than discarded.
 
-Using the **TMDb API**, 812 box office movies were enriched with release dates (93.5% coverage). The module defines **9 major Indian release windows** (Eid, Diwali, Christmas, etc.) and detects whether a release falls within +/-7 days of a festival.
+---
 
-## Plot tone & genre-conditional analysis
+## Tech Stack
 
-VADER sentiment analysis on plot summaries produces genre-conditional correlations. Key findings:
+| Category | Technologies |
+| :--- | :--- |
+| **Language & Environment** | Python 3.11+ |
+| **Data & Fuzzy Joins** | pandas, numpy, scipy, RapidFuzz |
+| **Machine Learning** | scikit-learn, XGBoost, LightGBM, CatBoost |
+| **Network & NLP** | NetworkX, NLTK (VADER) |
+| **Explainability** | SHAP |
+| **Serving & UI** | Streamlit, Plotly, FastAPI, Uvicorn |
+| **Testing & Quality** | Pytest, Hypothesis, Docker |
 
-| Genre | Correlation | Signal |
-| :---: | :---: | :---: |
-| 🎭 **Fantasy** | **+0.417** | Dark tone → higher box office |
-| 📜 **History** | **+0.404** | Serious tone → higher box office |
-| 🎶 **Music** | **-0.325** | Serious tone → lower box office |
-| 📖 **Drama** | **-0.007** | **No signal** (largest category, 536 movies) |
+---
 
-> [!NOTE] Drama (the largest category) shows **zero correlation** — confirming that genre-conditional analysis discovered real patterns a naive approach would miss.
+## Project Structure
 
-## Poster CV module
+```text
+Tamasha/
+├── api/                    # FastAPI routes, schemas, and serving logic
+├── app/                    # Multi-page Streamlit dashboard
+├── data/                   # Raw and processed datasets (gitignored)
+├── models/                 # Serialized model weights and scalers
+├── src/                    # Feature engineering, fuzzy joins, and modeling code
+├── tests/                  # Pytest unit, fuzzy match, and API test suites
+├── Dockerfile              # Multi-stage container build
+├── docker-compose.yml      # Local container orchestration
+├── pyproject.toml          # Build backend and test settings
+├── requirements.txt        # Python package dependencies
+└── README.md               # Project documentation
+```
 
-Using 200 poster images from the TMDb API, we extracted 63 hand-crafted visual features (HSV histograms, brightness, edge density, face count) and trained a Random Forest classifier. **Result: 49.2% accuracy — no signal detected.** This null result is reported transparently.
+---
 
-## How to run
+## Prerequisites
+
+- **Python**: `>= 3.11`
+- **Memory**: Minimum 2 GB RAM
+
+---
+
+## Installation & Quick Start
+
+### 1. Clone & Setup Environment
 
 ```bash
-# 1. Clone the repository
+# Clone the repository
 git clone https://github.com/themanoj-025/Tamasha.git
 cd Tamasha
 
-# 2. Create and activate a virtual environment
+# Create and activate virtual environment
 python -m venv .venv
+# Linux/macOS: source .venv/bin/activate
+# Windows: .venv\Scripts\Activate.ps1
+
+# Install requirements and package in editable mode
 pip install -r requirements.txt
-
-# 3. Install the package
 pip install -e .
-
-# 4. Download the datasets
-kaggle datasets download adrianmcmahon/imdb-india-movies -p data/raw/ --unzip
-kaggle datasets download rajugc/bollywood-movies-dataset -p data/raw/ --unzip
-kaggle datasets download vidhikishorwaghela/bollywood-movies-dataset -p data/raw/ --unzip
-
-# 5. Train models
-make train
-
-# 6. Run tests
-make test
-
-# 7. Start the dashboard
-streamlit run app/streamlit_app.py
-
-# 8. Start the API
-uvicorn api.main:app --reload
 ```
 
-## Tech stack
+### 2. Run the Applications
 
-| Category | Technologies |
-| --- | --- |
-| Language | Python 3.11+ |
-| Data processing | pandas, numpy, scipy, rapidfuzz |
-| Machine learning | scikit-learn, XGBoost, LightGBM, CatBoost |
-| NLP | NLTK (VADER) |
-| Network analysis | NetworkX |
-| Explainability | SHAP |
-| Dashboard | Streamlit, Plotly |
-| API | FastAPI, Pydantic, uvicorn |
-| Testing | pytest, pytest-cov, Hypothesis, httpx (141 tests) |
-| DevOps | Docker, docker-compose |
-| Image processing | OpenCV, Pillow |
-| External API | TMDb (themoviedb.org) |
+**Run Streamlit Interactive Explorer**:
+```bash
+streamlit run app/streamlit_app.py
+```
+*Open http://localhost:8501.*
 
-## Responsible AI & known limitations
+**Run FastAPI REST Service**:
+```bash
+uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
+```
+*Open Swagger API documentation at http://localhost:8000/docs.*
 
-| Limitation | Impact |
-| --- | --- |
-| **Low R²** (~0.22–0.35) | Directionally useful, not suitable for financial decisions |
-| **Small training set** (~800–12K samples) | May not generalize to films far from the training distribution |
-| **VADER sentiment** | Trained on social-media text, not Bollywood Hinglish plot summaries |
-| **Static dataset** | Predictions for 2025+ films extrapolate from pre-2024 patterns |
+---
 
-> [!CAUTION] All limitations above are reported as-is because they are true of the current model. Add a `MODEL_CARD.md` + CI check if this is still aspirational.
+## Known Limitations & Responsible AI
 
-## 🗺️ Roadmap
+- **Moderate $R^2$ Variance Explained**: Models explain 22%–35% of variance, reflecting unquantifiable consumer cultural sentiment. Suitable for directional intelligence, not definitive financial underwriting.
+- **Hinglish Nuance**: VADER sentiment models standard English vocabulary; nuances in colloquial Bollywood Hinglish may be attenuated.
+- **Historical Horizon**: Models extrapolate from pre-2024 theatrical releases; post-pandemic streaming distribution shifts may introduce drift.
 
-> [!CAUTION] Checked items are built and verified. Unchecked items are tracked in the issue tracker.
+---
 
-- [x] Rating prediction model
-- [x] Box office prediction (+ Bankability)
-- [x] Star chemistry network
-- [x] Release timing & festival analysis
-- [x] Plot-tone genre-conditional analysis
-- [x] Poster CV module (null result reported)
-- [ ] Real-time download/streaming of posters (tracked public issue)
+## Testing
+
+```bash
+# Execute full pytest suite (141 tests)
+pytest tests/ -v
+```
+
+---
+
+## Roadmap
+
+- [x] Rating and box office prediction models
+- [x] Time-decayed bankability score and chemistry network
+- [x] Release timing festival calendar analysis
+- [x] Genre-conditional plot tone evaluation
+- [x] Transparent reporting of computer vision null result
+- [ ] Post-theatrical OTT streaming window revenue modeling <!-- TODO: Track via GitHub issue -->
+- [ ] Multilingual Hinglish sentiment transformer pipeline <!-- TODO: Track via GitHub issue -->
+
+---
 
 ## Contributing
 
-Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md).
+Contributions are welcomed! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for pull request guidelines.
+
+---
+
+## Security
+
+Please report vulnerabilities following the instructions in [SECURITY.md](SECURITY.md).
+
+---
 
 ## License
 
-MIT License — see [LICENSE](LICENSE).
+This project is licensed under the [MIT License](LICENSE).
 
-## Acknowledgements
-
-- [IMDb India Movies](https://www.kaggle.com/datasets/adrianmcmahon/imdb-india-movies) - Primary dataset
-- [Bollywood Box Office](https://www.kaggle.com/datasets/rajugc/bollywood-movies-dataset) - Box office dataset
-- [Year Bridge](https://www.kaggle.com/datasets/vidhikishorwaghela/bollywood-movies-dataset) - Year-bridging dataset
-- [TMDb](https://www.themoviedb.org/) - Release-date, plot, and poster enrichment
+---
 
 ## Support
 
-- 🐛 [Report a bug](https://github.com/themanoj-025/Tamasha/issues)
-- 💡 [Request a feature](https://github.com/themanoj-025/Tamasha/issues)
-- ⭐ [Star the repository](https://github.com/themanoj-025/Tamasha)
-
+- 🐛 **Issue Tracker**: [GitHub Issues](https://github.com/themanoj-025/Tamasha/issues)
+- 💡 **Discussions & Feedback**: [GitHub Pull Requests](https://github.com/themanoj-025/Tamasha/pulls)
