@@ -75,6 +75,6 @@ class TestClashDetectionScale:
         if len(dup_dates) >= 2:
             first_dup_date = dup_dates.iloc[0]
             same_day = result[dates_series == first_dup_date]
-            assert same_day["has_clash"].all(), (
-                f"Movies on {first_dup_date.date()} should all be flagged as clashing"
-            )
+            assert same_day[
+                "has_clash"
+            ].all(), f"Movies on {first_dup_date.date()} should all be flagged as clashing"
