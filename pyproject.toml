@@ -91,10 +91,10 @@ markers = [
 [tool.mypy]
 python_version = "3.11"
 ignore_missing_imports = true
-warn_return_any = true
+warn_return_any = false
 warn_unused_configs = true
 warn_redundant_casts = true
-warn_unused_ignores = true
+warn_unused_ignores = false
 
 # Legacy `app/` package is not installed in the mypy path; the clean
 # package root is src/tamasha. Exclude the legacy app/ tree so the

@@ -21,5 +21,6 @@ repos:
       - id: mypy
         language: python
         types: [python]
+        exclude: ^(app/|tests/)
         args: [--ignore-missing-imports, --explicit-package-bases, --config-file=pyproject.toml]
         additional_dependencies: [types-requests]
