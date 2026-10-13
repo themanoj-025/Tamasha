@@ -21,4 +21,5 @@ repos:
       - id: mypy
         language: python
         types: [python]
-        args: [--ignore-missing-imports, --explicit-package-bases]
+        args: [--ignore-missing-imports, --explicit-package-bases, --config-file=pyproject.toml]
+        additional_dependencies: [types-requests]
