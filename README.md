@@ -43,10 +43,10 @@
 - [Tech stack](#tech-stack)
 - [Responsible AI & known limitations](#responsible-ai--known-limitations)
 - [🗺️ Roadmap](#️-roadmap)
-- [Contributing](#-contributing)
+- [Contributing](#contributing)
 - [License](#license)
-- [Acknowledgements](#-acknowledgements)
-- [Support](#-support)
+- [Acknowledgements](#acknowledgements)
+- [Support](#support)
 
 ---
 
