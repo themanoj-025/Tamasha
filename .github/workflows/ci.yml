@@ -139,7 +139,8 @@ jobs:
         # as of 2026-09-27 (OSV last_affected 5.6.3); diskcache is a runtime dep
         # (src/tamasha/cache.py) and cache entries are written only by our own
         # code. Ignore until a patched release exists.
-        run: pip-audit -r requirements.txt --ignore-vuln PYSEC-2026-2447
+        # PYSEC-2026-3740 (nltk) has no upstream fix release yet.
+        run: pip-audit -r requirements.txt --ignore-vuln PYSEC-2026-2447 --ignore-vuln PYSEC-2026-3740
 
   bandit:
     timeout-minutes: 10
