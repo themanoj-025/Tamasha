@@ -34,7 +34,7 @@ kaleido==1.4.0  # pinned: kaleido 1.x is required by plotly 7.x (7.0 dropped kal
 # shap>=0.42,<1.0
 
 # Streamlit dashboard
-streamlit>=1.64.0,<2.0
+streamlit>=1.65.0,<2.0
 streamlit-option-menu>=0.4.0,<1.0
 
 # FastAPI
