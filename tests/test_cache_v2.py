@@ -45,9 +45,13 @@ class TestCachedPrediction:
                 import tamasha.cache as mod
 
                 mod._CACHE = None
-                result = get_cached_prediction({"test": True}, "v1")
-                assert result is None
-                mod._CACHE = None
+                try:
+                    result = get_cached_prediction({"test": True}, "v1")
+                    assert result is None
+                finally:
+                    if mod._CACHE is not None:
+                        mod._CACHE.close()
+                    mod._CACHE = None
 
     def test_cache_hit(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -55,9 +59,13 @@ class TestCachedPrediction:
                 import tamasha.cache as mod
 
                 mod._CACHE = None
-                payload = {"title": "Test"}
-                set_cached_prediction(payload, {"result": "hit"}, "v1")
-                result = get_cached_prediction(payload, "v1")
-                assert result is not None
-                assert result["result"] == "hit"
-                mod._CACHE = None
+                try:
+                    payload = {"title": "Test"}
+                    set_cached_prediction(payload, {"result": "hit"}, "v1")
+                    result = get_cached_prediction(payload, "v1")
+                    assert result is not None
+                    assert result["result"] == "hit"
+                finally:
+                    if mod._CACHE is not None:
+                        mod._CACHE.close()
+                    mod._CACHE = None
