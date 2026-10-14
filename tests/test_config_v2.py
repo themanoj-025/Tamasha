@@ -1,5 +1,7 @@
 """Tests for configuration settings."""
 
+import pytest
+
 from tamasha.config import Settings
 
 
@@ -37,6 +39,7 @@ class TestSettings:
         s = Settings()
         assert s.RATE_LIMIT == "60/minute"
 
-    def test_api_key_empty_default(self) -> None:
+    def test_api_key_empty_default(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.delenv("API_KEY", raising=False)
         s = Settings()
         assert s.API_KEY == ""
