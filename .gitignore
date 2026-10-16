@@ -1,16 +1,90 @@
-# ── Byte-compiled / optimized / DLL files ─────────────────────────────────
+# ════════════════════════════════════════════════════════════════
+# Tamasha - Security & Production .gitignore
+# ════════════════════════════════════════════════════════════════
+
+# ─── Secrets & Environment (CRITICAL) ───────────────────────────
+.env
+.env.*
+*.env
+.env.local
+.env.*.local
+.env.development
+.env.test
+.env.staging
+.env.production
+!.env.example
+!.env.template
+!.env.sample
+
+# Streamlit secrets
+.streamlit/secrets.toml
+.streamlit/secrets.toml.local
+!.streamlit/secrets.toml.example
+!.streamlit/secrets.toml.template
+
+# Private keys, certificates & credentials
+*.pem
+*.key
+*.keystore
+*.jks
+*.p12
+*.pfx
+*.pkcs12
+*.cer
+*.crt
+*.der
+*.id_rsa
+id_rsa*
+id_ed25519*
+id_ecdsa*
+id_dsa*
+
+# Cloud & service credentials
+kaggle.json
+credentials.json
+client_secret*.json
+service-account*.json
+service_account*.json
+serviceAccountKey*.json
+google-services.json
+GoogleService-Info.plist
+.aws/
+.azure/
+.gcp/
+gcloud/
+.act-secrets
+*.publishsettings
+
+# Authentication tokens & configs
+.netrc
+.pypirc
+.npmrc
+*token*.json
+token.pickle
+auth*.json
+
+# ─── Byte-compiled / optimized / DLL files ─────────────────────
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
+.Python
 
-# ── Data files (large, raw, and processed) ────────────────────────────────
+# ─── Virtual environments ──────────────────────────────────────
+.venv/
+venv/
+env/
+.venv*/
+env.bak/
+venv.bak/
+
+# ─── Data files (large, raw, and processed) ────────────────────
 data/raw/*
 data/processed/*
 !data/raw/.gitkeep
 !data/processed/.gitkeep
 
-# ── Model artifacts (all formats + versioned subdirectories) ──────────────
+# ─── Model artifacts ───────────────────────────────────────────
 models/*.pkl
 models/*.joblib
 models/*.onnx
@@ -20,45 +94,9 @@ models/**/*.joblib
 models/**/*.onnx
 models/**/*.json
 !models/.gitkeep
+catboost_info/
 
-# ── Environment files ─────────────────────────────────────────────────────
-.env
-.env.*
-!.env.example
-.streamlit/secrets.toml
-!.streamlit/secrets.toml.example
-.venv/
-venv/
-env/
-
-# ── IDE / Editor ──────────────────────────────────────────────────────────
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-*.code-workspace
-
-# ── OS ────────────────────────────────────────────────────────────────────
-.DS_Store
-Thumbs.db
-
-# ── Jupyter ───────────────────────────────────────────────────────────────
-.ipynb_checkpoints/
-*.ipynb_checkpoints/
-
-# ── Reports (ignore loose HTML/PNG, keep figures and CSVs) ────────────────
-reports/*.html
-reports/*.png
-
-# ── Kaggle ────────────────────────────────────────────────────────────────
-kaggle.json
-
-# ── Docker ────────────────────────────────────────────────────────────────
-.docker/
-
-# ── Distribution / packaging ──────────────────────────────────────────────
-.Python
+# ─── Distribution / packaging ──────────────────────────────────
 build/
 develop-eggs/
 dist/
@@ -74,54 +112,89 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+.python-version
 
-# ── Testing / CI / Coverage ──────────────────────────────────────────────
+# ─── IDE / Editor ──────────────────────────────────────────────
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.vscode/*.local.*
+.vscode/mcp.json
+.idea/
+*.swp
+*.swo
+*~
+*.code-workspace
+
+# ─── OS ────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+desktop.ini
+$RECYCLE.BIN/
+*.tmp
+*.temp
+*.bak
+
+# ─── Jupyter ───────────────────────────────────────────────────
+.ipynb_checkpoints/
+*.ipynb_checkpoints/
+
+# ─── Reports ───────────────────────────────────────────────────
+reports/*.html
+reports/*.png
+
+# ─── Docker ────────────────────────────────────────────────────
+.docker/
+
+# ─── Testing / CI / Coverage ───────────────────────────────────
 .pytest_cache/
 .coverage
 .coverage.*
 coverage.xml
 .coverage.xml
 htmlcov/
-coverage/  # Generated pytest-cov combined report
+coverage/
 .tox/
 .nox/
+radar_balance.txt
 
-# ── Type checking ─────────────────────────────────────────────────────────
+# ─── Type checking ─────────────────────────────────────────────
 .mypy_cache/
 .pytype/
 .typings/
 .dmypy.json
 
-# ── CatBoost training artifacts ───────────────────────────────────────────
-catboost_info/
-
-# ── Node.js ──────────────────────────────────────────────────────────
+# ─── Node.js ───────────────────────────────────────────────────
 node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
-# ── Logs ──────────────────────────────────────────────────────────────────
+# ─── Logs & Database Files ─────────────────────────────────────
 *.log
 logs/
-
-# ── Cache / Temp ──────────────────────────────────────────────────────────
+*.dump
+*.stackdump
 *.db
+*.db-shm
+*.db-wal
+*.db-journal
 *.sqlite
+*.sqlite3
 tmp/
 temp/
 
-# ── Python version / runtime ──────────────────────────────────────────────
-.python-version
-
-# ── Portfolio-standard ignores (sweep 2026-09) ──────────────
-radar_balance.txt
-.venv*/
-*.db-shm
-*.db-wal
-
 # =====================================================================
-# KEEP: AI provenance & transparency files — these must remain
-# visible to any repository viewer. Do not add rules above this block
-# that would shadow a directory these files live in without also
-# adding a negation here. Verified with `git check-ignore -v`.
+# KEEP: AI provenance & transparency files — must remain visible
 # =====================================================================
 !AI_DISCLOSURE.md
 !AI_USAGE.md
