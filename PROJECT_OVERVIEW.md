@@ -622,55 +622,55 @@ streamlit run app/streamlit_app.py
 
 ## <a id="exam"></a>§EXAM — Cold-Reader Verification Exam (25 Questions)
 
-1. **Q: What is the primary analytical domain of Tamasha?**  
+1. **Q: What is the primary analytical domain of Tamasha?**
    *A:* Indian Cinema (Bollywood) box office revenue and rating predictive intelligence. Reference: [§TLDR](#tldr).
-2. **Q: How many unkeyed Kaggle datasets are joined in the ingestion pipeline?**  
+2. **Q: How many unkeyed Kaggle datasets are joined in the ingestion pipeline?**
    *A:* 3 unlinked corpora (15.5k IMDb India, 1k Box Office, 7.4k Year Bridge). Reference: [§TLDR](#tldr).
-3. **Q: What percentage of high-confidence matches is retained through the fuzzy joining pipeline?**  
+3. **Q: What percentage of high-confidence matches is retained through the fuzzy joining pipeline?**
    *A:* 81.2% retention (812 high-confidence enriched movie entities). Reference: [§TLDR](#tldr).
-4. **Q: What is the winning estimator for box office revenue prediction?**  
+4. **Q: What is the winning estimator for box office revenue prediction?**
    *A:* Tuned XGBoost + Bankability (MAE ₹73.6 Cr). Reference: [§WHAT](#what).
-5. **Q: What is the winning estimator for IMDb rating prediction?**  
+5. **Q: What is the winning estimator for IMDb rating prediction?**
    *A:* Tuned GradientBoosting (MAE 0.9534 / 10). Reference: [§WHAT](#what).
-6. **Q: How much error reduction does the star bankability feature vector deliver over baseline models?**  
+6. **Q: How much error reduction does the star bankability feature vector deliver over baseline models?**
    *A:* 11.6% MAE improvement (cutting error by ₹9.7 Cr). Reference: [§TLDR](#tldr).
-7. **Q: What is the half-life value utilized in the rolling exponential time-decay bankability formula?**  
+7. **Q: What is the half-life value utilized in the rolling exponential time-decay bankability formula?**
    *A:* 3 years ($t_{1/2} = 3$). Reference: [§WHAT](#what).
-8. **Q: How many cast and director individuals are indexed in the bankability scorer?**  
+8. **Q: How many cast and director individuals are indexed in the bankability scorer?**
    *A:* 1,010 individuals. Reference: [§TLDR](#tldr).
-9. **Q: What library powers the actor-director collaboration and chemistry graph?**  
+9. **Q: What library powers the actor-director collaboration and chemistry graph?**
    *A:* NetworkX. Reference: [`src/tamasha/network/collaboration_graph.py`](src/tamasha/network/collaboration_graph.py).
-10. **Q: What reported classification accuracy was achieved by the poster computer vision model?**  
+10. **Q: What reported classification accuracy was achieved by the poster computer vision model?**
     *A:* 49.2% accuracy (documented empirical null result vs 51.1% majority baseline). Reference: [§WHAT](#what).
-11. **Q: How many national festival release windows are parameterized in the temporal analyzer?**  
+11. **Q: How many national festival release windows are parameterized in the temporal analyzer?**
     *A:* 9 major national festival release windows. Reference: [§WHAT](#what).
-12. **Q: What window threshold is used for release clash collision detection?**  
+12. **Q: What window threshold is used for release clash collision detection?**
     *A:* Direct release collisions within ±7 days. Reference: [§WHAT](#what).
-13. **Q: What string similarity library accelerates fuzzy entity resolution?**  
+13. **Q: What string similarity library accelerates fuzzy entity resolution?**
     *A:* RapidFuzz. Reference: [`src/tamasha/data/fuzzy_matching.py`](src/tamasha/data/fuzzy_matching.py).
-14. **Q: What NLP sentiment engine extracts plot overview tone?**  
+14. **Q: What NLP sentiment engine extracts plot overview tone?**
     *A:* VADER sentiment analysis with genre-conditional interactions. Reference: [`src/tamasha/nlp/sentiment.py`](src/tamasha/nlp/sentiment.py).
-15. **Q: What two serving interfaces provide interaction with Tamasha?**  
+15. **Q: What two serving interfaces provide interaction with Tamasha?**
     *A:* FastAPI REST service and Streamlit interactive dashboard. Reference: [`api/main.py`](api/main.py), [`app/streamlit_app.py`](app/streamlit_app.py).
-16. **Q: What open-source license governs the Tamasha repository?**  
+16. **Q: What open-source license governs the Tamasha repository?**
     *A:* MIT License. Reference: [`LICENSE`](LICENSE).
-17. **Q: What total number of automated tests are collected in the test suite?**  
+17. **Q: What total number of automated tests are collected in the test suite?**
     *A:* 180 tests across 28 test files. Reference: [§TEST-CATALOG](#test-catalog).
-18. **Q: What total lines of code exist in the repository?**  
+18. **Q: What total lines of code exist in the repository?**
     *A:* 23,028 lines of code. Reference: [§META](#meta).
-19. **Q: What git commit hash was verified for this documentation?**  
+19. **Q: What git commit hash was verified for this documentation?**
     *A:* `c0d5fa3` (`c0d5fa31399014470eec76ad80addd5165745382`). Reference: [§META](#meta).
-20. **Q: What git tree hash represents the verified repository state?**  
+20. **Q: What git tree hash represents the verified repository state?**
     *A:* `e446294834a554d75e03219c8bc116f5ad9d3a8f`. Reference: [§META](#meta).
-21. **Q: What is the measured inference latency of the prediction service?**  
+21. **Q: What is the measured inference latency of the prediction service?**
     *A:* 18 ms. Reference: [§PERF](#perf).
-22. **Q: What command runs the full 5-fold cross-validation training suite?**  
+22. **Q: What command runs the full 5-fold cross-validation training suite?**
     *A:* `python -m src.tamasha.models.train`. Reference: [§CLI](#cli).
-23. **Q: How does the system handle bankability scores for film debutants?**  
+23. **Q: How does the system handle bankability scores for film debutants?**
     *A:* It applies genre baseline priors as fallback estimates. Reference: [§RESILIENCE](#resilience).
-24. **Q: What pattern guards external TMDb API enrichment calls against cascade timeouts?**  
+24. **Q: What pattern guards external TMDb API enrichment calls against cascade timeouts?**
     *A:* Circuit breaker pattern implemented in `circuit_breaker.py`. Reference: [§RESILIENCE](#resilience).
-25. **Q: How many total tracked files are cataloged with 100% manifest coverage in Appendix A?**  
+25. **Q: How many total tracked files are cataloged with 100% manifest coverage in Appendix A?**
     *A:* All 205 tracked files. Reference: [§APP](#app).
 
 ---
