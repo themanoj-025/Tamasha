@@ -17,7 +17,7 @@ pydantic-settings>=2.16.0,<3.0
 rapidfuzz>=3.14.6,<4.0
 
 # NLP
-nltk>=3.8,<4.0
+nltk>=3.10.4,<4.0
 
 # Network analysis
 networkx>=3.6.1,<4.0
