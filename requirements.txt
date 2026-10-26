@@ -4,7 +4,7 @@ numpy>=2.4.6,<3.0  # widened from <2.0 to support Python 3.14 (numpy 2.x has whe
 scikit-learn>=1.9.1,<2.0
 opencv-python>=4.8  # cv2 — image processing used by api/src
 python-dotenv>=1.0  # dotenv
-requests>=2.31
+requests>=2.34.2
 prometheus-fastapi-instrumentator>=8.1,<9.0  # /metrics instrumentation in api/main.py; 8.1+ required for fastapi>=0.116 router handling
 joblib>=1.6.0,<2.0
 scipy>=1.17.1,<2.0
@@ -61,7 +61,7 @@ ruff>=0.17.1,<1.0
 
 # Docker / env
 python-dotenv>=1.0,<2.0
-requests>=2.28,<3.0
+requests>=2.34.2,<3.0
 Pillow>=12.3.0,<13.0  # widened for Python 3.14 wheel compatibility (12.x is current)
 opencv-python>=4.8,<5.0
 gunicorn>=26.1.0,<27.0
