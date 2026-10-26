@@ -57,7 +57,7 @@ hypothesis>=6.170.1,<7.0
 pre-commit>=4.7.0,<5.0
 black>=26.10.1,<27.0
 isort>=9.0.2,<10.0
-ruff>=0.17.1,<1.0
+ruff>=0.17.2,<1.0
 
 # Docker / env
 python-dotenv>=1.0,<2.0
