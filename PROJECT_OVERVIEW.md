@@ -761,8 +761,6 @@ Total tracked files in repository tree: 205
 | [`.mailmap`](.mailmap) | `no-ext` | 6 | 298 | Configuration or static asset |
 | [`.pre-commit-config.yaml`](.pre-commit-config.yaml) | `.yaml` | 26 | 792 | Configuration or static asset |
 | [`.streamlit/secrets.toml.example`](.streamlit/secrets.toml.example) | `.example` | 11 | 481 | Configuration or static asset |
-| [`AGENTS.md`](AGENTS.md) | `.md` | 74 | 1901 | Documentation asset |
-| [`AI_DISCLOSURE.md`](AI_DISCLOSURE.md) | `.md` | 67 | 2558 | Documentation asset |
 | [`CHANGELOG.md`](CHANGELOG.md) | `.md` | 40 | 1378 | Documentation asset |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | `.md` | 14 | 528 | Documentation asset |
 | [`Dockerfile`](Dockerfile) | `no-ext` | 76 | 2565 | Configuration or static asset |
@@ -772,7 +770,6 @@ Total tracked files in repository tree: 205
 | [`PROJECT_ANALYSIS.md`](PROJECT_ANALYSIS.md) | `.md` | 18 | 793 | Documentation asset |
 | [`README.md`](README.md) | `.md` | 311 | 13793 | Documentation asset |
 | [`SECURITY.md`](SECURITY.md) | `.md` | 25 | 983 | Documentation asset |
-| [`ai-provenance.json`](ai-provenance.json) | `.json` | 64 | 1677 | Configuration or static asset |
 | [`api/__init__.py`](api/__init__.py) | `.py` | 1 | 55 | FastAPI endpoint routing and service contracts |
 | [`api/deps.py`](api/deps.py) | `.py` | 26 | 830 | FastAPI endpoint routing and service contracts |
 | [`api/main.py`](api/main.py) | `.py` | 281 | 9250 | FastAPI endpoint routing and service contracts |
