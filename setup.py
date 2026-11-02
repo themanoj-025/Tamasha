@@ -17,7 +17,7 @@ EXTRAS_ML = [
 ]
 
 EXTRAS_DEV = [
-    "pytest>=7.4,<8.0",
+    "pytest>=7.4,<10.0",
     "pytest-cov>=4.1,<5.0",
     "httpx>=0.24,<1.0",
     "hypothesis>=6.0,<7.0",
