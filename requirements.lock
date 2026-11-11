@@ -72,7 +72,7 @@ httpcore==0.17.3
     # via httpx
 httpx==0.24.0
     # via -r requirements.txt
-hypothesis==6.170.13
+hypothesis==6.170.15
     # via -r requirements.txt
 identify==2.6.20
     # via pre-commit
@@ -140,9 +140,9 @@ numpy==2.4.6
     #   scikit-learn
     #   scipy
     #   streamlit
-opencv-python==4.14.0.94
+opencv-python==5.0.0.93
     # via -r requirements.txt
-opentelemetry-api==1.45.1
+opentelemetry-api==1.45.2
     # via
     #   -r requirements.txt
     #   fastapi
@@ -152,36 +152,36 @@ opentelemetry-api==1.45.1
     #   opentelemetry-instrumentation-fastapi
     #   opentelemetry-sdk
     #   opentelemetry-semantic-conventions
-opentelemetry-exporter-otlp-common==0.66b1
+opentelemetry-exporter-otlp-common==0.66b2
     # via opentelemetry-exporter-otlp-proto-grpc
-opentelemetry-exporter-otlp-proto-common==1.45.1
+opentelemetry-exporter-otlp-proto-common==1.45.2
     # via opentelemetry-exporter-otlp-proto-grpc
-opentelemetry-exporter-otlp-proto-grpc==1.45.1
+opentelemetry-exporter-otlp-proto-grpc==1.45.2
     # via -r requirements.txt
-opentelemetry-instrumentation==0.66b1
+opentelemetry-instrumentation==0.66b2
     # via
     #   opentelemetry-instrumentation-asgi
     #   opentelemetry-instrumentation-fastapi
-opentelemetry-instrumentation-asgi==0.66b1
+opentelemetry-instrumentation-asgi==0.66b2
     # via opentelemetry-instrumentation-fastapi
-opentelemetry-instrumentation-fastapi==0.66b1
+opentelemetry-instrumentation-fastapi==0.66b2
     # via -r requirements.txt
-opentelemetry-proto==1.45.1
+opentelemetry-proto==1.45.2
     # via
     #   opentelemetry-exporter-otlp-proto-common
     #   opentelemetry-exporter-otlp-proto-grpc
-opentelemetry-sdk==1.45.1
+opentelemetry-sdk==1.45.2
     # via
     #   -r requirements.txt
     #   opentelemetry-exporter-otlp-common
     #   opentelemetry-exporter-otlp-proto-grpc
-opentelemetry-semantic-conventions==0.66b1
+opentelemetry-semantic-conventions==0.66b2
     # via
     #   opentelemetry-instrumentation
     #   opentelemetry-instrumentation-asgi
     #   opentelemetry-instrumentation-fastapi
     #   opentelemetry-sdk
-opentelemetry-util-http==0.66b1
+opentelemetry-util-http==0.66b2
     # via
     #   opentelemetry-instrumentation-asgi
     #   opentelemetry-instrumentation-fastapi
@@ -244,7 +244,7 @@ pygments==2.21.0
     # via pytest
 pyparsing==3.3.3
     # via matplotlib
-pytest==9.0.3
+pytest==9.2.0
     # via
     #   -r requirements.txt
     #   pytest-cov
@@ -282,7 +282,7 @@ rpds-py==2026.6.3
     # via
     #   jsonschema
     #   referencing
-ruff==0.17.3
+ruff==0.17.4
     # via -r requirements.txt
 scikit-learn==1.9.1
     # via -r requirements.txt
@@ -307,7 +307,7 @@ starlette==1.7.0
     #   fastapi
     #   prometheus-fastapi-instrumentator
     #   streamlit
-streamlit==1.66.1
+streamlit==1.67.0
     # via
     #   -r requirements.txt
     #   streamlit-option-menu
@@ -319,6 +319,8 @@ tenacity==9.2.1
     # via -r requirements.txt
 threadpoolctl==3.7.0
     # via scikit-learn
+tomli==2.5.0
+    # via coverage
 tqdm==4.70.1
     # via nltk
 typing-extensions==4.16.0
