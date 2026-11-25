@@ -319,8 +319,6 @@ tenacity==9.2.1
     # via -r requirements.txt
 threadpoolctl==3.7.0
     # via scikit-learn
-tomli==2.5.0
-    # via coverage
 tqdm==4.70.1
     # via nltk
 typing-extensions==4.16.0
