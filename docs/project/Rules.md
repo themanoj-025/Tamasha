@@ -1,4 +1,4 @@
-# Rules — Tamasha: Coding Standards & AI-Agent Operating Rules
+# Rules — Tamasha: Coding Standards & Engineering Operating Rules
 
 | Field | Value |
 | --- | --- |
@@ -52,7 +52,7 @@ Tamasha/
 - MUST test: auth/roles, publish idempotency, search, delete cascades.
 - Optional: UI smoke via Playwright.
 
-## 5. AI Agent Operating Rules
+## 5. Engineering Operating Rules
 
 - Read Tracker.md + ImplementationPlan.md before tasks.
 - Never mark 🟢 without tests passing.
